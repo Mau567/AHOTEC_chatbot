@@ -57,9 +57,15 @@ export default function Home() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...formData,
+          name: formData.hotelName,
+          region: formData.region,
+          city: formData.city,
+          description: formData.description,
           amenities: formData.amenities.split(',').map(a => a.trim()).filter(a => a),
-          tags: formData.tags.split(',').map(t => t.trim()).filter(t => t)
+          bookingLink: formData.bookingLink,
+          tags: formData.tags.split(',').map(t => t.trim()).filter(t => t),
+          submittedBy: formData.submittedBy,
+          contactEmail: formData.contactEmail
         })
       })
 
