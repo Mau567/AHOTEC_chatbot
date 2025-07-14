@@ -1,0 +1,65 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String
+  role      UserRole @default(ADMIN)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Hotel {
+  id          String       @id @default(cuid())
+  name        String
+  region      String
+  city        String
+  description String
+  amenities   String[]
+  bookingLink String?
+  tags        String[]
+  status      HotelStatus  @default(PENDING)
+  isPaid      Boolean      @default(false)
+  price       Float?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  submittedBy String?      // Email of the person who submitted
+  approvedBy  String?      // User ID who approved/rejected
+  approvedAt  DateTime?
+
+  @@map("hotels")
+}
+
+model ChatSession {
+  id        String   @id @default(cuid())
+  sessionId String   @unique
+  messages  Json[]   // Array of chat messages
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("chat_sessions")
+}
+
+enum UserRole {
+  ADMIN
+  MODERATOR
+}
+
+enum HotelStatus {
+  PENDING
+  APPROVED
+  REJECTED
+} 
