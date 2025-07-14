@@ -13,6 +13,7 @@ interface HotelFormData {
   tags: string
   submittedBy: string
   contactEmail: string
+  image?: File | null // Add image field
 }
 
 interface ChatMessage {
@@ -32,7 +33,8 @@ export default function Home() {
     bookingLink: '',
     tags: '',
     submittedBy: '',
-    contactEmail: ''
+    contactEmail: '',
+    image: null // Add image field
   })
 
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
@@ -49,24 +51,35 @@ export default function Home() {
     }))
   }
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files && e.target.files[0] ? e.target.files[0] : null
+    setFormData(prev => ({
+      ...prev,
+      image: file
+    }))
+  }
+
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     try {
+      const form = new FormData()
+      form.append('name', formData.hotelName)
+      form.append('region', formData.region)
+      form.append('city', formData.city)
+      form.append('description', formData.description)
+      form.append('amenities', formData.amenities)
+      form.append('bookingLink', formData.bookingLink)
+      form.append('tags', formData.tags)
+      form.append('submittedBy', formData.submittedBy)
+      form.append('contactEmail', formData.contactEmail)
+      if (formData.image) {
+        form.append('image', formData.image)
+      }
+
       const response = await fetch('/api/hotels', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: formData.hotelName,
-          region: formData.region,
-          city: formData.city,
-          description: formData.description,
-          amenities: formData.amenities.split(',').map(a => a.trim()).filter(a => a),
-          bookingLink: formData.bookingLink,
-          tags: formData.tags.split(',').map(t => t.trim()).filter(t => t),
-          submittedBy: formData.submittedBy,
-          contactEmail: formData.contactEmail
-        })
+        body: form
       })
 
       const result = await response.json()
@@ -82,7 +95,8 @@ export default function Home() {
           bookingLink: '',
           tags: '',
           submittedBy: '',
-          contactEmail: ''
+          contactEmail: '',
+          image: null // Reset image after submission
         })
       } else {
         alert('Error al enviar el formulario. Por favor intenta de nuevo.')
@@ -346,6 +360,29 @@ export default function Home() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="tu-email@ejemplo.com"
                 />
+              </div>
+
+              <div>
+                <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-2">
+                  Foto del Hotel (1 imagen)
+                </label>
+                <input
+                  type="file"
+                  id="image"
+                  name="image"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                {formData.image && (
+                  <div className="mt-2">
+                    <img
+                      src={URL.createObjectURL(formData.image)}
+                      alt="Vista previa de la imagen"
+                      className="h-32 rounded-md object-cover border"
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="flex justify-end">

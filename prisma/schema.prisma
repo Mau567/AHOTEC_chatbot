@@ -37,8 +37,10 @@ model Hotel {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   submittedBy String?      // Email of the person who submitted
+  contactEmail String?     // Contact email for the hotel
   approvedBy  String?      // User ID who approved/rejected
   approvedAt  DateTime?
+  imageUrl    String?      // URL of the hotel image
 
   @@map("hotels")
 }

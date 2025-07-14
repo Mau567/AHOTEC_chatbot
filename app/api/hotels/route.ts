@@ -1,10 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
+import { prisma, supabase } from '@/lib/db'
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { name, region, city, description, amenities, bookingLink, tags, submittedBy } = body
+    // Parse multipart/form-data
+    const formData = await request.formData()
+    const name = formData.get('name') as string
+    const region = formData.get('region') as string
+    const city = formData.get('city') as string
+    const description = formData.get('description') as string
+    const amenities = formData.get('amenities') as string
+    const bookingLink = formData.get('bookingLink') as string
+    const tags = formData.get('tags') as string
+    const submittedBy = formData.get('submittedBy') as string
+    const contactEmail = formData.get('contactEmail') as string
+    const image = formData.get('image') as File | null
+
+    let imageUrl: string | undefined = undefined
+    if (image) {
+      // Upload image to Supabase Storage
+      const arrayBuffer = await image.arrayBuffer()
+      const fileExt = image.name.split('.').pop()
+      const fileName = `hotel_${Date.now()}.${fileExt}`
+      const { data, error } = await supabase.storage
+        .from(process.env.SUPABASE_BUCKET || 'hotel-images')
+        .upload(fileName, new Uint8Array(arrayBuffer), {
+          contentType: image.type
+        })
+      if (error) {
+        console.error('Error uploading image to Supabase:', error)
+        return NextResponse.json({ error: 'Error uploading image' }, { status: 500 })
+      }
+      // Get public URL
+      const { data: publicUrlData } = supabase.storage
+        .from(process.env.SUPABASE_BUCKET || 'hotel-images')
+        .getPublicUrl(fileName)
+      imageUrl = publicUrlData?.publicUrl
+    }
 
     const hotel = await prisma.hotel.create({
       data: {
@@ -12,10 +44,12 @@ export async function POST(request: NextRequest) {
         region,
         city,
         description,
-        amenities: Array.isArray(amenities) ? amenities : [amenities],
+        amenities: amenities.split(',').map(a => a.trim()).filter(a => a),
         bookingLink,
-        tags: Array.isArray(tags) ? tags : [tags],
-        submittedBy
+        tags: tags.split(',').map(t => t.trim()).filter(t => t),
+        submittedBy,
+        contactEmail,
+        imageUrl
       }
     })
 
