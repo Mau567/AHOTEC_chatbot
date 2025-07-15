@@ -7,18 +7,31 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { message, sessionId } = body
 
-    // Get approved hotels from database
+    // Extraer ubicación y tipo de hotel del mensaje
+    // Esperamos el formato: "Ubicación: ...\nTipo de hotel: ..."
+    let location = ''
+    let hotelType = ''
+    const locationMatch = message.match(/Ubicación:\s*(.*)/i)
+    const typeMatch = message.match(/Tipo de hotel:\s*(.*)/i)
+    if (locationMatch) location = locationMatch[1].trim()
+    if (typeMatch) hotelType = typeMatch[1].trim()
+
+    // Buscar hoteles aprobados y pagados que coincidan
     const hotels = await prisma.hotel.findMany({
       where: {
         status: 'APPROVED',
-        isPaid: true
+        isPaid: true,
+        hotelType: hotelType ? { equals: hotelType } : undefined,
+        OR: [
+          { city: { contains: location, mode: 'insensitive' } },
+          { region: { contains: location, mode: 'insensitive' } },
+          { address: { contains: location, mode: 'insensitive' } },
+          { locationPhrase: { contains: location, mode: 'insensitive' } }
+        ]
       }
     })
 
-    // Get AI response using Mistral
-    const aiResponse = await getHotelRecommendations(message, hotels)
-
-    // Save or update chat session
+    // Guardar la sesión como antes
     const existingSession = await prisma.chatSession.findUnique({
       where: { sessionId }
     })
@@ -31,7 +44,7 @@ export async function POST(request: NextRequest) {
 
     const botMessage = {
       role: 'assistant',
-      content: aiResponse,
+      content: hotels.length > 0 ? 'Hoteles encontrados' : 'No se encontraron hoteles compatibles',
       timestamp: new Date().toISOString()
     }
 
@@ -51,8 +64,9 @@ export async function POST(request: NextRequest) {
       })
     }
 
+    // Devolver los hoteles compatibles (array)
     return NextResponse.json({ 
-      message: aiResponse,
+      hotels,
       timestamp: new Date().toISOString()
     })
   } catch (error) {

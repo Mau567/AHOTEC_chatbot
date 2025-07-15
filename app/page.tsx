@@ -47,6 +47,24 @@ export default function Home() {
   const [formSubmitted, setFormSubmitted] = useState(false)
   const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`)
 
+  // 1. Estado para el flujo guiado del chatbot
+  const [chatStep, setChatStep] = useState<'ubicacion' | 'tipo' | 'resultados'>('ubicacion')
+  const [userLocation, setUserLocation] = useState('')
+  const [userHotelType, setUserHotelType] = useState('')
+
+  // Estado para los resultados de hoteles
+  const [hotelResults, setHotelResults] = useState<any[]>([])
+  const [noResults, setNoResults] = useState(false)
+
+  const hotelTypeOptions = [
+    'Hotel 4 o 5 estrellas',
+    'Hotel 3 o menos estrellas',
+    'Hostal / Bed and Breakfast',
+    'Hostería de campo',
+    'Hacienda',
+    'Resort'
+  ]
+
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({
@@ -182,6 +200,34 @@ export default function Home() {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       handleSendMessage()
+    }
+  }
+
+  // 3. Preparar el envío de la consulta al backend cuando se tengan ambos datos
+  const handleSendGuidedQuery = async (location: string, hotelType: string) => {
+    setIsLoading(true)
+    setNoResults(false)
+    setHotelResults([])
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: `Ubicación: ${location}\nTipo de hotel: ${hotelType}`,
+          sessionId
+        })
+      })
+      const data = await response.json()
+      // Esperamos que el backend devuelva un array de hoteles en data.hotels
+      if (Array.isArray(data.hotels) && data.hotels.length > 0) {
+        setHotelResults(data.hotels)
+      } else {
+        setNoResults(true)
+      }
+      setIsLoading(false)
+    } catch (error) {
+      setNoResults(true)
+      setIsLoading(false)
     }
   }
 
@@ -450,43 +496,80 @@ export default function Home() {
             
             {/* Chat Messages */}
             <div className="h-96 overflow-y-auto border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50">
-              {chatMessages.length === 0 ? (
-                <div className="text-center text-gray-500 mt-8">
-                  <MessageCircle className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                  <p>¡Hola! Soy tu asistente de hoteles. ¿En qué área de Ecuador te gustaría encontrar hoteles?</p>
+              {chatStep === 'ubicacion' && (
+                <div className="text-center text-gray-700 mt-8">
+                  <p className="mb-4">¿Dónde te gustaría buscar un hotel?</p>
+                  <input
+                    type="text"
+                    value={userLocation}
+                    onChange={e => setUserLocation(e.target.value)}
+                    placeholder="Ciudad, región o dirección"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' && userLocation.trim()) {
+                        setChatStep('tipo')
+                      }
+                    }}
+                  />
+                  <button
+                    className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                    disabled={!userLocation.trim()}
+                    onClick={() => setChatStep('tipo')}
+                  >
+                    Siguiente
+                  </button>
                 </div>
-              ) : (
-                <div className="space-y-4">
-                  {chatMessages.map((message) => (
-                    <div
-                      key={message.id}
-                      className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
-                    >
-                      <div
-                        className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                          message.isUser
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-white text-gray-900 border border-gray-200'
-                        }`}
+              )}
+              {chatStep === 'tipo' && (
+                <div className="text-center text-gray-700 mt-8">
+                  <p className="mb-4">¿Qué tipo de hotel buscas?</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {hotelTypeOptions.map(option => (
+                      <button
+                        key={option}
+                        className={`px-4 py-2 rounded-md border ${userHotelType === option ? 'bg-blue-600 text-white' : 'bg-white text-gray-900 hover:bg-blue-100'}`}
+                        onClick={() => {
+                          setUserHotelType(option)
+                          setChatStep('resultados')
+                          handleSendGuidedQuery(userLocation, option)
+                        }}
                       >
-                        <p className="text-sm">{message.text}</p>
-                        <p className={`text-xs mt-1 ${
-                          message.isUser ? 'text-blue-100' : 'text-gray-500'
-                        }`}>
-                          {message.timestamp.toLocaleTimeString()}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                  {isLoading && (
-                    <div className="flex justify-start">
-                      <div className="bg-white text-gray-900 border border-gray-200 px-4 py-2 rounded-lg">
-                        <div className="flex space-x-1">
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {/* Aquí se mostrarán los resultados en el siguiente paso */}
+              {chatStep === 'resultados' && (
+                <div className="text-center text-gray-700 mt-8">
+                  {isLoading && <p>Buscando hoteles compatibles...</p>}
+                  {!isLoading && noResults && (
+                    <div className="text-red-600 font-semibold mt-4">Lo siento, no encontramos un hotel que coincida con tu búsqueda.</div>
+                  )}
+                  {!isLoading && hotelResults.length > 0 && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                      {hotelResults.map((hotel, idx) => (
+                        <div key={hotel.id || idx} className="bg-white border rounded-lg shadow p-4 flex flex-col items-start text-left">
+                          {hotel.imageUrl && (
+                            <img src={hotel.imageUrl} alt={hotel.name} className="w-full h-40 object-cover rounded mb-3" />
+                          )}
+                          <h3 className="text-xl font-bold mb-1">{hotel.name}</h3>
+                          <div className="text-sm text-gray-600 mb-2">{hotel.hotelType}</div>
+                          <div className="text-gray-800 mb-2 line-clamp-3">{hotel.description}</div>
+                          {hotel.address && <div className="text-gray-500 text-sm mb-1"><b>Dirección:</b> {hotel.address}</div>}
+                          {hotel.locationPhrase && <div className="text-gray-500 text-sm mb-1"><b>Ubicación:</b> {hotel.locationPhrase}</div>}
+                          {hotel.recreationAreas && <div className="text-gray-500 text-sm mb-1"><b>Áreas recreativas:</b> {hotel.recreationAreas}</div>}
+                          {hotel.surroundings && hotel.surroundings.length > 0 && (
+                            <div className="text-gray-500 text-sm mb-1">
+                              <b>Alrededores:</b> {hotel.surroundings.join(', ')}
+                            </div>
+                          )}
+                          {hotel.bookingLink && (
+                            <a href={hotel.bookingLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline mt-2">Ver sitio web</a>
+                          )}
                         </div>
-                      </div>
+                      ))}
                     </div>
                   )}
                 </div>
