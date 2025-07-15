@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { MessageCircle, Building, Users } from 'lucide-react'
+import HotelDetailModal from '@/components/HotelDetailModal'
 
 interface HotelFormData {
   hotelName: string
@@ -55,6 +56,7 @@ export default function Home() {
   // Estado para los resultados de hoteles
   const [hotelResults, setHotelResults] = useState<any[]>([])
   const [noResults, setNoResults] = useState(false)
+  const [selectedHotel, setSelectedHotel] = useState<any | null>(null)
 
   const hotelTypeOptions = [
     'Hotel 4 o 5 estrellas',
@@ -579,7 +581,11 @@ export default function Home() {
                   {!isLoading && hotelResults.length > 0 && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                       {hotelResults.map((hotel, idx) => (
-                        <div key={hotel.id || idx} className="bg-white border rounded-lg shadow p-4 flex flex-col items-start text-left">
+                        <div
+                          key={hotel.id || idx}
+                          onClick={() => setSelectedHotel(hotel)}
+                          className="bg-white border rounded-lg shadow p-4 flex flex-col items-start text-left cursor-pointer hover:shadow-lg transition"
+                        >
                           {hotel.imageUrl && (
                             <img src={hotel.imageUrl} alt={hotel.name} className="w-full h-40 object-cover rounded mb-3" />
                           )}
@@ -604,6 +610,10 @@ export default function Home() {
                 </div>
               )}
             </div>
+
+            {selectedHotel && (
+              <HotelDetailModal hotel={selectedHotel} onClose={() => setSelectedHotel(null)} />
+            )}
 
             {/* Chat Input */}
             <div className="flex space-x-2">
