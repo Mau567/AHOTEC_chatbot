@@ -507,7 +507,20 @@ export default function AdminDashboard() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Tipo de hotel</label>
-                    <input type="text" className="mt-1 w-full border px-2 py-1 rounded" value={editData.hotelType || ''} onChange={e => setEditData({ ...editData, hotelType: e.target.value })} />
+                    <select
+                      className="mt-1 w-full border px-2 py-1 rounded"
+                      value={editData.hotelType || ''}
+                      onChange={e => setEditData({ ...editData, hotelType: e.target.value })}
+                      required
+                    >
+                      <option value="">Selecciona una opción</option>
+                      <option value="Hotel 4 o 5 estrellas">Hotel 4 o 5 estrellas</option>
+                      <option value="Hotel 3 o menos estrellas">Hotel 3 o menos estrellas</option>
+                      <option value="Hostal / Bed and Breakfast">Hostal / Bed and Breakfast</option>
+                      <option value="Hostería de campo">Hostería de campo</option>
+                      <option value="Hacienda">Hacienda</option>
+                      <option value="Resort">Resort</option>
+                    </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Link de Reserva</label>
