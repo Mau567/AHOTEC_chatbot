@@ -9,9 +9,15 @@ interface Hotel {
   region: string
   city: string
   description: string
-  amenities: string[]
+  amenities?: string[]
   bookingLink?: string
-  tags: string[]
+  tags?: string[]
+  aboutMessage?: string
+  recreationAreas?: string
+  locationPhrase?: string
+  address?: string
+  surroundings?: string[]
+  hotelType?: string
   status: 'PENDING' | 'APPROVED' | 'REJECTED'
   isPaid: boolean
   price?: number
@@ -24,6 +30,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED'>('ALL')
   const [selectedHotel, setSelectedHotel] = useState<Hotel | null>(null)
+  const [editHotel, setEditHotel] = useState<Hotel | null>(null)
   const [loggedIn, setLoggedIn] = useState(false)
   const [loginError, setLoginError] = useState('')
   const [username, setUsername] = useState('')
@@ -80,6 +87,32 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error('Error deleting hotel:', error)
+    }
+  }
+
+  const handleEditChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    if (!editHotel) return
+    const { name, value } = e.target
+    setEditHotel({ ...editHotel, [name]: value })
+  }
+
+  const saveHotelEdits = async () => {
+    if (!editHotel) return
+    try {
+      const response = await fetch(`/api/hotels/${editHotel.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editHotel)
+      })
+      if (response.ok) {
+        setEditHotel(null)
+        setSelectedHotel(null)
+        fetchHotels()
+      }
+    } catch (error) {
+      console.error('Error saving hotel:', error)
     }
   }
 
@@ -303,6 +336,13 @@ export default function AdminDashboard() {
                         >
                           <Eye className="w-4 h-4" />
                         </button>
+                        <button
+                          onClick={() => setEditHotel(hotel)}
+                          className="text-yellow-600 hover:text-yellow-900"
+                        >
+                          <span className="sr-only">Editar</span>
+                          ✎
+                        </button>
                         {hotel.status === 'PENDING' && (
                           <>
                             <button
@@ -349,26 +389,30 @@ export default function AdminDashboard() {
                     <label className="block text-sm font-medium text-gray-700">Descripción</label>
                     <p className="mt-1 text-sm text-gray-900">{selectedHotel.description}</p>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Amenities</label>
-                    <div className="mt-1 flex flex-wrap gap-2">
-                      {selectedHotel.amenities.map((amenity, index) => (
-                        <span key={index} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          {amenity}
-                        </span>
-                      ))}
+                  {selectedHotel.amenities && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Amenities</label>
+                      <div className="mt-1 flex flex-wrap gap-2">
+                        {selectedHotel.amenities.map((amenity, index) => (
+                          <span key={index} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            {amenity}
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Tags</label>
-                    <div className="mt-1 flex flex-wrap gap-2">
-                      {selectedHotel.tags.map((tag, index) => (
-                        <span key={index} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                          {tag}
-                        </span>
-                      ))}
+                  )}
+                  {selectedHotel.tags && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Tags</label>
+                      <div className="mt-1 flex flex-wrap gap-2">
+                        {selectedHotel.tags.map((tag, index) => (
+                          <span key={index} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
                   {selectedHotel.bookingLink && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Link de Reserva</label>
@@ -390,7 +434,84 @@ export default function AdminDashboard() {
             </div>
           </div>
         )}
+
+        {/* Edit Hotel Modal */}
+        {editHotel && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+              <div className="mt-3 space-y-4">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Editar Hotel</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Nombre</label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={editHotel.name}
+                      onChange={handleEditChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Región</label>
+                    <input
+                      type="text"
+                      name="region"
+                      value={editHotel.region}
+                      onChange={handleEditChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Ciudad</label>
+                    <input
+                      type="text"
+                      name="city"
+                      value={editHotel.city}
+                      onChange={handleEditChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Descripción</label>
+                    <textarea
+                      name="description"
+                      value={editHotel.description}
+                      onChange={handleEditChange}
+                      rows={3}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Link de Reserva</label>
+                    <input
+                      type="text"
+                      name="bookingLink"
+                      value={editHotel.bookingLink || ''}
+                      onChange={handleEditChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end space-x-3 mt-6">
+                  <button
+                    onClick={() => setEditHotel(null)}
+                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={saveHotelEdits}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                  >
+                    Guardar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
-} 
+}
