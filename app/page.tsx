@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { MessageCircle, Building, Users } from 'lucide-react'
+import { MessageCircle, Building, Users, X } from 'lucide-react'
 
 interface HotelFormData {
   hotelName: string
@@ -55,6 +55,7 @@ export default function Home() {
   // Estado para los resultados de hoteles
   const [hotelResults, setHotelResults] = useState<any[]>([])
   const [noResults, setNoResults] = useState(false)
+  const [selectedHotel, setSelectedHotel] = useState<any | null>(null)
 
   const hotelTypeOptions = [
     'Hotel 4 o 5 estrellas',
@@ -579,7 +580,11 @@ export default function Home() {
                   {!isLoading && hotelResults.length > 0 && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                       {hotelResults.map((hotel, idx) => (
-                        <div key={hotel.id || idx} className="bg-white border rounded-lg shadow p-4 flex flex-col items-start text-left">
+                        <div
+                          key={hotel.id || idx}
+                          className="bg-white border rounded-lg shadow p-4 flex flex-col items-start text-left cursor-pointer"
+                          onClick={() => setSelectedHotel(hotel)}
+                        >
                           {hotel.imageUrl && (
                             <img src={hotel.imageUrl} alt={hotel.name} className="w-full h-40 object-cover rounded mb-3" />
                           )}
@@ -627,6 +632,52 @@ export default function Home() {
           </div>
         </div>
       </div>
+      {selectedHotel && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6 relative overflow-y-auto max-h-[90vh]">
+            <button
+              onClick={() => setSelectedHotel(null)}
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            {selectedHotel.imageUrl && (
+              <img
+                src={selectedHotel.imageUrl}
+                alt={selectedHotel.name}
+                className="w-full h-48 object-cover rounded mb-4"
+              />
+            )}
+            <h3 className="text-2xl font-bold mb-2">{selectedHotel.name}</h3>
+            {selectedHotel.hotelType && (
+              <div className="text-sm text-gray-600 mb-2">{selectedHotel.hotelType}</div>
+            )}
+            <p className="text-gray-800 mb-4">{selectedHotel.description}</p>
+            {selectedHotel.address && (
+              <div className="text-gray-500 text-sm mb-1"><b>Dirección:</b> {selectedHotel.address}</div>
+            )}
+            {selectedHotel.locationPhrase && (
+              <div className="text-gray-500 text-sm mb-1"><b>Ubicación:</b> {selectedHotel.locationPhrase}</div>
+            )}
+            {selectedHotel.recreationAreas && (
+              <div className="text-gray-500 text-sm mb-1"><b>Áreas recreativas:</b> {selectedHotel.recreationAreas}</div>
+            )}
+            {selectedHotel.surroundings && selectedHotel.surroundings.length > 0 && (
+              <div className="text-gray-500 text-sm mb-1"><b>Alrededores:</b> {selectedHotel.surroundings.join(', ')}</div>
+            )}
+            {selectedHotel.bookingLink && (
+              <a
+                href={selectedHotel.bookingLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline mt-2 inline-block"
+              >
+                Ver sitio web
+              </a>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
-} 
+}
