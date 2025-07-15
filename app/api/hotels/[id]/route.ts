@@ -7,23 +7,55 @@ export async function PATCH(
 ) {
   try {
     const body = await request.json()
-    const { status, approvedBy, price, isPaid } = body
+    const {
+      status,
+      approvedBy,
+      price,
+      isPaid,
+      name,
+      region,
+      city,
+      description,
+      bookingLink,
+      aboutMessage,
+      recreationAreas,
+      locationPhrase,
+      address,
+      surroundings,
+      hotelType,
+      imageUrl
+    } = body
+
+    const data: any = {}
+    if (status) {
+      data.status = status
+      data.approvedBy = approvedBy
+      data.approvedAt = status !== 'PENDING' ? new Date() : null
+    }
+    if (price !== undefined) data.price = price
+    if (isPaid !== undefined) data.isPaid = isPaid
+    if (name !== undefined) data.name = name
+    if (region !== undefined) data.region = region
+    if (city !== undefined) data.city = city
+    if (description !== undefined) data.description = description
+    if (bookingLink !== undefined) data.bookingLink = bookingLink
+    if (aboutMessage !== undefined) data.aboutMessage = aboutMessage
+    if (recreationAreas !== undefined) data.recreationAreas = recreationAreas
+    if (locationPhrase !== undefined) data.locationPhrase = locationPhrase
+    if (address !== undefined) data.address = address
+    if (surroundings !== undefined) data.surroundings = surroundings
+    if (hotelType !== undefined) data.hotelType = hotelType
+    if (imageUrl !== undefined) data.imageUrl = imageUrl
 
     const hotel = await prisma.hotel.update({
       where: { id: params.id },
-      data: {
-        status,
-        approvedBy,
-        approvedAt: status !== 'PENDING' ? new Date() : null,
-        price,
-        isPaid
-      }
+      data
     })
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       hotel,
-      message: `Hotel ${status.toLowerCase()} successfully`
+      message: 'Hotel updated successfully'
     })
   } catch (error) {
     console.error('Error updating hotel:', error)

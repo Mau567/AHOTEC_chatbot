@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { CheckCircle, XCircle, Clock, Eye, Trash2 } from 'lucide-react'
+import { CheckCircle, XCircle, Clock, Eye, Trash2, Pencil } from 'lucide-react'
 
 interface Hotel {
   id: string
@@ -9,14 +9,18 @@ interface Hotel {
   region: string
   city: string
   description: string
-  amenities: string[]
   bookingLink?: string
-  tags: string[]
   status: 'PENDING' | 'APPROVED' | 'REJECTED'
   isPaid: boolean
   price?: number
-  submittedBy?: string
   createdAt: string
+  imageUrl?: string
+  aboutMessage?: string
+  recreationAreas?: string
+  locationPhrase?: string
+  address?: string
+  surroundings: string[]
+  hotelType?: string
 }
 
 export default function AdminDashboard() {
@@ -24,6 +28,8 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED'>('ALL')
   const [selectedHotel, setSelectedHotel] = useState<Hotel | null>(null)
+  const [editingHotel, setEditingHotel] = useState<Hotel | null>(null)
+  const [editFormData, setEditFormData] = useState<Partial<Hotel>>({})
   const [loggedIn, setLoggedIn] = useState(false)
   const [loginError, setLoginError] = useState('')
   const [username, setUsername] = useState('')
@@ -80,6 +86,50 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error('Error deleting hotel:', error)
+    }
+  }
+
+  const startEditing = (hotel: Hotel) => {
+    setEditingHotel(hotel)
+    setEditFormData({
+      name: hotel.name,
+      region: hotel.region,
+      city: hotel.city,
+      description: hotel.description,
+      bookingLink: hotel.bookingLink,
+      aboutMessage: hotel.aboutMessage,
+      recreationAreas: hotel.recreationAreas,
+      locationPhrase: hotel.locationPhrase,
+      address: hotel.address,
+      surroundings: hotel.surroundings,
+      hotelType: hotel.hotelType
+    })
+  }
+
+  const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setEditFormData(prev => ({ ...prev, [name]: value }))
+  }
+
+  const saveHotelEdits = async () => {
+    if (!editingHotel) return
+    try {
+      const response = await fetch(`/api/hotels/${editingHotel.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...editFormData,
+          surroundings: typeof editFormData.surroundings === 'string'
+            ? (editFormData.surroundings as unknown as string).split(',').map(s => s.trim()).filter(Boolean)
+            : editFormData.surroundings
+        })
+      })
+      if (response.ok) {
+        fetchHotels()
+        setEditingHotel(null)
+      }
+    } catch (error) {
+      console.error('Error updating hotel:', error)
     }
   }
 
@@ -276,7 +326,6 @@ export default function AdminDashboard() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
                         <div className="text-sm font-medium text-gray-900">{hotel.name}</div>
-                        <div className="text-sm text-gray-500">{hotel.submittedBy}</div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -302,6 +351,12 @@ export default function AdminDashboard() {
                           className="text-blue-600 hover:text-blue-900"
                         >
                           <Eye className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => startEditing(hotel)}
+                          className="text-gray-600 hover:text-gray-900"
+                        >
+                          <Pencil className="w-4 h-4" />
                         </button>
                         {hotel.status === 'PENDING' && (
                           <>
@@ -349,26 +404,46 @@ export default function AdminDashboard() {
                     <label className="block text-sm font-medium text-gray-700">Descripción</label>
                     <p className="mt-1 text-sm text-gray-900">{selectedHotel.description}</p>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Amenities</label>
-                    <div className="mt-1 flex flex-wrap gap-2">
-                      {selectedHotel.amenities.map((amenity, index) => (
-                        <span key={index} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          {amenity}
-                        </span>
-                      ))}
+                  {selectedHotel.aboutMessage && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Mensaje para el viajero</label>
+                      <p className="mt-1 text-sm text-gray-900">{selectedHotel.aboutMessage}</p>
                     </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Tags</label>
-                    <div className="mt-1 flex flex-wrap gap-2">
-                      {selectedHotel.tags.map((tag, index) => (
-                        <span key={index} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                          {tag}
-                        </span>
-                      ))}
+                  )}
+                  {selectedHotel.recreationAreas && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Áreas recreativas</label>
+                      <p className="mt-1 text-sm text-gray-900">{selectedHotel.recreationAreas}</p>
                     </div>
-                  </div>
+                  )}
+                  {selectedHotel.locationPhrase && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Frase de localización</label>
+                      <p className="mt-1 text-sm text-gray-900">{selectedHotel.locationPhrase}</p>
+                    </div>
+                  )}
+                  {selectedHotel.address && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Dirección</label>
+                      <p className="mt-1 text-sm text-gray-900">{selectedHotel.address}</p>
+                    </div>
+                  )}
+                  {selectedHotel.hotelType && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Tipo de hotel</label>
+                      <p className="mt-1 text-sm text-gray-900">{selectedHotel.hotelType}</p>
+                    </div>
+                  )}
+                  {selectedHotel.surroundings && selectedHotel.surroundings.length > 0 && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Alrededores</label>
+                      <ul className="mt-1 list-disc list-inside text-sm text-gray-900 space-y-1">
+                        {selectedHotel.surroundings.map((s, idx) => (
+                          <li key={idx}>{s}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                   {selectedHotel.bookingLink && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Link de Reserva</label>
@@ -390,7 +465,70 @@ export default function AdminDashboard() {
             </div>
           </div>
         )}
+
+        {/* Edit Hotel Modal */}
+        {editingHotel && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+              <div className="mt-3 space-y-4">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Editar Hotel</h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Nombre</label>
+                    <input type="text" name="name" value={editFormData.name as string || ''} onChange={handleEditChange} className="mt-1 w-full border px-2 py-1 rounded" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Ciudad</label>
+                      <input type="text" name="city" value={editFormData.city as string || ''} onChange={handleEditChange} className="mt-1 w-full border px-2 py-1 rounded" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Región</label>
+                      <input type="text" name="region" value={editFormData.region as string || ''} onChange={handleEditChange} className="mt-1 w-full border px-2 py-1 rounded" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Descripción</label>
+                    <textarea name="description" value={editFormData.description as string || ''} onChange={handleEditChange} className="mt-1 w-full border px-2 py-1 rounded" rows={3}></textarea>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Link de Reserva</label>
+                    <input type="text" name="bookingLink" value={editFormData.bookingLink as string || ''} onChange={handleEditChange} className="mt-1 w-full border px-2 py-1 rounded" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Mensaje para el viajero</label>
+                    <textarea name="aboutMessage" value={editFormData.aboutMessage as string || ''} onChange={handleEditChange} className="mt-1 w-full border px-2 py-1 rounded" rows={2}></textarea>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Áreas recreativas</label>
+                    <input type="text" name="recreationAreas" value={editFormData.recreationAreas as string || ''} onChange={handleEditChange} className="mt-1 w-full border px-2 py-1 rounded" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Frase de localización</label>
+                    <input type="text" name="locationPhrase" value={editFormData.locationPhrase as string || ''} onChange={handleEditChange} className="mt-1 w-full border px-2 py-1 rounded" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Dirección</label>
+                    <input type="text" name="address" value={editFormData.address as string || ''} onChange={handleEditChange} className="mt-1 w-full border px-2 py-1 rounded" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Tipo de hotel</label>
+                    <input type="text" name="hotelType" value={editFormData.hotelType as string || ''} onChange={handleEditChange} className="mt-1 w-full border px-2 py-1 rounded" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Alrededores (separados por coma)</label>
+                    <textarea name="surroundings" value={(editFormData.surroundings as unknown as string[])?.join(', ') || ''} onChange={handleEditChange} className="mt-1 w-full border px-2 py-1 rounded" rows={2}></textarea>
+                  </div>
+                </div>
+                <div className="flex justify-end space-x-3 mt-6">
+                  <button onClick={() => setEditingHotel(null)} className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors">Cancelar</button>
+                  <button onClick={saveHotelEdits} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">Guardar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
-} 
+}
