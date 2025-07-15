@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { CheckCircle, XCircle, Clock, Eye, Trash2 } from 'lucide-react'
+import { CheckCircle, XCircle, Clock, Eye, Trash2, Edit } from 'lucide-react'
 
 interface Hotel {
   id: string
@@ -9,13 +9,18 @@ interface Hotel {
   region: string
   city: string
   description: string
-  amenities: string[]
   bookingLink?: string
-  tags: string[]
+  aboutMessage?: string
+  recreationAreas?: string
+  locationPhrase?: string
+  address?: string
+  surroundings: string[]
+  hotelType?: string
+  imageUrl?: string
   status: 'PENDING' | 'APPROVED' | 'REJECTED'
   isPaid: boolean
   price?: number
-  submittedBy?: string
+  approvedBy?: string
   createdAt: string
 }
 
@@ -24,6 +29,8 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED'>('ALL')
   const [selectedHotel, setSelectedHotel] = useState<Hotel | null>(null)
+  const [editingHotel, setEditingHotel] = useState<Hotel | null>(null)
+  const [editData, setEditData] = useState<any>({})
   const [loggedIn, setLoggedIn] = useState(false)
   const [loginError, setLoginError] = useState('')
   const [username, setUsername] = useState('')
@@ -80,6 +87,35 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error('Error deleting hotel:', error)
+    }
+  }
+
+  const startEditHotel = (hotel: Hotel) => {
+    setEditingHotel(hotel)
+    setEditData({ ...hotel, surroundings: hotel.surroundings.join(', ') } as any)
+  }
+
+  const saveHotelEdits = async () => {
+    if (!editingHotel) return
+    try {
+      const payload: any = { ...editData }
+      if (typeof payload.surroundings === 'string') {
+        payload.surroundings = payload.surroundings
+          .split(',')
+          .map((s: string) => s.trim())
+          .filter((s: string) => s)
+      }
+      const response = await fetch(`/api/hotels/${editingHotel.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      if (response.ok) {
+        fetchHotels()
+        setEditingHotel(null)
+      }
+    } catch (error) {
+      console.error('Error editing hotel:', error)
     }
   }
 
@@ -276,7 +312,6 @@ export default function AdminDashboard() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
                         <div className="text-sm font-medium text-gray-900">{hotel.name}</div>
-                        <div className="text-sm text-gray-500">{hotel.submittedBy}</div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -298,10 +333,18 @@ export default function AdminDashboard() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex space-x-2">
                         <button
+                          type="button"
                           onClick={() => setSelectedHotel(hotel)}
                           className="text-blue-600 hover:text-blue-900"
                         >
                           <Eye className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => startEditHotel(hotel)}
+                          className="text-blue-600 hover:text-blue-900"
+                        >
+                          <Edit className="w-4 h-4" />
                         </button>
                         {hotel.status === 'PENDING' && (
                           <>
@@ -349,26 +392,48 @@ export default function AdminDashboard() {
                     <label className="block text-sm font-medium text-gray-700">Descripción</label>
                     <p className="mt-1 text-sm text-gray-900">{selectedHotel.description}</p>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Amenities</label>
-                    <div className="mt-1 flex flex-wrap gap-2">
-                      {selectedHotel.amenities.map((amenity, index) => (
-                        <span key={index} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          {amenity}
-                        </span>
-                      ))}
+                  {selectedHotel.aboutMessage && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Mensaje</label>
+                      <p className="mt-1 text-sm text-gray-900">{selectedHotel.aboutMessage}</p>
                     </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Tags</label>
-                    <div className="mt-1 flex flex-wrap gap-2">
-                      {selectedHotel.tags.map((tag, index) => (
-                        <span key={index} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                          {tag}
-                        </span>
-                      ))}
+                  )}
+                  {selectedHotel.recreationAreas && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Áreas recreativas</label>
+                      <p className="mt-1 text-sm text-gray-900">{selectedHotel.recreationAreas}</p>
                     </div>
-                  </div>
+                  )}
+                  {selectedHotel.locationPhrase && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Frase de ubicación</label>
+                      <p className="mt-1 text-sm text-gray-900">{selectedHotel.locationPhrase}</p>
+                    </div>
+                  )}
+                  {selectedHotel.address && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Dirección</label>
+                      <p className="mt-1 text-sm text-gray-900">{selectedHotel.address}</p>
+                    </div>
+                  )}
+                  {selectedHotel.surroundings.length > 0 && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Alrededores</label>
+                      <div className="mt-1 flex flex-wrap gap-2">
+                        {selectedHotel.surroundings.map((s, index) => (
+                          <span key={index} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            {s}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {selectedHotel.hotelType && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Tipo de hotel</label>
+                      <p className="mt-1 text-sm text-gray-900">{selectedHotel.hotelType}</p>
+                    </div>
+                  )}
                   {selectedHotel.bookingLink && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Link de Reserva</label>
@@ -385,6 +450,73 @@ export default function AdminDashboard() {
                   >
                     Cerrar
                   </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {editingHotel && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+              <div className="mt-3">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Editar {editingHotel.name}</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Nombre</label>
+                    <input type="text" className="mt-1 w-full border px-2 py-1 rounded" value={editData.name || ''} onChange={e => setEditData({ ...editData, name: e.target.value })} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Región</label>
+                      <input type="text" className="mt-1 w-full border px-2 py-1 rounded" value={editData.region || ''} onChange={e => setEditData({ ...editData, region: e.target.value })} />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Ciudad</label>
+                      <input type="text" className="mt-1 w-full border px-2 py-1 rounded" value={editData.city || ''} onChange={e => setEditData({ ...editData, city: e.target.value })} />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Descripción</label>
+                    <textarea className="mt-1 w-full border px-2 py-1 rounded" value={editData.description || ''} onChange={e => setEditData({ ...editData, description: e.target.value })}></textarea>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Mensaje</label>
+                    <textarea className="mt-1 w-full border px-2 py-1 rounded" value={editData.aboutMessage || ''} onChange={e => setEditData({ ...editData, aboutMessage: e.target.value })}></textarea>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Áreas recreativas</label>
+                    <textarea className="mt-1 w-full border px-2 py-1 rounded" value={editData.recreationAreas || ''} onChange={e => setEditData({ ...editData, recreationAreas: e.target.value })}></textarea>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Frase de ubicación</label>
+                    <input type="text" className="mt-1 w-full border px-2 py-1 rounded" value={editData.locationPhrase || ''} onChange={e => setEditData({ ...editData, locationPhrase: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Dirección</label>
+                    <input type="text" className="mt-1 w-full border px-2 py-1 rounded" value={editData.address || ''} onChange={e => setEditData({ ...editData, address: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Alrededores (separados por coma)</label>
+                    <input
+                      type="text"
+                      className="mt-1 w-full border px-2 py-1 rounded"
+                      value={Array.isArray(editData.surroundings) ? editData.surroundings.join(', ') : editData.surroundings || ''}
+                      onChange={e => setEditData({ ...editData, surroundings: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Tipo de hotel</label>
+                    <input type="text" className="mt-1 w-full border px-2 py-1 rounded" value={editData.hotelType || ''} onChange={e => setEditData({ ...editData, hotelType: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Link de Reserva</label>
+                    <input type="text" className="mt-1 w-full border px-2 py-1 rounded" value={editData.bookingLink || ''} onChange={e => setEditData({ ...editData, bookingLink: e.target.value })} />
+                  </div>
+                </div>
+                <div className="flex justify-end space-x-3 mt-6">
+                  <button onClick={() => setEditingHotel(null)} type="button" className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors">Cancelar</button>
+                  <button onClick={saveHotelEdits} type="button" className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">Guardar</button>
                 </div>
               </div>
             </div>
