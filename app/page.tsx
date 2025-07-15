@@ -115,6 +115,11 @@ export default function Home() {
         form.append('image', formData.image)
       }
       form.append('surroundings', formData.surroundings.join(','))
+      form.append('aboutMessage', formData.aboutMessage)
+      form.append('recreationAreas', formData.recreationAreas)
+      form.append('locationPhrase', formData.locationPhrase)
+      form.append('address', formData.address)
+      form.append('hotelType', formData.hotelType)
 
       const response = await fetch('/api/hotels', {
         method: 'POST',
@@ -384,12 +389,12 @@ export default function Home() {
                   required
                 >
                   <option value="">Selecciona una opción</option>
-                  <option value="4-5 estrellas">Hotel 4 o 5 estrellas</option>
-                  <option value="3 o menos estrellas">Hotel 3 o menos estrellas</option>
-                  <option value="hostal">Hostal / Bed and Breakfast</option>
-                  <option value="hosteria">Hostería de campo</option>
-                  <option value="hacienda">Hacienda</option>
-                  <option value="resort">Resort</option>
+                  <option value="Hotel 4 o 5 estrellas">Hotel 4 o 5 estrellas</option>
+                  <option value="Hotel 3 o menos estrellas">Hotel 3 o menos estrellas</option>
+                  <option value="Hostal / Bed and Breakfast">Hostal / Bed and Breakfast</option>
+                  <option value="Hostería de campo">Hostería de campo</option>
+                  <option value="Hacienda">Hacienda</option>
+                  <option value="Resort">Resort</option>
                 </select>
               </div>
 

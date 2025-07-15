@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
       where: {
         status: 'APPROVED',
         isPaid: true,
-        hotelType: hotelType ? { equals: hotelType } : undefined,
+        hotelType: hotelType ? { contains: hotelType, mode: 'insensitive' } : undefined,
         OR: [
           { city: { contains: location, mode: 'insensitive' } },
           { region: { contains: location, mode: 'insensitive' } },
