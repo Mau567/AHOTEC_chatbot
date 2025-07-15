@@ -55,6 +55,7 @@ export default function Home() {
   // Estado para los resultados de hoteles
   const [hotelResults, setHotelResults] = useState<any[]>([])
   const [noResults, setNoResults] = useState(false)
+  const [selectedHotel, setSelectedHotel] = useState<any | null>(null)
 
   const hotelTypeOptions = [
     'Hotel 4 o 5 estrellas',
@@ -579,7 +580,11 @@ export default function Home() {
                   {!isLoading && hotelResults.length > 0 && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                       {hotelResults.map((hotel, idx) => (
-                        <div key={hotel.id || idx} className="bg-white border rounded-lg shadow p-4 flex flex-col items-start text-left">
+                        <div
+                          key={hotel.id || idx}
+                          onClick={() => setSelectedHotel(hotel)}
+                          className="bg-white border rounded-lg shadow p-4 flex flex-col items-start text-left cursor-pointer hover:shadow-lg transition"
+                        >
                           {hotel.imageUrl && (
                             <img src={hotel.imageUrl} alt={hotel.name} className="w-full h-40 object-cover rounded mb-3" />
                           )}
@@ -627,6 +632,43 @@ export default function Home() {
           </div>
         </div>
       </div>
+      {selectedHotel && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 max-h-[90vh] overflow-y-auto w-11/12 md:w-3/4 lg:w-1/2">
+            <h3 className="text-xl font-bold mb-4">{selectedHotel.name}</h3>
+            {selectedHotel.imageUrl && (
+              <img src={selectedHotel.imageUrl} alt={selectedHotel.name} className="w-full h-60 object-cover rounded mb-4" />
+            )}
+            <div className="space-y-2 text-left">
+              {selectedHotel.hotelType && (
+                <div className="text-sm text-gray-600">{selectedHotel.hotelType}</div>
+              )}
+              <p className="text-gray-700">{selectedHotel.description}</p>
+              {selectedHotel.address && (
+                <p className="text-sm text-gray-600"><b>Dirección:</b> {selectedHotel.address}</p>
+              )}
+              {selectedHotel.locationPhrase && (
+                <p className="text-sm text-gray-600"><b>Ubicación:</b> {selectedHotel.locationPhrase}</p>
+              )}
+              {selectedHotel.recreationAreas && (
+                <p className="text-sm text-gray-600"><b>Áreas recreativas:</b> {selectedHotel.recreationAreas}</p>
+              )}
+              {selectedHotel.surroundings && selectedHotel.surroundings.length > 0 && (
+                <p className="text-sm text-gray-600"><b>Alrededores:</b> {selectedHotel.surroundings.join(', ')}</p>
+              )}
+              {selectedHotel.aboutMessage && (
+                <p className="text-sm text-gray-600"><b>Mensaje:</b> {selectedHotel.aboutMessage}</p>
+              )}
+              {selectedHotel.bookingLink && (
+                <a href={selectedHotel.bookingLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline block">Ver sitio web</a>
+              )}
+            </div>
+            <div className="mt-4 text-right">
+              <button onClick={() => setSelectedHotel(null)} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Cerrar</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
-} 
+}
