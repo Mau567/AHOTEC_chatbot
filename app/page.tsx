@@ -8,12 +8,14 @@ interface HotelFormData {
   region: string
   city: string
   description: string
-  amenities: string
-  bookingLink: string
-  tags: string
-  submittedBy: string
-  contactEmail: string
-  image?: File | null // Add image field
+  bookingLink: string // Renombrar a linkHotel
+  image?: File | null
+  aboutMessage: string // Mensaje para el viajero
+  recreationAreas: string // Áreas recreativas
+  locationPhrase: string // Localización en una frase
+  address: string // Dirección
+  surroundings: string[] // 10 puntos importantes alrededor
+  hotelType: string // Tipo de hotel
 }
 
 interface ChatMessage {
@@ -29,12 +31,14 @@ export default function Home() {
     region: '',
     city: '',
     description: '',
-    amenities: '',
     bookingLink: '',
-    tags: '',
-    submittedBy: '',
-    contactEmail: '',
-    image: null // Add image field
+    image: null,
+    aboutMessage: '',
+    recreationAreas: '',
+    locationPhrase: '',
+    address: '',
+    surroundings: Array(10).fill(''),
+    hotelType: '',
   })
 
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
@@ -51,6 +55,14 @@ export default function Home() {
     }))
   }
 
+  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { name, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }))
+  }
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files && e.target.files[0] ? e.target.files[0] : null
     setFormData(prev => ({
@@ -59,8 +71,20 @@ export default function Home() {
     }))
   }
 
+  const handleSurroundingChange = (idx: number, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      surroundings: prev.surroundings.map((item, i) => i === idx ? value : item)
+    }))
+  }
+
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    // Validar que los 10 puntos estén llenos
+    if (formData.surroundings.some(s => !s.trim())) {
+      alert('Por favor ingresa los 10 puntos importantes alrededor del hotel.')
+      return
+    }
     
     try {
       const form = new FormData()
@@ -68,14 +92,11 @@ export default function Home() {
       form.append('region', formData.region)
       form.append('city', formData.city)
       form.append('description', formData.description)
-      form.append('amenities', formData.amenities)
       form.append('bookingLink', formData.bookingLink)
-      form.append('tags', formData.tags)
-      form.append('submittedBy', formData.submittedBy)
-      form.append('contactEmail', formData.contactEmail)
       if (formData.image) {
         form.append('image', formData.image)
       }
+      form.append('surroundings', formData.surroundings.join(','))
 
       const response = await fetch('/api/hotels', {
         method: 'POST',
@@ -91,12 +112,14 @@ export default function Home() {
           region: '',
           city: '',
           description: '',
-          amenities: '',
           bookingLink: '',
-          tags: '',
-          submittedBy: '',
-          contactEmail: '',
-          image: null // Reset image after submission
+          image: null,
+          aboutMessage: '',
+          recreationAreas: '',
+          locationPhrase: '',
+          address: '',
+          surroundings: Array(10).fill(''),
+          hotelType: '',
         })
       } else {
         alert('Error al enviar el formulario. Por favor intenta de nuevo.')
@@ -215,6 +238,116 @@ export default function Home() {
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-2xl font-semibold text-gray-900 mb-6">Registra tu Hotel</h2>
             <form onSubmit={handleFormSubmit} className="space-y-6">
+              {/* Mensaje para el viajero */}
+              <div>
+                <label htmlFor="aboutMessage" className="block text-sm font-medium text-gray-700 mb-2">
+                  Cuando el usuario hace clic en "Sobre el hotel", ¿qué mensaje te gustaría darle al viajero?
+                </label>
+                <textarea
+                  id="aboutMessage"
+                  name="aboutMessage"
+                  value={formData.aboutMessage}
+                  onChange={handleFormChange}
+                  rows={2}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Ejemplo: ¡Bienvenido a nuestro hotel, tu casa en Ecuador!"
+                />
+              </div>
+
+              {/* Áreas recreativas */}
+              <div>
+                <label htmlFor="recreationAreas" className="block text-sm font-medium text-gray-700 mb-2">
+                  ¿Qué áreas recreativas ofrece el hotel?
+                </label>
+                <input
+                  type="text"
+                  id="recreationAreas"
+                  name="recreationAreas"
+                  value={formData.recreationAreas}
+                  onChange={handleFormChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Piscina, spa, gimnasio, juegos infantiles, etc."
+                />
+              </div>
+
+              {/* Localización en una frase */}
+              <div>
+                <label htmlFor="locationPhrase" className="block text-sm font-medium text-gray-700 mb-2">
+                  Escribe en una frase la localización del hotel:
+                </label>
+                <input
+                  type="text"
+                  id="locationPhrase"
+                  name="locationPhrase"
+                  value={formData.locationPhrase}
+                  onChange={handleFormChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="En el corazón de Quito, cerca del parque La Carolina."
+                />
+              </div>
+
+              {/* Dirección */}
+              <div>
+                <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
+                  Dirección
+                </label>
+                <input
+                  type="text"
+                  id="address"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleFormChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Av. Amazonas N34-120 y Av. Naciones Unidas, Quito"
+                />
+              </div>
+
+              {/* Puntos importantes alrededor */}
+              <div>
+                <label htmlFor="surroundings" className="block text-sm font-medium text-gray-700 mb-2">
+                  Puntos importantes al rededor del hotel. <span className="text-gray-500">Ejemplo: estadio de futbol, centro comercial, parque natural, barrio, montaña, cascada, etc.</span>
+                </label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {formData.surroundings.map((point, idx) => (
+                    <input
+                      key={idx}
+                      type="text"
+                      id={`surrounding-${idx}`}
+                      name={`surrounding-${idx}`}
+                      value={point}
+                      onChange={e => handleSurroundingChange(idx, e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder={`Punto ${idx + 1}`}
+                      required
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Tipo de hotel */}
+              <div>
+                <label htmlFor="hotelType" className="block text-sm font-medium text-gray-700 mb-2">
+                  Tipo de hotel
+                </label>
+                <select
+                  id="hotelType"
+                  name="hotelType"
+                  value={formData.hotelType}
+                  onChange={handleSelectChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  required
+                >
+                  <option value="">Selecciona una opción</option>
+                  <option value="4-5 estrellas">Hotel 4 o 5 estrellas</option>
+                  <option value="3 o menos estrellas">Hotel 3 o menos estrellas</option>
+                  <option value="hostal">Hostal / Bed and Breakfast</option>
+                  <option value="hosteria">Hostería de campo</option>
+                  <option value="hacienda">Hacienda</option>
+                  <option value="resort">Resort</option>
+                </select>
+              </div>
+
+              {/* El resto de campos existentes, renombrando Link de Reserva a Link a hotel */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label htmlFor="hotelName" className="block text-sm font-medium text-gray-700 mb-2">
@@ -281,108 +414,20 @@ export default function Home() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label htmlFor="amenities" className="block text-sm font-medium text-gray-700 mb-2">
-                    Amenities
-                  </label>
-                  <input
-                    type="text"
-                    id="amenities"
-                    name="amenities"
-                    value={formData.amenities}
-                    onChange={handleFormChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="WiFi, Piscina, Gimnasio, Restaurante"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="bookingLink" className="block text-sm font-medium text-gray-700 mb-2">
-                    Link de Reserva
-                  </label>
-                  <input
-                    type="url"
-                    id="bookingLink"
-                    name="bookingLink"
-                    value={formData.bookingLink}
-                    onChange={handleFormChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="https://tu-sitio-web.com/reservas"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-2">
-                    Tags o Palabras Clave
-                  </label>
-                  <input
-                    type="text"
-                    id="tags"
-                    name="tags"
-                    value={formData.tags}
-                    onChange={handleFormChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="lujo, familiar, negocios, económico"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="submittedBy" className="block text-sm font-medium text-gray-700 mb-2">
-                    Nombre del Contacto *
-                  </label>
-                  <input
-                    type="text"
-                    id="submittedBy"
-                    name="submittedBy"
-                    value={formData.submittedBy}
-                    onChange={handleFormChange}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Tu nombre completo"
-                  />
-                </div>
-              </div>
-
+              {/* Link a hotel */}
               <div>
-                <label htmlFor="contactEmail" className="block text-sm font-medium text-gray-700 mb-2">
-                  Email de Contacto *
+                <label htmlFor="bookingLink" className="block text-sm font-medium text-gray-700 mb-2">
+                  Link a hotel
                 </label>
                 <input
-                  type="email"
-                  id="contactEmail"
-                  name="contactEmail"
-                  value={formData.contactEmail}
+                  type="url"
+                  id="bookingLink"
+                  name="bookingLink"
+                  value={formData.bookingLink}
                   onChange={handleFormChange}
-                  required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="tu-email@ejemplo.com"
+                  placeholder="https://tu-sitio-web.com/reservas"
                 />
-              </div>
-
-              <div>
-                <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-2">
-                  Foto del Hotel (1 imagen)
-                </label>
-                <input
-                  type="file"
-                  id="image"
-                  name="image"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-                {formData.image && (
-                  <div className="mt-2">
-                    <img
-                      src={URL.createObjectURL(formData.image)}
-                      alt="Vista previa de la imagen"
-                      className="h-32 rounded-md object-cover border"
-                    />
-                  </div>
-                )}
               </div>
 
               <div className="flex justify-end">

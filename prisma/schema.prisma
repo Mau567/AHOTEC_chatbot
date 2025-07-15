@@ -28,19 +28,21 @@ model Hotel {
   region      String
   city        String
   description String
-  amenities   String[]
   bookingLink String?
-  tags        String[]
   status      HotelStatus  @default(PENDING)
   isPaid      Boolean      @default(false)
   price       Float?
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
-  submittedBy String?      // Email of the person who submitted
-  contactEmail String?     // Contact email for the hotel
   approvedBy  String?      // User ID who approved/rejected
   approvedAt  DateTime?
   imageUrl    String?      // URL of the hotel image
+  aboutMessage String?
+  recreationAreas String?
+  locationPhrase String?
+  address String?
+  surroundings String[]
+  hotelType String?
 
   @@map("hotels")
 }

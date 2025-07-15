@@ -9,12 +9,17 @@ export async function POST(request: NextRequest) {
     const region = formData.get('region') as string
     const city = formData.get('city') as string
     const description = formData.get('description') as string
-    const amenities = formData.get('amenities') as string
     const bookingLink = formData.get('bookingLink') as string
-    const tags = formData.get('tags') as string
-    const submittedBy = formData.get('submittedBy') as string
-    const contactEmail = formData.get('contactEmail') as string
+    const aboutMessage = formData.get('aboutMessage') as string
+    const recreationAreas = formData.get('recreationAreas') as string
+    const locationPhrase = formData.get('locationPhrase') as string
+    const address = formData.get('address') as string
+    const surroundingsRaw = formData.get('surroundings') as string
+    const hotelType = formData.get('hotelType') as string
     const image = formData.get('image') as File | null
+
+    // surroundingsRaw llega como string separado por comas
+    const surroundings = surroundingsRaw ? surroundingsRaw.split(',').map(s => s.trim()).filter(s => s) : []
 
     let imageUrl: string | undefined = undefined
     if (image) {
@@ -44,11 +49,13 @@ export async function POST(request: NextRequest) {
         region,
         city,
         description,
-        amenities: amenities.split(',').map(a => a.trim()).filter(a => a),
         bookingLink,
-        tags: tags.split(',').map(t => t.trim()).filter(t => t),
-        submittedBy,
-        contactEmail,
+        aboutMessage,
+        recreationAreas,
+        locationPhrase,
+        address,
+        surroundings,
+        hotelType,
         imageUrl
       }
     })
