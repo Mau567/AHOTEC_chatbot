@@ -55,6 +55,7 @@ export default function Home() {
   // Estado para los resultados de hoteles
   const [hotelResults, setHotelResults] = useState<any[]>([])
   const [noResults, setNoResults] = useState(false)
+  const [selectedHotel, setSelectedHotel] = useState<any | null>(null)
 
   const hotelTypeOptions = [
     'Hotel 4 o 5 estrellas',
@@ -579,7 +580,11 @@ export default function Home() {
                   {!isLoading && hotelResults.length > 0 && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                       {hotelResults.map((hotel, idx) => (
-                        <div key={hotel.id || idx} className="bg-white border rounded-lg shadow p-4 flex flex-col items-start text-left">
+                        <div
+                          key={hotel.id || idx}
+                          onClick={() => setSelectedHotel(hotel)}
+                          className="bg-white border rounded-lg shadow p-4 flex flex-col items-start text-left cursor-pointer"
+                        >
                           {hotel.imageUrl && (
                             <img src={hotel.imageUrl} alt={hotel.name} className="w-full h-40 object-cover rounded mb-3" />
                           )}
@@ -604,6 +609,48 @@ export default function Home() {
                 </div>
               )}
             </div>
+
+            {selectedHotel && (
+              <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+                <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+                  <div className="mt-3 space-y-4">
+                    <div className="flex justify-between items-start">
+                      <h3 className="text-lg font-medium text-gray-900">{selectedHotel.name}</h3>
+                      <button onClick={() => setSelectedHotel(null)} className="text-gray-500 hover:text-gray-700">
+                        ✕
+                      </button>
+                    </div>
+                    {selectedHotel.imageUrl && (
+                      <img src={selectedHotel.imageUrl} alt={selectedHotel.name} className="w-full h-60 object-cover rounded" />
+                    )}
+                    <p className="text-sm text-gray-700">{selectedHotel.description}</p>
+                    {selectedHotel.aboutMessage && (
+                      <p className="text-sm text-gray-700"><b>Mensaje:</b> {selectedHotel.aboutMessage}</p>
+                    )}
+                    {selectedHotel.recreationAreas && (
+                      <p className="text-sm text-gray-700"><b>Áreas recreativas:</b> {selectedHotel.recreationAreas}</p>
+                    )}
+                    {selectedHotel.locationPhrase && (
+                      <p className="text-sm text-gray-700"><b>Ubicación:</b> {selectedHotel.locationPhrase}</p>
+                    )}
+                    {selectedHotel.address && (
+                      <p className="text-sm text-gray-700"><b>Dirección:</b> {selectedHotel.address}</p>
+                    )}
+                    {selectedHotel.surroundings && selectedHotel.surroundings.length > 0 && (
+                      <p className="text-sm text-gray-700"><b>Alrededores:</b> {selectedHotel.surroundings.join(', ')}</p>
+                    )}
+                    {selectedHotel.hotelType && (
+                      <p className="text-sm text-gray-700"><b>Tipo de hotel:</b> {selectedHotel.hotelType}</p>
+                    )}
+                    {selectedHotel.bookingLink && (
+                      <a href={selectedHotel.bookingLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                        Ver sitio web
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Chat Input */}
             <div className="flex space-x-2">
