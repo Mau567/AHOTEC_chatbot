@@ -177,13 +177,16 @@ Obtiene la lista de hoteles con filtros opcionales
 ```
 
 ### **PATCH /api/hotels/[id]**
-Actualiza el estado de un hotel
+Actualiza los datos de un hotel. Puede enviarse JSON o `multipart/form-data` si se va a subir una nueva imagen.
 ```json
 {
   "status": "APPROVED",
   "approvedBy": "admin",
   "price": 100.00,
-  "isPaid": true
+  "isPaid": true,
+  "name": "Nuevo nombre",
+  "region": "Costa"
+  // ...otros campos
 }
 ```
 

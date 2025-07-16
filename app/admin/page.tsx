@@ -120,12 +120,24 @@ export default function AdminDashboard() {
           .map((s: string) => s.trim())
           .filter((s: string) => s)
       }
-      // If a new image is selected, upload it first (implement upload logic as needed)
-      // For now, just note that editImageFile is available here
+
+      const form = new FormData()
+      Object.entries(payload).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          if (Array.isArray(value)) {
+            form.append(key, value.join(','))
+          } else {
+            form.append(key, value as any)
+          }
+        }
+      })
+      if (editImageFile) {
+        form.append('image', editImageFile)
+      }
+
       const response = await fetch(`/api/hotels/${editingHotel.id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: form
       })
       if (response.ok) {
         fetchHotels()
