@@ -1,6 +1,7 @@
 'use client'
 
 import { X, MapPin, Building, MessageCircle, Waves, Navigation, Home, Map, ExternalLink } from 'lucide-react'
+import { useTranslation } from '@/lib/useTranslation'
 
 interface Hotel {
   id: string
@@ -24,6 +25,7 @@ interface HotelDetailModalProps {
 }
 
 export default function HotelDetailModal({ hotel, onClose }: HotelDetailModalProps) {
+  const t = useTranslation()
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-lg w-11/12 md:w-3/4 lg:w-1/2 max-h-[90vh] overflow-y-auto">
@@ -48,14 +50,14 @@ export default function HotelDetailModal({ hotel, onClose }: HotelDetailModalPro
             <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
               <MapPin className="w-5 h-5 text-blue-600" />
               <div>
-                <p className="text-sm text-gray-600">Ubicación</p>
+                <p className="text-sm text-gray-600">{t('location_label')}</p>
                 <p className="font-medium text-gray-900">{hotel.city}, {hotel.region}</p>
               </div>
             </div>
             <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
               <Building className="w-5 h-5 text-green-600" />
               <div>
-                <p className="text-sm text-gray-600">Tipo de hotel</p>
+                <p className="text-sm text-gray-600">{t('hotel_type_label')}</p>
                 <p className="font-medium text-gray-900">{hotel.hotelType}</p>
               </div>
             </div>
@@ -75,7 +77,7 @@ export default function HotelDetailModal({ hotel, onClose }: HotelDetailModalPro
 
           {/* Description */}
           <div>
-            <h4 className="text-lg font-semibold text-gray-900 mb-3">Descripción</h4>
+            <h4 className="text-lg font-semibold text-gray-900 mb-3">{t('description_label')}</h4>
             <p className="text-gray-700 leading-relaxed">{hotel.description}</p>
           </div>
 
@@ -85,7 +87,7 @@ export default function HotelDetailModal({ hotel, onClose }: HotelDetailModalPro
               <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-lg">
                 <Waves className="w-5 h-5 text-purple-600" />
                 <div>
-                  <p className="text-sm text-gray-600">Áreas recreativas</p>
+                  <p className="text-sm text-gray-600">{t('recreation_areas_label')}</p>
                   <p className="font-medium text-gray-900">{hotel.recreationAreas}</p>
                 </div>
               </div>
@@ -94,7 +96,7 @@ export default function HotelDetailModal({ hotel, onClose }: HotelDetailModalPro
               <div className="flex items-center gap-3 p-3 bg-indigo-50 rounded-lg">
                 <Navigation className="w-5 h-5 text-indigo-600" />
                 <div>
-                  <p className="text-sm text-gray-600">Ubicación</p>
+                  <p className="text-sm text-gray-600">{t('location_label')}</p>
                   <p className="font-medium text-gray-900">{hotel.locationPhrase}</p>
                 </div>
               </div>
@@ -103,7 +105,7 @@ export default function HotelDetailModal({ hotel, onClose }: HotelDetailModalPro
               <div className="flex items-center gap-3 p-3 bg-orange-50 rounded-lg">
                 <Home className="w-5 h-5 text-orange-600" />
                 <div>
-                  <p className="text-sm text-gray-600">Dirección</p>
+                  <p className="text-sm text-gray-600">{t('address_label')}</p>
                   <p className="font-medium text-gray-900">{hotel.address}</p>
                 </div>
               </div>
@@ -115,7 +117,7 @@ export default function HotelDetailModal({ hotel, onClose }: HotelDetailModalPro
             <div>
               <div className="flex items-center gap-3 mb-3">
                 <Map className="w-5 h-5 text-gray-600" />
-                <h4 className="text-lg font-semibold text-gray-900">Alrededores</h4>
+                <h4 className="text-lg font-semibold text-gray-900">{t('surroundings_label')}</h4>
               </div>
               <div className="flex flex-wrap gap-2">
                 {hotel.surroundings.map((surrounding, index) => (
@@ -137,7 +139,7 @@ export default function HotelDetailModal({ hotel, onClose }: HotelDetailModalPro
                 className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
               >
                 <ExternalLink className="w-4 h-4" />
-                Reservar ahora
+                {t('booking_now')}
               </a>
             </div>
           )}

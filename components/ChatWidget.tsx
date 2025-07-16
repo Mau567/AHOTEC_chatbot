@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { MessageCircle, X, Send, Building } from 'lucide-react'
+import { useTranslation } from '@/lib/useTranslation'
 
 interface ChatMessage {
   id: string
@@ -21,6 +22,7 @@ export default function ChatWidget({
   theme = 'light',
   position = 'bottom-right'
 }: ChatWidgetProps) {
+  const t = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [inputValue, setInputValue] = useState('')
@@ -74,7 +76,7 @@ export default function ChatWidget({
       console.error('Error sending message:', error)
       const errorMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
-        text: 'Lo siento, hay un problema técnico. Por favor intenta de nuevo.',
+        text: t('technical_error'),
         isUser: false,
         timestamp: new Date()
       }
@@ -157,7 +159,7 @@ export default function ChatWidget({
             {messages.length === 0 ? (
               <div className="text-center text-gray-500">
                 <MessageCircle className="w-8 h-8 mx-auto mb-2" />
-                <p className="text-sm">¡Hola! ¿En qué área de Ecuador buscas hoteles?</p>
+                <p className="text-sm">{t('location_question')}</p>
               </div>
             ) : (
               messages.map((message) => (
@@ -199,7 +201,7 @@ export default function ChatWidget({
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Escribe tu mensaje..."
+                placeholder={t('chat_placeholder')}
                 disabled={isLoading}
                 className={`flex-1 px-3 py-2 rounded-md text-sm border focus:outline-none focus:ring-2 focus:ring-blue-500 ${currentTheme.input}`}
               />

@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { CheckCircle, XCircle, Clock, Eye, Trash2, Edit } from 'lucide-react'
+import LanguageToggle from '@/components/LanguageToggle'
+import { useTranslation } from '@/lib/useTranslation'
 
 interface Hotel {
   id: string
@@ -25,6 +27,7 @@ interface Hotel {
 }
 
 export default function AdminDashboard() {
+  const t = useTranslation()
   const [hotels, setHotels] = useState<Hotel[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED'>('ALL')
@@ -145,7 +148,10 @@ export default function AdminDashboard() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-sm">
-          <h2 className="text-2xl font-bold mb-6 text-center">Admin Login</h2>
+          <div className="flex justify-end mb-2">
+            <LanguageToggle />
+          </div>
+          <h2 className="text-2xl font-bold mb-6 text-center">{t('admin_login')}</h2>
           <form
             onSubmit={e => {
               e.preventDefault()
@@ -153,13 +159,13 @@ export default function AdminDashboard() {
                 setLoggedIn(true)
                 setLoginError('')
               } else {
-                setLoginError('Clave o contraseña incorrecta')
+                setLoginError(t('login_error'))
               }
             }}
             className="space-y-4"
           >
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Clave</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('key_label')}</label>
               <input
                 type="text"
                 value={username}
@@ -170,7 +176,7 @@ export default function AdminDashboard() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('password_label')}</label>
               <input
                 type="password"
                 value={password}
@@ -184,7 +190,7 @@ export default function AdminDashboard() {
               type="submit"
               className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition-colors font-semibold"
             >
-              Entrar
+              {t('login_button')}
             </button>
           </form>
         </div>
@@ -208,8 +214,13 @@ export default function AdminDashboard() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Panel de Administración AHOTEC</h1>
-          <p className="text-gray-600 mt-2">Gestiona las solicitudes de hoteles y el chatbot</p>
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">{t('dashboard_title')}</h1>
+              <p className="text-gray-600 mt-2">{t('dashboard_subtitle')}</p>
+            </div>
+            <LanguageToggle />
+          </div>
         </div>
 
         {/* Stats */}
@@ -218,7 +229,7 @@ export default function AdminDashboard() {
             <div className="flex items-center">
               <Clock className="w-8 h-8 text-yellow-500" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Pendientes</p>
+                <p className="text-sm font-medium text-gray-600">{t('pending')}</p>
                 <p className="text-2xl font-bold text-gray-900">
                   {hotels.filter(h => h.status === 'PENDING').length}
                 </p>
@@ -229,7 +240,7 @@ export default function AdminDashboard() {
             <div className="flex items-center">
               <CheckCircle className="w-8 h-8 text-green-500" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Aprobados</p>
+                <p className="text-sm font-medium text-gray-600">{t('approved')}</p>
                 <p className="text-2xl font-bold text-gray-900">
                   {hotels.filter(h => h.status === 'APPROVED').length}
                 </p>
@@ -240,7 +251,7 @@ export default function AdminDashboard() {
             <div className="flex items-center">
               <XCircle className="w-8 h-8 text-red-500" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Rechazados</p>
+                <p className="text-sm font-medium text-gray-600">{t('rejected')}</p>
                 <p className="text-2xl font-bold text-gray-900">
                   {hotels.filter(h => h.status === 'REJECTED').length}
                 </p>
@@ -253,7 +264,7 @@ export default function AdminDashboard() {
                 <span className="text-white font-bold">$</span>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Pagados</p>
+                <p className="text-sm font-medium text-gray-600">{t('paid')}</p>
                 <p className="text-2xl font-bold text-gray-900">
                   {hotels.filter(h => h.isPaid).length}
                 </p>
@@ -275,9 +286,9 @@ export default function AdminDashboard() {
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                {status === 'ALL' ? 'Todos' : 
-                 status === 'PENDING' ? 'Pendientes' :
-                 status === 'APPROVED' ? 'Aprobados' : 'Rechazados'}
+                {status === 'ALL' ? t('all') :
+                 status === 'PENDING' ? t('pending') :
+                 status === 'APPROVED' ? t('approved') : t('rejected')}
               </button>
             ))}
           </div>
@@ -290,19 +301,19 @@ export default function AdminDashboard() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Hotel
+                    {t('hotel')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Ubicación
+                    {t('location')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Estado
+                    {t('status')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Fecha
+                    {t('date')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Acciones
+                    {t('actions')}
                   </th>
                 </tr>
               </thead>
@@ -322,8 +333,8 @@ export default function AdminDashboard() {
                       <div className="flex items-center">
                         {getStatusIcon(hotel.status)}
                         <span className={`ml-2 inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(hotel.status)}`}>
-                          {hotel.status === 'PENDING' ? 'Pendiente' :
-                           hotel.status === 'APPROVED' ? 'Aprobado' : 'Rechazado'}
+                          {hotel.status === 'PENDING' ? t('pending') :
+                           hotel.status === 'APPROVED' ? t('approved') : t('rejected')}
                         </span>
                       </div>
                     </td>
