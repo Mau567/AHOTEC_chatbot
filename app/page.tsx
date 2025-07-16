@@ -26,6 +26,78 @@ interface ChatMessage {
 }
 
 export default function Home() {
+  // Language state
+  const [language, setLanguage] = useState<'es' | 'en'>('es')
+
+  // Translation object
+  const t = {
+    // Header
+    title: language === 'es' ? 'AHOTEC - Asociación de Hoteles del Ecuador' : 'AHOTEC - Ecuador Hotels Association',
+    subtitle: language === 'es' ? 'Descubre los mejores hoteles de Ecuador con nuestro asistente inteligente' : 'Discover the best hotels in Ecuador with our intelligent assistant',
+    
+    // Form labels
+    hotelNameLabel: language === 'es' ? 'Nombre del Hotel *' : 'Hotel Name *',
+    regionLabel: language === 'es' ? 'Región *' : 'Region *',
+    cityLabel: language === 'es' ? 'Ciudad *' : 'City *',
+    addressLabel: language === 'es' ? 'Dirección *' : 'Address *',
+    locationPhraseLabel: language === 'es' ? 'Escribe en una frase la localización del hotel: *' : 'Write the hotel location in one phrase: *',
+    hotelTypeLabel: language === 'es' ? 'Tipo de hotel *' : 'Hotel type *',
+    descriptionLabel: language === 'es' ? 'Descripción *' : 'Description *',
+    recreationAreasLabel: language === 'es' ? '¿Qué áreas recreativas ofrece el hotel? *' : 'What recreational areas does the hotel offer? *',
+    surroundingsLabel: language === 'es' ? 'Puntos importantes alrededor del hotel. *' : 'Important points around the hotel. *',
+    bookingLinkLabel: language === 'es' ? 'Link a hotel' : 'Hotel link',
+    imageLabel: language === 'es' ? 'Fotografía del hotel' : 'Hotel photo',
+    
+    // Placeholders
+    hotelNamePlaceholder: language === 'es' ? 'Nombre del hotel' : 'Hotel name',
+    regionPlaceholder: language === 'es' ? 'ej. Costa, Sierra, Amazonía' : 'e.g. Coast, Highlands, Amazon',
+    cityPlaceholder: language === 'es' ? 'ej. Quito, Guayaquil, Cuenca' : 'e.g. Quito, Guayaquil, Cuenca',
+    addressPlaceholder: language === 'es' ? 'Av. Amazonas N34-120 y Av. Naciones Unidas, Quito' : 'Av. Amazonas N34-120 and Av. Naciones Unidas, Quito',
+    locationPhrasePlaceholder: language === 'es' ? 'En el corazón de Quito, cerca del parque La Carolina.' : 'In the heart of Quito, near La Carolina park.',
+    descriptionPlaceholder: language === 'es' ? 'Describe las características únicas de tu hotel' : 'Describe the unique features of your hotel',
+    bookingLinkPlaceholder: language === 'es' ? 'https://tu-sitio-web.com/reservas' : 'https://your-website.com/book',
+    pointPlaceholder: language === 'es' ? 'Punto' : 'Point',
+    
+    // Select options
+    selectOption: language === 'es' ? 'Selecciona una opción' : 'Select an option',
+    selectRegion: language === 'es' ? 'Selecciona una región' : 'Select a region',
+    option1: language === 'es' ? 'Hotel 4 o 5 estrellas' : '4 or 5 star hotel',
+    option2: language === 'es' ? 'Hotel 3 o menos estrellas' : '3 star or less hotel',
+    option3: language === 'es' ? 'Hostal / Bed and Breakfast' : 'Hostel / Bed and Breakfast',
+    option4: language === 'es' ? 'Hostería de campo' : 'Country inn',
+    option5: language === 'es' ? 'Hacienda' : 'Hacienda',
+    option6: language === 'es' ? 'Resort' : 'Resort',
+    
+    // Region options
+    costa: 'Costa',
+    sierra: 'Sierra', 
+    amazonia: 'Amazonía',
+    galapagos: 'Galápagos',
+    
+    // Messages
+    submitButton: language === 'es' ? 'Enviar Solicitud' : 'Submit Request',
+    successMessage: language === 'es' ? '¡Hotel enviado exitosamente! Nuestro equipo lo revisará y te contactaremos pronto.' : 'Hotel submitted successfully! Our team will review it and contact you soon.',
+    validationMessage: language === 'es' ? 'Por favor ingresa los 10 puntos importantes alrededor del hotel.' : 'Please enter the 10 important points around the hotel.',
+    imageError: language === 'es' ? 'Solo se permiten imágenes JPG, JPEG, PNG, WEBP o GIF.' : 'Only JPG, JPEG, PNG, WEBP or GIF images are allowed.',
+    sizeError: language === 'es' ? 'El tamaño máximo permitido es 4MB.' : 'Maximum size allowed is 4MB.',
+    imageFormats: language === 'es' ? 'Formatos permitidos: JPG, JPEG, PNG, WEBP, GIF. Tamaño máximo: 4MB.' : 'Allowed formats: JPG, JPEG, PNG, WEBP, GIF. Maximum size: 4MB.',
+    recreationError: language === 'es' ? 'Selecciona al menos una área recreativa.' : 'Select at least one recreational area.',
+    
+    // Chat
+    chatTitle: language === 'es' ? 'Asistente de Hoteles' : 'Hotel Assistant',
+    locationQuestion: language === 'es' ? '¿Dónde te gustaría buscar un hotel?' : 'Where would you like to search for a hotel?',
+    typeQuestion: language === 'es' ? '¿Qué tipo de hotel buscas?' : 'What type of hotel are you looking for?',
+    nextButton: language === 'es' ? 'Siguiente' : 'Next',
+    loadingMessage: language === 'es' ? 'Buscando hoteles compatibles...' : 'Searching for compatible hotels...',
+    noResultsMessage: language === 'es' ? 'Lo siento, no encontramos un hotel que coincida con tu búsqueda.' : 'Sorry, we couldn\'t find a hotel that matches your search.',
+    resetButton: language === 'es' ? 'Reiniciar búsqueda' : 'Reset search',
+    chatPlaceholder: language === 'es' ? 'Pregunta sobre hoteles en Ecuador...' : 'Ask about hotels in Ecuador...',
+    sendButton: language === 'es' ? 'Enviar' : 'Send',
+    
+    // Surroundings example
+    surroundingsExample: language === 'es' ? 'Ejemplo: estadio de futbol, centro comercial, parque natural, barrio, montaña, cascada, etc.' : 'Example: football stadium, shopping center, natural park, neighborhood, mountain, waterfall, etc.'
+  }
+
   const [formData, setFormData] = useState<HotelFormData>({
     hotelName: '',
     region: '',
@@ -118,12 +190,12 @@ export default function Home() {
     const file = e.target.files && e.target.files[0] ? e.target.files[0] : null
     if (file) {
       if (!allowedImageTypes.includes(file.type)) {
-        setImageError('Solo se permiten imágenes JPG, JPEG, PNG, WEBP o GIF.')
+        setImageError(t.imageError)
         setFormData(prev => ({ ...prev, image: null }))
         return
       }
       if (file.size > maxImageSizeBytes) {
-        setImageError('El tamaño máximo permitido es 4MB.')
+        setImageError(t.sizeError)
         setFormData(prev => ({ ...prev, image: null }))
         return
       }
@@ -158,7 +230,7 @@ export default function Home() {
     e.preventDefault()
     // Validar que los 10 puntos estén llenos
     if (formData.surroundings.some(s => !s.trim())) {
-      alert('Por favor ingresa los 10 puntos importantes alrededor del hotel.')
+      alert(t.validationMessage)
       return
     }
     // Unir recreationAreas en string para backend
@@ -211,7 +283,6 @@ export default function Home() {
         alert('Error al enviar el formulario. Por favor intenta de nuevo.')
       }
     } catch (error) {
-      console.error('Error submitting form:', error)
       alert('Error al enviar el formulario. Por favor intenta de nuevo.')
     }
   }
@@ -337,8 +408,16 @@ export default function Home() {
         <div className="max-w-4xl mx-auto space-y-8">
           {/* Header */}
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">AHOTEC - Asociación de Hoteles del Ecuador</h1>
-            <p className="text-gray-600">Descubre los mejores hoteles de Ecuador con nuestro asistente inteligente</p>
+            <div className="flex justify-end mb-4">
+              <button
+                onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+              >
+                {language === 'es' ? 'English' : 'Español'}
+              </button>
+            </div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">{t.title}</h1>
+            <p className="text-gray-600">{t.subtitle}</p>
           </div>
 
           {/* Success Message */}
@@ -352,7 +431,7 @@ export default function Home() {
                 </div>
                 <div className="ml-3">
                   <p className="text-sm text-green-800">
-                    ¡Hotel enviado exitosamente! Nuestro equipo lo revisará y te contactaremos pronto.
+                    {t.successMessage}
                   </p>
                 </div>
               </div>
@@ -366,7 +445,7 @@ export default function Home() {
               {/* Nombre del hotel */}
               <div>
                 <label htmlFor="hotelName" className="block text-sm font-medium text-gray-700 mb-2">
-                  Nombre del Hotel *
+                  {t.hotelNameLabel}
                 </label>
                 <input
                   type="text"
@@ -376,14 +455,14 @@ export default function Home() {
                   onChange={handleFormChange}
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Nombre del hotel"
+                  placeholder={t.hotelNamePlaceholder}
                 />
               </div>
 
               {/* Región */}
               <div>
                 <label htmlFor="region" className="block text-sm font-medium text-gray-700 mb-2">
-                  Región *
+                  {t.regionLabel}
                 </label>
                 <select
                   id="region"
@@ -393,18 +472,18 @@ export default function Home() {
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="">Selecciona una región</option>
-                  <option value="Costa">Costa</option>
-                  <option value="Sierra">Sierra</option>
-                  <option value="Amazonía">Amazonía</option>
-                  <option value="Galápagos">Galápagos</option>
+                  <option value="">{t.selectRegion}</option>
+                  <option value="Costa">{t.costa}</option>
+                  <option value="Sierra">{t.sierra}</option>
+                  <option value="Amazonía">{t.amazonia}</option>
+                  <option value="Galápagos">{t.galapagos}</option>
                 </select>
               </div>
 
               {/* Ciudad */}
               <div>
                 <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-2">
-                  Ciudad *
+                  {t.cityLabel}
                 </label>
                 <input
                   type="text"
@@ -414,14 +493,14 @@ export default function Home() {
                   onChange={handleFormChange}
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="ej. Quito, Guayaquil, Cuenca"
+                  placeholder={t.cityPlaceholder}
                 />
               </div>
 
               {/* Dirección */}
               <div>
                 <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
-                  Dirección *
+                  {t.addressLabel}
                 </label>
                 <input
                   type="text"
@@ -431,14 +510,14 @@ export default function Home() {
                   onChange={handleFormChange}
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Av. Amazonas N34-120 y Av. Naciones Unidas, Quito"
+                  placeholder={t.addressPlaceholder}
                 />
               </div>
 
               {/* Frase de localización */}
               <div>
                 <label htmlFor="locationPhrase" className="block text-sm font-medium text-gray-700 mb-2">
-                  Escribe en una frase la localización del hotel: *
+                  {t.locationPhraseLabel}
                 </label>
                 <input
                   type="text"
@@ -449,7 +528,7 @@ export default function Home() {
                   required
                   maxLength={150}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="En el corazón de Quito, cerca del parque La Carolina."
+                  placeholder={t.locationPhrasePlaceholder}
                 />
                 <div className="text-xs text-gray-500 text-right">{formData.locationPhrase.length}/150</div>
               </div>
@@ -457,7 +536,7 @@ export default function Home() {
               {/* Tipo de hotel */}
               <div>
                 <label htmlFor="hotelType" className="block text-sm font-medium text-gray-700 mb-2">
-                  Tipo de hotel *
+                  {t.hotelTypeLabel}
                 </label>
                 <select
                   id="hotelType"
@@ -467,20 +546,20 @@ export default function Home() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   required
                 >
-                  <option value="">Selecciona una opción</option>
-                  <option value="Hotel 4 o 5 estrellas">Hotel 4 o 5 estrellas</option>
-                  <option value="Hotel 3 o menos estrellas">Hotel 3 o menos estrellas</option>
-                  <option value="Hostal / Bed and Breakfast">Hostal / Bed and Breakfast</option>
-                  <option value="Hostería de campo">Hostería de campo</option>
-                  <option value="Hacienda">Hacienda</option>
-                  <option value="Resort">Resort</option>
+                  <option value="">{t.selectOption}</option>
+                  <option value="Hotel 4 o 5 estrellas">{t.option1}</option>
+                  <option value="Hotel 3 o menos estrellas">{t.option2}</option>
+                  <option value="Hostal / Bed and Breakfast">{t.option3}</option>
+                  <option value="Hostería de campo">{t.option4}</option>
+                  <option value="Hacienda">{t.option5}</option>
+                  <option value="Resort">{t.option6}</option>
                 </select>
               </div>
 
               {/* Descripción */}
               <div>
                 <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
-                  Descripción *
+                  {t.descriptionLabel}
                 </label>
                 <textarea
                   id="description"
@@ -491,7 +570,7 @@ export default function Home() {
                   maxLength={200}
                   rows={4}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Describe las características únicas de tu hotel"
+                  placeholder={t.descriptionPlaceholder}
                 />
                 <div className="text-xs text-gray-500 text-right">{formData.description.length}/200</div>
               </div>
@@ -499,7 +578,7 @@ export default function Home() {
               {/* Áreas recreativas */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  ¿Qué áreas recreativas ofrece el hotel? *
+                  {t.recreationAreasLabel}
                 </label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   {recreationOptions.map(option => (
@@ -516,14 +595,14 @@ export default function Home() {
                   ))}
                 </div>
                 {formData.recreationAreas.length === 0 && (
-                  <div className="text-xs text-red-500 mt-1">Selecciona al menos una área recreativa.</div>
+                  <div className="text-xs text-red-500 mt-1">{t.recreationError}</div>
                 )}
               </div>
 
               {/* Puntos importantes alrededor */}
               <div>
                 <label htmlFor="surroundings" className="block text-sm font-medium text-gray-700 mb-2">
-                  Puntos importantes alrededor del hotel. * <span className="text-gray-500">Ejemplo: estadio de futbol, centro comercial, parque natural, barrio, montaña, cascada, etc.</span>
+                  {t.surroundingsLabel} <span className="text-gray-500">{t.surroundingsExample}</span>
                 </label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   {formData.surroundings.map((point, idx) => (
@@ -535,7 +614,7 @@ export default function Home() {
                       value={point}
                       onChange={e => handleSurroundingChange(idx, e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder={`Punto ${idx + 1}`}
+                      placeholder={`${t.pointPlaceholder} ${idx + 1}`}
                       required
                       maxLength={100}
                     />
@@ -546,7 +625,7 @@ export default function Home() {
               {/* Link a hotel (opcional) */}
               <div>
                 <label htmlFor="bookingLink" className="block text-sm font-medium text-gray-700 mb-2">
-                  Link a hotel
+                  {t.bookingLinkLabel}
                 </label>
                 <input
                   type="url"
@@ -555,14 +634,14 @@ export default function Home() {
                   value={formData.bookingLink}
                   onChange={handleFormChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="https://tu-sitio-web.com/reservas"
+                  placeholder={t.bookingLinkPlaceholder}
                 />
               </div>
 
               {/* Foto del hotel */}
               <div>
                 <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-2">
-                  Fotografía del hotel <span className="text-red-500">*</span>
+                  {t.imageLabel} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="file"
@@ -574,7 +653,7 @@ export default function Home() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Formatos permitidos: JPG, JPEG, PNG, WEBP, GIF. Tamaño máximo: 4MB.
+                  {t.imageFormats}
                 </p>
                 {imageError && (
                   <p className="text-xs text-red-500 mt-1">{imageError}</p>
@@ -595,7 +674,7 @@ export default function Home() {
                   type="submit"
                   className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
                 >
-                  Enviar Solicitud
+                  {t.submitButton}
                 </button>
               </div>
             </form>
@@ -605,14 +684,14 @@ export default function Home() {
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-2xl font-semibold text-gray-900 mb-6 flex items-center">
               <MessageCircle className="w-6 h-6 mr-2 text-blue-600" />
-              Asistente de Hoteles
+              {t.chatTitle}
             </h2>
             
             {/* Chat Messages */}
             <div className="h-96 overflow-y-auto border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50">
               {chatStep === 'ubicacion' && (
                 <div className="text-center text-gray-700 mt-8">
-                  <p className="mb-4">¿Dónde te gustaría buscar un hotel?</p>
+                  <p className="mb-4">{t.locationQuestion}</p>
                   <input
                     type="text"
                     value={userLocation}
@@ -630,13 +709,13 @@ export default function Home() {
                     disabled={!userLocation.trim()}
                     onClick={() => setChatStep('tipo')}
                   >
-                    Siguiente
+                    {t.nextButton}
                   </button>
                 </div>
               )}
               {chatStep === 'tipo' && (
                 <div className="text-center text-gray-700 mt-8">
-                  <p className="mb-4">¿Qué tipo de hotel buscas?</p>
+                  <p className="mb-4">{t.typeQuestion}</p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                     {hotelTypeOptions.map(option => (
                       <button
@@ -657,9 +736,9 @@ export default function Home() {
               {/* Aquí se mostrarán los resultados en el siguiente paso */}
               {chatStep === 'resultados' && (
                 <div className="text-center text-gray-700 mt-8">
-                  {isLoading && <p>Buscando hoteles compatibles...</p>}
+                  {isLoading && <p>{t.loadingMessage}</p>}
                   {!isLoading && noResults && (
-                    <div className="text-red-600 font-semibold mt-4">Lo siento, no encontramos un hotel que coincida con tu búsqueda.</div>
+                    <div className="text-red-600 font-semibold mt-4">{t.noResultsMessage}</div>
                   )}
                   {!isLoading && hotelResults.length > 0 && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
@@ -698,7 +777,7 @@ export default function Home() {
                 onClick={handleChatReset}
                 className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 transition-colors"
               >
-                Reiniciar búsqueda
+                {t.resetButton}
               </button>
             </div>
             {selectedHotel && (
@@ -712,7 +791,7 @@ export default function Home() {
                 value={userInput}
                 onChange={(e) => setUserInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Pregunta sobre hoteles en Ecuador..."
+                placeholder={t.chatPlaceholder}
                 disabled={isLoading}
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
               />
@@ -721,7 +800,7 @@ export default function Home() {
                 disabled={!userInput.trim() || isLoading}
                 className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
-                Enviar
+                {t.sendButton}
               </button>
             </div>
           </div>
