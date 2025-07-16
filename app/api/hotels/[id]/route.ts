@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { deleteImageFromStorage } from '@/lib/storage'
 
 export async function PATCH(
   request: NextRequest,
@@ -49,6 +50,14 @@ export async function PATCH(
     if (hotelType !== undefined) data.hotelType = hotelType
     if (imageUrl !== undefined) data.imageUrl = imageUrl
 
+    const existingHotel = await prisma.hotel.findUnique({
+      where: { id: params.id }
+    })
+
+    if (imageUrl && existingHotel?.imageUrl && existingHotel.imageUrl !== imageUrl) {
+      await deleteImageFromStorage(existingHotel.imageUrl)
+    }
+
     const hotel = await prisma.hotel.update({
       where: { id: params.id },
       data
@@ -73,6 +82,14 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    const hotel = await prisma.hotel.findUnique({
+      where: { id: params.id }
+    })
+
+    if (hotel?.imageUrl) {
+      await deleteImageFromStorage(hotel.imageUrl)
+    }
+
     await prisma.hotel.delete({
       where: { id: params.id }
     })
