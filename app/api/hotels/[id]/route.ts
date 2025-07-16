@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
+import { prisma, supabase } from '@/lib/db'
 
 export async function PATCH(
   request: NextRequest,
@@ -49,10 +49,25 @@ export async function PATCH(
     if (hotelType !== undefined) data.hotelType = hotelType
     if (imageUrl !== undefined) data.imageUrl = imageUrl
 
+    const existing = await prisma.hotel.findUnique({ where: { id: params.id } })
+
     const hotel = await prisma.hotel.update({
       where: { id: params.id },
       data
     })
+
+    if (
+      imageUrl !== undefined &&
+      existing?.imageUrl &&
+      existing.imageUrl !== imageUrl
+    ) {
+      const fileName = existing.imageUrl.split('/').pop()
+      if (fileName) {
+        await supabase.storage
+          .from(process.env.SUPABASE_BUCKET || 'hotel-images')
+          .remove([fileName])
+      }
+    }
 
     return NextResponse.json({
       success: true,
@@ -73,9 +88,18 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    await prisma.hotel.delete({
+    const hotel = await prisma.hotel.delete({
       where: { id: params.id }
     })
+
+    if (hotel.imageUrl) {
+      const fileName = hotel.imageUrl.split('/').pop()
+      if (fileName) {
+        await supabase.storage
+          .from(process.env.SUPABASE_BUCKET || 'hotel-images')
+          .remove([fileName])
+      }
+    }
 
     return NextResponse.json({ 
       success: true,
