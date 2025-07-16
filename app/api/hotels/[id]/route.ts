@@ -1,5 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
+import { prisma, supabase } from '@/lib/db'
+
+function extractFilePath(url: string): string | null {
+  try {
+    const bucket = process.env.SUPABASE_BUCKET || 'hotel-images'
+    const { pathname } = new URL(url)
+    const idx = pathname.indexOf(`/${bucket}/`)
+    if (idx === -1) return null
+    return pathname.slice(idx + bucket.length + 2)
+  } catch {
+    return null
+  }
+}
 
 export async function PATCH(
   request: NextRequest,
@@ -7,6 +19,10 @@ export async function PATCH(
 ) {
   try {
     const body = await request.json()
+    const existingHotel = await prisma.hotel.findUnique({
+      where: { id: params.id },
+      select: { imageUrl: true }
+    })
     const {
       status,
       approvedBy,
@@ -54,6 +70,15 @@ export async function PATCH(
       data
     })
 
+    if (existingHotel?.imageUrl && imageUrl !== existingHotel.imageUrl) {
+      const path = extractFilePath(existingHotel.imageUrl)
+      if (path) {
+        await supabase.storage
+          .from(process.env.SUPABASE_BUCKET || 'hotel-images')
+          .remove([path])
+      }
+    }
+
     return NextResponse.json({
       success: true,
       hotel,
@@ -73,9 +98,18 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    await prisma.hotel.delete({
+    const hotel = await prisma.hotel.delete({
       where: { id: params.id }
     })
+
+    if (hotel.imageUrl) {
+      const path = extractFilePath(hotel.imageUrl)
+      if (path) {
+        await supabase.storage
+          .from(process.env.SUPABASE_BUCKET || 'hotel-images')
+          .remove([path])
+      }
+    }
 
     return NextResponse.json({ 
       success: true,
