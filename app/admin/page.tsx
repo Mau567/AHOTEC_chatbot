@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRef } from 'react'
 import { CheckCircle, XCircle, Clock, Eye, Trash2, Edit } from 'lucide-react'
 
 interface Hotel {
@@ -31,6 +32,8 @@ export default function AdminDashboard() {
   const [selectedHotel, setSelectedHotel] = useState<Hotel | null>(null)
   const [editingHotel, setEditingHotel] = useState<Hotel | null>(null)
   const [editData, setEditData] = useState<any>({})
+  const [editImageFile, setEditImageFile] = useState<File | null>(null)
+  const [editImagePreview, setEditImagePreview] = useState<string | null>(null)
   const [loggedIn, setLoggedIn] = useState(false)
   const [loginError, setLoginError] = useState('')
   const [username, setUsername] = useState('')
@@ -93,6 +96,18 @@ export default function AdminDashboard() {
   const startEditHotel = (hotel: Hotel) => {
     setEditingHotel(hotel)
     setEditData({ ...hotel, surroundings: hotel.surroundings.join(', ') } as any)
+    setEditImagePreview(hotel.imageUrl || null)
+  }
+
+  // Add handler for image change in edit modal
+  const handleEditImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files && e.target.files[0] ? e.target.files[0] : null
+    setEditImageFile(file)
+    if (file) {
+      setEditImagePreview(URL.createObjectURL(file))
+    } else {
+      setEditImagePreview(null)
+    }
   }
 
   const saveHotelEdits = async () => {
@@ -105,6 +120,8 @@ export default function AdminDashboard() {
           .map((s: string) => s.trim())
           .filter((s: string) => s)
       }
+      // If a new image is selected, upload it first (implement upload logic as needed)
+      // For now, just note that editImageFile is available here
       const response = await fetch(`/api/hotels/${editingHotel.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -113,6 +130,8 @@ export default function AdminDashboard() {
       if (response.ok) {
         fetchHotels()
         setEditingHotel(null)
+        setEditImageFile(null)
+        setEditImagePreview(null)
       }
     } catch (error) {
       console.error('Error editing hotel:', error)
@@ -383,6 +402,9 @@ export default function AdminDashboard() {
             <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
               <div className="mt-3">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">{selectedHotel.name}</h3>
+                {selectedHotel.imageUrl && (
+                  <img src={selectedHotel.imageUrl} alt="Imagen del hotel" className="h-40 w-full object-cover rounded-md mb-4 border" />
+                )}
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Ubicación</label>
@@ -462,6 +484,24 @@ export default function AdminDashboard() {
               <div className="mt-3">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Editar {editingHotel.name}</h3>
                 <div className="space-y-4">
+                  {/* Image preview and upload */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Imagen actual / nueva</label>
+                    {editImagePreview ? (
+                      <img src={editImagePreview} alt="Vista previa" className="h-32 rounded-md object-cover border mb-2" />
+                    ) : editingHotel.imageUrl ? (
+                      <img src={editingHotel.imageUrl} alt="Imagen actual" className="h-32 rounded-md object-cover border mb-2" />
+                    ) : (
+                      <div className="h-32 w-full bg-gray-100 flex items-center justify-center text-gray-400 border rounded-md mb-2">Sin imagen</div>
+                    )}
+                    <input
+                      type="file"
+                      accept=".jpg,.jpeg,.png,.webp,.gif"
+                      onChange={handleEditImageChange}
+                      className="mt-1"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Formatos permitidos: JPG, JPEG, PNG, WEBP, GIF. Tamaño máximo: 4MB.</p>
+                  </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Nombre</label>
                     <input type="text" className="mt-1 w-full border px-2 py-1 rounded" value={editData.name || ''} onChange={e => setEditData({ ...editData, name: e.target.value })} />
