@@ -331,62 +331,61 @@ export default function Home() {
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-2xl font-semibold text-gray-900 mb-6">Registra tu Hotel</h2>
             <form onSubmit={handleFormSubmit} className="space-y-6">
-              {/* Mensaje para el viajero */}
+              {/* Nombre del hotel */}
               <div>
-                <label htmlFor="aboutMessage" className="block text-sm font-medium text-gray-700 mb-2">
-                  Cuando el usuario hace clic en "Sobre el hotel", ¿qué mensaje te gustaría darle al viajero?
-                </label>
-                <textarea
-                  id="aboutMessage"
-                  name="aboutMessage"
-                  value={formData.aboutMessage}
-                  onChange={handleFormChange}
-                  rows={2}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Ejemplo: ¡Bienvenido a nuestro hotel, tu casa en Ecuador!"
-                />
-              </div>
-
-              {/* Áreas recreativas */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  ¿Qué áreas recreativas ofrece el hotel?
-                </label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  {recreationOptions.map(option => (
-                    <label key={option} className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        checked={formData.recreationAreas.includes(option)}
-                        onChange={e => handleRecreationChange(option, e.target.checked)}
-                        className="h-4 w-4 text-blue-600 border-gray-300 rounded"
-                      />
-                      <span>{option}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Localización en una frase */}
-              <div>
-                <label htmlFor="locationPhrase" className="block text-sm font-medium text-gray-700 mb-2">
-                  Escribe en una frase la localización del hotel:
+                <label htmlFor="hotelName" className="block text-sm font-medium text-gray-700 mb-2">
+                  Nombre del Hotel *
                 </label>
                 <input
                   type="text"
-                  id="locationPhrase"
-                  name="locationPhrase"
-                  value={formData.locationPhrase}
+                  id="hotelName"
+                  name="hotelName"
+                  value={formData.hotelName}
                   onChange={handleFormChange}
+                  required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="En el corazón de Quito, cerca del parque La Carolina."
+                  placeholder="Nombre del hotel"
+                />
+              </div>
+
+              {/* Región */}
+              <div>
+                <label htmlFor="region" className="block text-sm font-medium text-gray-700 mb-2">
+                  Región *
+                </label>
+                <input
+                  type="text"
+                  id="region"
+                  name="region"
+                  value={formData.region}
+                  onChange={handleFormChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="ej. Costa, Sierra, Amazonía"
+                />
+              </div>
+
+              {/* Ciudad */}
+              <div>
+                <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-2">
+                  Ciudad *
+                </label>
+                <input
+                  type="text"
+                  id="city"
+                  name="city"
+                  value={formData.city}
+                  onChange={handleFormChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="ej. Quito, Guayaquil, Cuenca"
                 />
               </div>
 
               {/* Dirección */}
               <div>
                 <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
-                  Dirección
+                  Dirección *
                 </label>
                 <input
                   type="text"
@@ -394,37 +393,35 @@ export default function Home() {
                   name="address"
                   value={formData.address}
                   onChange={handleFormChange}
+                  required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Av. Amazonas N34-120 y Av. Naciones Unidas, Quito"
                 />
               </div>
 
-              {/* Puntos importantes alrededor */}
+              {/* Frase de localización */}
               <div>
-                <label htmlFor="surroundings" className="block text-sm font-medium text-gray-700 mb-2">
-                  Puntos importantes al rededor del hotel. <span className="text-gray-500">Ejemplo: estadio de futbol, centro comercial, parque natural, barrio, montaña, cascada, etc.</span>
+                <label htmlFor="locationPhrase" className="block text-sm font-medium text-gray-700 mb-2">
+                  Escribe en una frase la localización del hotel: *
                 </label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  {formData.surroundings.map((point, idx) => (
-                    <input
-                      key={idx}
-                      type="text"
-                      id={`surrounding-${idx}`}
-                      name={`surrounding-${idx}`}
-                      value={point}
-                      onChange={e => handleSurroundingChange(idx, e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder={`Punto ${idx + 1}`}
-                      required
-                    />
-                  ))}
-                </div>
+                <input
+                  type="text"
+                  id="locationPhrase"
+                  name="locationPhrase"
+                  value={formData.locationPhrase}
+                  onChange={handleFormChange}
+                  required
+                  maxLength={150}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="En el corazón de Quito, cerca del parque La Carolina."
+                />
+                <div className="text-xs text-gray-500 text-right">{formData.locationPhrase.length}/150</div>
               </div>
 
               {/* Tipo de hotel */}
               <div>
                 <label htmlFor="hotelType" className="block text-sm font-medium text-gray-700 mb-2">
-                  Tipo de hotel
+                  Tipo de hotel *
                 </label>
                 <select
                   id="hotelType"
@@ -444,57 +441,7 @@ export default function Home() {
                 </select>
               </div>
 
-              {/* El resto de campos existentes, renombrando Link de Reserva a Link a hotel */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label htmlFor="hotelName" className="block text-sm font-medium text-gray-700 mb-2">
-                    Nombre del Hotel *
-                  </label>
-                  <input
-                    type="text"
-                    id="hotelName"
-                    name="hotelName"
-                    value={formData.hotelName}
-                    onChange={handleFormChange}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Nombre del hotel"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="region" className="block text-sm font-medium text-gray-700 mb-2">
-                    Región *
-                  </label>
-                  <input
-                    type="text"
-                    id="region"
-                    name="region"
-                    value={formData.region}
-                    onChange={handleFormChange}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="ej. Costa, Sierra, Amazonía"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-2">
-                  Ciudad *
-                </label>
-                <input
-                  type="text"
-                  id="city"
-                  name="city"
-                  value={formData.city}
-                  onChange={handleFormChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="ej. Quito, Guayaquil, Cuenca"
-                />
-              </div>
-
+              {/* Descripción */}
               <div>
                 <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
                   Descripción *
@@ -505,13 +452,81 @@ export default function Home() {
                   value={formData.description}
                   onChange={handleFormChange}
                   required
+                  maxLength={200}
                   rows={4}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Describe las características únicas de tu hotel"
                 />
+                <div className="text-xs text-gray-500 text-right">{formData.description.length}/200</div>
               </div>
 
-              {/* Link a hotel */}
+              {/* Mensaje para el viajero */}
+              <div>
+                <label htmlFor="aboutMessage" className="block text-sm font-medium text-gray-700 mb-2">
+                  Cuando el usuario hace clic en "Sobre el hotel", ¿qué mensaje te gustaría darle al viajero? *
+                </label>
+                <textarea
+                  id="aboutMessage"
+                  name="aboutMessage"
+                  value={formData.aboutMessage}
+                  onChange={handleFormChange}
+                  required
+                  maxLength={200}
+                  rows={2}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Ejemplo: ¡Bienvenido a nuestro hotel, tu casa en Ecuador!"
+                />
+                <div className="text-xs text-gray-500 text-right">{formData.aboutMessage.length}/200</div>
+              </div>
+
+              {/* Áreas recreativas */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  ¿Qué áreas recreativas ofrece el hotel? *
+                </label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {recreationOptions.map(option => (
+                    <label key={option} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={formData.recreationAreas.includes(option)}
+                        onChange={e => handleRecreationChange(option, e.target.checked)}
+                        className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+                        required={formData.recreationAreas.length === 0}
+                      />
+                      <span>{option}</span>
+                    </label>
+                  ))}
+                </div>
+                {formData.recreationAreas.length === 0 && (
+                  <div className="text-xs text-red-500 mt-1">Selecciona al menos una área recreativa.</div>
+                )}
+              </div>
+
+              {/* Puntos importantes alrededor */}
+              <div>
+                <label htmlFor="surroundings" className="block text-sm font-medium text-gray-700 mb-2">
+                  Puntos importantes alrededor del hotel. * <span className="text-gray-500">Ejemplo: estadio de futbol, centro comercial, parque natural, barrio, montaña, cascada, etc.</span>
+                </label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {formData.surroundings.map((point, idx) => (
+                    <input
+                      key={idx}
+                      type="text"
+                      id={`surrounding-${idx}`}
+                      name={`surrounding-${idx}`}
+                      value={point}
+                      onChange={e => handleSurroundingChange(idx, e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder={`Punto ${idx + 1}`}
+                      required
+                      maxLength={100}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Link a hotel (opcional) */}
               <div>
                 <label htmlFor="bookingLink" className="block text-sm font-medium text-gray-700 mb-2">
                   Link a hotel
@@ -527,6 +542,7 @@ export default function Home() {
                 />
               </div>
 
+              {/* Foto del hotel */}
               <div>
                 <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-2">
                   Foto del hotel <span className="text-red-500">*</span>
