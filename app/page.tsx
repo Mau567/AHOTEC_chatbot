@@ -355,16 +355,20 @@ export default function Home() {
                 <label htmlFor="region" className="block text-sm font-medium text-gray-700 mb-2">
                   Región *
                 </label>
-                <input
-                  type="text"
+                <select
                   id="region"
                   name="region"
                   value={formData.region}
-                  onChange={handleFormChange}
+                  onChange={handleSelectChange}
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="ej. Costa, Sierra, Amazonía"
-                />
+                >
+                  <option value="">Selecciona una región</option>
+                  <option value="Costa">Costa</option>
+                  <option value="Sierra">Sierra</option>
+                  <option value="Amazonía">Amazonía</option>
+                  <option value="Galápagos">Galápagos</option>
+                </select>
               </div>
 
               {/* Ciudad */}
