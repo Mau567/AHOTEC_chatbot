@@ -1,6 +1,6 @@
 'use client'
 
-import { X } from 'lucide-react'
+import { X, MapPin, Building, MessageCircle, Waves, Navigation, Home, Map, ExternalLink } from 'lucide-react'
 
 interface Hotel {
   id: string
@@ -25,35 +25,121 @@ interface HotelDetailModalProps {
 
 export default function HotelDetailModal({ hotel, onClose }: HotelDetailModalProps) {
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-lg w-11/12 md:w-3/4 lg:w-1/2 p-5 overflow-y-auto max-h-[80vh]">
-        <div className="flex justify-between items-start mb-4">
-          <h3 className="text-lg font-medium text-gray-900">{hotel.name}</h3>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-            <X className="w-5 h-5" />
+    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg shadow-lg w-11/12 md:w-3/4 lg:w-1/2 max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="flex justify-between items-start p-6 border-b">
+          <h3 className="text-2xl font-bold text-gray-900">{hotel.name}</h3>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700 p-1">
+            <X className="w-6 h-6" />
           </button>
         </div>
+
+        {/* Hero Section with Image */}
         {hotel.imageUrl && (
-          <img src={hotel.imageUrl} alt={hotel.name} className="w-full h-48 object-cover rounded mb-4" />
+          <div className="relative">
+            <img src={hotel.imageUrl} alt={hotel.name} className="w-full h-64 object-contain bg-gray-100" />
+          </div>
         )}
-        <div className="space-y-2 text-sm text-gray-700">
-          <p><b>Ubicación:</b> {hotel.city}, {hotel.region}</p>
-          <p><b>Descripción:</b> {hotel.description}</p>
-          {hotel.aboutMessage && <p><b>Mensaje:</b> {hotel.aboutMessage}</p>}
-          {hotel.recreationAreas && <p><b>Áreas recreativas:</b> {hotel.recreationAreas}</p>}
-          {hotel.locationPhrase && <p><b>Frase de ubicación:</b> {hotel.locationPhrase}</p>}
-          {hotel.address && <p><b>Dirección:</b> {hotel.address}</p>}
-          {hotel.surroundings && hotel.surroundings.length > 0 && (
-            <p><b>Alrededores:</b> {hotel.surroundings.join(', ')}</p>
+
+        <div className="p-6 space-y-6">
+          {/* Location and Type Section */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
+              <MapPin className="w-5 h-5 text-blue-600" />
+              <div>
+                <p className="text-sm text-gray-600">Ubicación</p>
+                <p className="font-medium text-gray-900">{hotel.city}, {hotel.region}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+              <Building className="w-5 h-5 text-green-600" />
+              <div>
+                <p className="text-sm text-gray-600">Tipo de hotel</p>
+                <p className="font-medium text-gray-900">{hotel.hotelType}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Welcome Message */}
+          {hotel.aboutMessage && (
+            <div className="bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-400">
+              <div className="flex items-start gap-3">
+                <MessageCircle className="w-5 h-5 text-yellow-600 mt-0.5" />
+                <div>
+                  <p className="text-gray-900 italic text-lg">"{hotel.aboutMessage}"</p>
+                </div>
+              </div>
+            </div>
           )}
-          {hotel.hotelType && <p><b>Tipo de hotel:</b> {hotel.hotelType}</p>}
+
+          {/* Description */}
+          <div>
+            <h4 className="text-lg font-semibold text-gray-900 mb-3">Descripción</h4>
+            <p className="text-gray-700 leading-relaxed">{hotel.description}</p>
+          </div>
+
+          {/* Quick Info Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {hotel.recreationAreas && (
+              <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-lg">
+                <Waves className="w-5 h-5 text-purple-600" />
+                <div>
+                  <p className="text-sm text-gray-600">Áreas recreativas</p>
+                  <p className="font-medium text-gray-900">{hotel.recreationAreas}</p>
+                </div>
+              </div>
+            )}
+            {hotel.locationPhrase && (
+              <div className="flex items-center gap-3 p-3 bg-indigo-50 rounded-lg">
+                <Navigation className="w-5 h-5 text-indigo-600" />
+                <div>
+                  <p className="text-sm text-gray-600">Ubicación</p>
+                  <p className="font-medium text-gray-900">{hotel.locationPhrase}</p>
+                </div>
+              </div>
+            )}
+            {hotel.address && (
+              <div className="flex items-center gap-3 p-3 bg-orange-50 rounded-lg">
+                <Home className="w-5 h-5 text-orange-600" />
+                <div>
+                  <p className="text-sm text-gray-600">Dirección</p>
+                  <p className="font-medium text-gray-900">{hotel.address}</p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Surroundings */}
+          {hotel.surroundings && hotel.surroundings.length > 0 && (
+            <div>
+              <div className="flex items-center gap-3 mb-3">
+                <Map className="w-5 h-5 text-gray-600" />
+                <h4 className="text-lg font-semibold text-gray-900">Alrededores</h4>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {hotel.surroundings.map((surrounding, index) => (
+                  <span key={index} className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">
+                    {surrounding}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Booking Link */}
           {hotel.bookingLink && (
-            <p>
-              <b>Link de Reserva:</b>{' '}
-              <a href={hotel.bookingLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                {hotel.bookingLink}
+            <div className="pt-4 border-t">
+              <a 
+                href={hotel.bookingLink} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              >
+                <ExternalLink className="w-4 h-4" />
+                Reservar ahora
               </a>
-            </p>
+            </div>
           )}
         </div>
       </div>
