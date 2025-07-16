@@ -11,7 +11,6 @@ interface HotelFormData {
   description: string
   bookingLink: string // Renombrar a linkHotel
   image?: File | null
-  aboutMessage: string // Mensaje para el viajero
   recreationAreas: string[] // Áreas recreativas ahora es array
   locationPhrase: string // Localización en una frase
   address: string // Dirección
@@ -34,7 +33,6 @@ export default function Home() {
     description: '',
     bookingLink: '',
     image: null,
-    aboutMessage: '',
     recreationAreas: [], // Cambiado a array
     locationPhrase: '',
     address: '',
@@ -157,7 +155,6 @@ export default function Home() {
         form.append('image', formData.image)
       }
       form.append('surroundings', formData.surroundings.join(','))
-      form.append('aboutMessage', formData.aboutMessage)
       form.append('recreationAreas', recreationAreasString)
       form.append('locationPhrase', formData.locationPhrase)
       form.append('address', formData.address)
@@ -179,7 +176,6 @@ export default function Home() {
           description: '',
           bookingLink: '',
           image: null,
-          aboutMessage: '',
           recreationAreas: [],
           locationPhrase: '',
           address: '',
@@ -464,25 +460,6 @@ export default function Home() {
                   placeholder="Describe las características únicas de tu hotel"
                 />
                 <div className="text-xs text-gray-500 text-right">{formData.description.length}/200</div>
-              </div>
-
-              {/* Mensaje para el viajero */}
-              <div>
-                <label htmlFor="aboutMessage" className="block text-sm font-medium text-gray-700 mb-2">
-                  Cuando el usuario hace clic en "Sobre el hotel", ¿qué mensaje te gustaría darle al viajero? *
-                </label>
-                <textarea
-                  id="aboutMessage"
-                  name="aboutMessage"
-                  value={formData.aboutMessage}
-                  onChange={handleFormChange}
-                  required
-                  maxLength={200}
-                  rows={2}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Ejemplo: ¡Bienvenido a nuestro hotel, tu casa en Ecuador!"
-                />
-                <div className="text-xs text-gray-500 text-right">{formData.aboutMessage.length}/200</div>
               </div>
 
               {/* Áreas recreativas */}
