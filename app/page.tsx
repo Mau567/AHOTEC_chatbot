@@ -92,6 +92,12 @@ export default function Home() {
   ]
   const [otherRecreation, setOtherRecreation] = useState('')
 
+  // Allowed image types and max size
+  const allowedImageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+  const maxImageSizeMB = 4
+  const maxImageSizeBytes = maxImageSizeMB * 1024 * 1024
+  const [imageError, setImageError] = useState('')
+
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({
@@ -110,10 +116,23 @@ export default function Home() {
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files && e.target.files[0] ? e.target.files[0] : null
-    setFormData(prev => ({
-      ...prev,
-      image: file
-    }))
+    if (file) {
+      if (!allowedImageTypes.includes(file.type)) {
+        setImageError('Solo se permiten imágenes JPG, JPEG, PNG, WEBP o GIF.')
+        setFormData(prev => ({ ...prev, image: null }))
+        return
+      }
+      if (file.size > maxImageSizeBytes) {
+        setImageError('El tamaño máximo permitido es 4MB.')
+        setFormData(prev => ({ ...prev, image: null }))
+        return
+      }
+      setImageError('')
+      setFormData(prev => ({ ...prev, image: file }))
+    } else {
+      setImageError('')
+      setFormData(prev => ({ ...prev, image: null }))
+    }
   }
 
   const handleSurroundingChange = (idx: number, value: string) => {
@@ -532,18 +551,24 @@ export default function Home() {
               {/* Foto del hotel */}
               <div>
                 <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-2">
-                  Foto del hotel <span className="text-red-500">*</span>
+                  Fotografía del hotel <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="file"
                   id="image"
                   name="image"
-                  accept="image/*"
+                  accept=".jpg,.jpeg,.png,.webp,.gif"
                   onChange={handleImageChange}
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
-                {formData.image && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Formatos permitidos: JPG, JPEG, PNG, WEBP, GIF. Tamaño máximo: 4MB.
+                </p>
+                {imageError && (
+                  <p className="text-xs text-red-500 mt-1">{imageError}</p>
+                )}
+                {formData.image && !imageError && (
                   <div className="mt-2">
                     <img
                       src={URL.createObjectURL(formData.image)}
