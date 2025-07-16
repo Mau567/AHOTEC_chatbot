@@ -299,6 +299,17 @@ export default function Home() {
     }
   }
 
+  // Add a reset handler for the chatbot
+  const handleChatReset = () => {
+    setChatStep('ubicacion')
+    setUserLocation('')
+    setUserHotelType('')
+    setHotelResults([])
+    setNoResults(false)
+    setSelectedHotel(null)
+    setUserInput('')
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navigation */}
@@ -682,7 +693,14 @@ export default function Home() {
                 </div>
               )}
             </div>
-
+            <div className="flex justify-end mb-2">
+              <button
+                onClick={handleChatReset}
+                className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 transition-colors"
+              >
+                Reiniciar búsqueda
+              </button>
+            </div>
             {selectedHotel && (
               <HotelDetailModal hotel={selectedHotel} onClose={() => setSelectedHotel(null)} />
             )}
