@@ -26,6 +26,91 @@ interface Hotel {
 }
 
 export default function AdminDashboard() {
+  // Language state
+  const [language, setLanguage] = useState<'es' | 'en'>('es')
+
+  // Translation object
+  const t = {
+    // Login
+    adminLogin: language === 'es' ? 'Admin Login' : 'Admin Login',
+    username: language === 'es' ? 'Clave' : 'Username',
+    password: language === 'es' ? 'Contraseña' : 'Password',
+    loginError: language === 'es' ? 'Clave o contraseña incorrecta' : 'Incorrect username or password',
+    enter: language === 'es' ? 'Entrar' : 'Enter',
+    
+    // Header
+    adminPanel: language === 'es' ? 'Panel de Administración AHOTEC' : 'AHOTEC Administration Panel',
+    adminSubtitle: language === 'es' ? 'Gestiona las solicitudes de hoteles y el chatbot' : 'Manage hotel requests and chatbot',
+    
+    // Stats
+    pending: language === 'es' ? 'Pendientes' : 'Pending',
+    approved: language === 'es' ? 'Aprobados' : 'Approved',
+    rejected: language === 'es' ? 'Rechazados' : 'Rejected',
+    paid: language === 'es' ? 'Pagados' : 'Paid',
+    
+    // Filters
+    all: language === 'es' ? 'Todos' : 'All',
+    
+    // Table headers
+    hotel: language === 'es' ? 'Hotel' : 'Hotel',
+    location: language === 'es' ? 'Ubicación' : 'Location',
+    status: language === 'es' ? 'Estado' : 'Status',
+    date: language === 'es' ? 'Fecha' : 'Date',
+    actions: language === 'es' ? 'Acciones' : 'Actions',
+    
+    // Status labels
+    pendingStatus: language === 'es' ? 'Pendiente' : 'Pending',
+    approvedStatus: language === 'es' ? 'Aprobado' : 'Approved',
+    rejectedStatus: language === 'es' ? 'Rechazado' : 'Rejected',
+    
+    // Modal labels
+    description: language === 'es' ? 'Descripción' : 'Description',
+    message: language === 'es' ? 'Mensaje' : 'Message',
+    recreationAreas: language === 'es' ? 'Áreas recreativas' : 'Recreation areas',
+    locationPhrase: language === 'es' ? 'Frase de ubicación' : 'Location phrase',
+    address: language === 'es' ? 'Dirección' : 'Address',
+    surroundings: language === 'es' ? 'Alrededores' : 'Surroundings',
+    hotelType: language === 'es' ? 'Tipo de hotel' : 'Hotel type',
+    bookingLink: language === 'es' ? 'Link de Reserva' : 'Booking Link',
+    close: language === 'es' ? 'Cerrar' : 'Close',
+    
+    // Edit modal
+    editHotel: language === 'es' ? 'Editar' : 'Edit',
+    currentImage: language === 'es' ? 'Imagen actual / nueva' : 'Current / new image',
+    preview: language === 'es' ? 'Vista previa' : 'Preview',
+    currentImageAlt: language === 'es' ? 'Imagen actual' : 'Current image',
+    noImage: language === 'es' ? 'Sin imagen' : 'No image',
+    imageFormats: language === 'es' ? 'Formatos permitidos: JPG, JPEG, PNG, WEBP, GIF. Tamaño máximo: 4MB.' : 'Allowed formats: JPG, JPEG, PNG, WEBP, GIF. Maximum size: 4MB.',
+    name: language === 'es' ? 'Nombre' : 'Name',
+    region: language === 'es' ? 'Región' : 'Region',
+    city: language === 'es' ? 'Ciudad' : 'City',
+    surroundingsComma: language === 'es' ? 'Alrededores (separados por coma)' : 'Surroundings (comma separated)',
+    selectOption: language === 'es' ? 'Selecciona una opción' : 'Select an option',
+    cancel: language === 'es' ? 'Cancelar' : 'Cancel',
+    save: language === 'es' ? 'Guardar' : 'Save',
+    
+    // Loading
+    loadingHotels: language === 'es' ? 'Cargando hoteles...' : 'Loading hotels...',
+    
+    // Confirmation
+    deleteConfirm: language === 'es' ? '¿Estás seguro de que quieres eliminar este hotel?' : 'Are you sure you want to delete this hotel?',
+    
+    // Error messages
+    technicalError: language === 'es' ? 'Lo siento, hay un problema técnico. Por favor intenta de nuevo.' : 'Sorry, there is a technical problem. Please try again.',
+    
+    // Hotel type options
+    hotel4or5: language === 'es' ? 'Hotel 4 o 5 estrellas' : '4 or 5 star hotel',
+    hotel3orLess: language === 'es' ? 'Hotel 3 o menos estrellas' : '3 star or less hotel',
+    hostel: language === 'es' ? 'Hostal / Bed and Breakfast' : 'Hostel / Bed and Breakfast',
+    countryInn: language === 'es' ? 'Hostería de campo' : 'Country inn',
+    hacienda: language === 'es' ? 'Hacienda' : 'Hacienda',
+    resort: language === 'es' ? 'Resort' : 'Resort',
+    
+    // Language toggle
+    english: 'English',
+    spanish: 'Español'
+  }
+
   const [hotels, setHotels] = useState<Hotel[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED'>('ALL')
@@ -78,7 +163,7 @@ export default function AdminDashboard() {
   }
 
   const deleteHotel = async (hotelId: string) => {
-    if (!confirm('¿Estás seguro de que quieres eliminar este hotel?')) return
+    if (!confirm(t.deleteConfirm)) return
 
     try {
       const response = await fetch(`/api/hotels/${hotelId}`, {
@@ -180,7 +265,15 @@ export default function AdminDashboard() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-sm">
-          <h2 className="text-2xl font-bold mb-6 text-center">Admin Login</h2>
+          <div className="flex justify-end mb-4">
+            <button
+              onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
+              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+            >
+              {language === 'es' ? t.english : t.spanish}
+            </button>
+          </div>
+          <h2 className="text-2xl font-bold mb-6 text-center">{t.adminLogin}</h2>
           <form
             onSubmit={e => {
               e.preventDefault()
@@ -188,13 +281,13 @@ export default function AdminDashboard() {
                 setLoggedIn(true)
                 setLoginError('')
               } else {
-                setLoginError('Clave o contraseña incorrecta')
+                setLoginError(t.loginError)
               }
             }}
             className="space-y-4"
           >
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Clave</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t.username}</label>
               <input
                 type="text"
                 value={username}
@@ -205,7 +298,7 @@ export default function AdminDashboard() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t.password}</label>
               <input
                 type="password"
                 value={password}
@@ -219,7 +312,7 @@ export default function AdminDashboard() {
               type="submit"
               className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition-colors font-semibold"
             >
-              Entrar
+              {t.enter}
             </button>
           </form>
         </div>
@@ -232,7 +325,7 @@ export default function AdminDashboard() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Cargando hoteles...</p>
+          <p className="mt-4 text-gray-600">{t.loadingHotels}</p>
         </div>
       </div>
     )
@@ -243,8 +336,18 @@ export default function AdminDashboard() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Panel de Administración AHOTEC</h1>
-          <p className="text-gray-600 mt-2">Gestiona las solicitudes de hoteles y el chatbot</p>
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">{t.adminPanel}</h1>
+              <p className="text-gray-600 mt-2">{t.adminSubtitle}</p>
+            </div>
+            <button
+              onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
+              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+            >
+              {language === 'es' ? t.english : t.spanish}
+            </button>
+          </div>
         </div>
 
         {/* Stats */}
@@ -253,7 +356,7 @@ export default function AdminDashboard() {
             <div className="flex items-center">
               <Clock className="w-8 h-8 text-yellow-500" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Pendientes</p>
+                <p className="text-sm font-medium text-gray-600">{t.pending}</p>
                 <p className="text-2xl font-bold text-gray-900">
                   {hotels.filter(h => h.status === 'PENDING').length}
                 </p>
@@ -264,7 +367,7 @@ export default function AdminDashboard() {
             <div className="flex items-center">
               <CheckCircle className="w-8 h-8 text-green-500" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Aprobados</p>
+                <p className="text-sm font-medium text-gray-600">{t.approved}</p>
                 <p className="text-2xl font-bold text-gray-900">
                   {hotels.filter(h => h.status === 'APPROVED').length}
                 </p>
@@ -275,7 +378,7 @@ export default function AdminDashboard() {
             <div className="flex items-center">
               <XCircle className="w-8 h-8 text-red-500" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Rechazados</p>
+                <p className="text-sm font-medium text-gray-600">{t.rejected}</p>
                 <p className="text-2xl font-bold text-gray-900">
                   {hotels.filter(h => h.status === 'REJECTED').length}
                 </p>
@@ -288,7 +391,7 @@ export default function AdminDashboard() {
                 <span className="text-white font-bold">$</span>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Pagados</p>
+                <p className="text-sm font-medium text-gray-600">{t.paid}</p>
                 <p className="text-2xl font-bold text-gray-900">
                   {hotels.filter(h => h.isPaid).length}
                 </p>
@@ -310,9 +413,9 @@ export default function AdminDashboard() {
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                {status === 'ALL' ? 'Todos' : 
-                 status === 'PENDING' ? 'Pendientes' :
-                 status === 'APPROVED' ? 'Aprobados' : 'Rechazados'}
+                {status === 'ALL' ? t.all : 
+                 status === 'PENDING' ? t.pending :
+                 status === 'APPROVED' ? t.approved : t.rejected}
               </button>
             ))}
           </div>
@@ -325,19 +428,19 @@ export default function AdminDashboard() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Hotel
+                    {t.hotel}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Ubicación
+                    {t.location}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Estado
+                    {t.status}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Fecha
+                    {t.date}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Acciones
+                    {t.actions}
                   </th>
                 </tr>
               </thead>
@@ -357,13 +460,13 @@ export default function AdminDashboard() {
                       <div className="flex items-center">
                         {getStatusIcon(hotel.status)}
                         <span className={`ml-2 inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(hotel.status)}`}>
-                          {hotel.status === 'PENDING' ? 'Pendiente' :
-                           hotel.status === 'APPROVED' ? 'Aprobado' : 'Rechazado'}
+                          {hotel.status === 'PENDING' ? t.pendingStatus :
+                           hotel.status === 'APPROVED' ? t.approvedStatus : t.rejectedStatus}
                         </span>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(hotel.createdAt).toLocaleDateString('es-EC')}
+                      {new Date(hotel.createdAt).toLocaleDateString(language === 'es' ? 'es-EC' : 'en-US')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex space-x-2">
@@ -423,40 +526,40 @@ export default function AdminDashboard() {
                 )}
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Ubicación</label>
+                    <label className="block text-sm font-medium text-gray-700">{t.location}</label>
                     <p className="mt-1 text-sm text-gray-900">{selectedHotel.city}, {selectedHotel.region}</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Descripción</label>
+                    <label className="block text-sm font-medium text-gray-700">{t.description}</label>
                     <p className="mt-1 text-sm text-gray-900">{selectedHotel.description}</p>
                   </div>
                   {selectedHotel.aboutMessage && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Mensaje</label>
+                      <label className="block text-sm font-medium text-gray-700">{t.message}</label>
                       <p className="mt-1 text-sm text-gray-900">{selectedHotel.aboutMessage}</p>
                     </div>
                   )}
                   {selectedHotel.recreationAreas && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Áreas recreativas</label>
+                      <label className="block text-sm font-medium text-gray-700">{t.recreationAreas}</label>
                       <p className="mt-1 text-sm text-gray-900">{selectedHotel.recreationAreas}</p>
                     </div>
                   )}
                   {selectedHotel.locationPhrase && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Frase de ubicación</label>
+                      <label className="block text-sm font-medium text-gray-700">{t.locationPhrase}</label>
                       <p className="mt-1 text-sm text-gray-900">{selectedHotel.locationPhrase}</p>
                     </div>
                   )}
                   {selectedHotel.address && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Dirección</label>
+                      <label className="block text-sm font-medium text-gray-700">{t.address}</label>
                       <p className="mt-1 text-sm text-gray-900">{selectedHotel.address}</p>
                     </div>
                   )}
                   {selectedHotel.surroundings.length > 0 && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Alrededores</label>
+                      <label className="block text-sm font-medium text-gray-700">{t.surroundings}</label>
                       <div className="mt-1 flex flex-wrap gap-2">
                         {selectedHotel.surroundings.map((s, index) => (
                           <span key={index} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
@@ -468,13 +571,13 @@ export default function AdminDashboard() {
                   )}
                   {selectedHotel.hotelType && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Tipo de hotel</label>
+                      <label className="block text-sm font-medium text-gray-700">{t.hotelType}</label>
                       <p className="mt-1 text-sm text-gray-900">{selectedHotel.hotelType}</p>
                     </div>
                   )}
                   {selectedHotel.bookingLink && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Link de Reserva</label>
+                      <label className="block text-sm font-medium text-gray-700">{t.bookingLink}</label>
                       <a href={selectedHotel.bookingLink} target="_blank" rel="noopener noreferrer" className="mt-1 text-sm text-blue-600 hover:text-blue-800">
                         {selectedHotel.bookingLink}
                       </a>
@@ -486,7 +589,7 @@ export default function AdminDashboard() {
                     onClick={() => setSelectedHotel(null)}
                     className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors"
                   >
-                    Cerrar
+                    {t.close}
                   </button>
                 </div>
               </div>
@@ -498,17 +601,17 @@ export default function AdminDashboard() {
           <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
             <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
               <div className="mt-3">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Editar {editingHotel.name}</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">{t.editHotel} {editingHotel.name}</h3>
                 <div className="space-y-4">
                   {/* Image preview and upload */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Imagen actual / nueva</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{t.currentImage}</label>
                     {editImagePreview ? (
-                      <img src={editImagePreview} alt="Vista previa" className="h-32 rounded-md object-cover border mb-2" />
+                      <img src={editImagePreview} alt={t.preview} className="h-32 rounded-md object-cover border mb-2" />
                     ) : editingHotel.imageUrl ? (
-                      <img src={editingHotel.imageUrl} alt="Imagen actual" className="h-32 rounded-md object-cover border mb-2" />
+                      <img src={editingHotel.imageUrl} alt={t.currentImageAlt} className="h-32 rounded-md object-cover border mb-2" />
                     ) : (
-                      <div className="h-32 w-full bg-gray-100 flex items-center justify-center text-gray-400 border rounded-md mb-2">Sin imagen</div>
+                      <div className="h-32 w-full bg-gray-100 flex items-center justify-center text-gray-400 border rounded-md mb-2">{t.noImage}</div>
                     )}
                     <input
                       type="file"
@@ -516,44 +619,44 @@ export default function AdminDashboard() {
                       onChange={handleEditImageChange}
                       className="mt-1"
                     />
-                    <p className="text-xs text-gray-500 mt-1">Formatos permitidos: JPG, JPEG, PNG, WEBP, GIF. Tamaño máximo: 4MB.</p>
+                    <p className="text-xs text-gray-500 mt-1">{t.imageFormats}</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Nombre</label>
+                    <label className="block text-sm font-medium text-gray-700">{t.name}</label>
                     <input type="text" className="mt-1 w-full border px-2 py-1 rounded" value={editData.name || ''} onChange={e => setEditData({ ...editData, name: e.target.value })} />
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Región</label>
+                      <label className="block text-sm font-medium text-gray-700">{t.region}</label>
                       <input type="text" className="mt-1 w-full border px-2 py-1 rounded" value={editData.region || ''} onChange={e => setEditData({ ...editData, region: e.target.value })} />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Ciudad</label>
+                      <label className="block text-sm font-medium text-gray-700">{t.city}</label>
                       <input type="text" className="mt-1 w-full border px-2 py-1 rounded" value={editData.city || ''} onChange={e => setEditData({ ...editData, city: e.target.value })} />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Descripción</label>
+                    <label className="block text-sm font-medium text-gray-700">{t.description}</label>
                     <textarea className="mt-1 w-full border px-2 py-1 rounded" value={editData.description || ''} onChange={e => setEditData({ ...editData, description: e.target.value })}></textarea>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Mensaje</label>
+                    <label className="block text-sm font-medium text-gray-700">{t.message}</label>
                     <textarea className="mt-1 w-full border px-2 py-1 rounded" value={editData.aboutMessage || ''} onChange={e => setEditData({ ...editData, aboutMessage: e.target.value })}></textarea>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Áreas recreativas</label>
+                    <label className="block text-sm font-medium text-gray-700">{t.recreationAreas}</label>
                     <textarea className="mt-1 w-full border px-2 py-1 rounded" value={editData.recreationAreas || ''} onChange={e => setEditData({ ...editData, recreationAreas: e.target.value })}></textarea>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Frase de ubicación</label>
+                    <label className="block text-sm font-medium text-gray-700">{t.locationPhrase}</label>
                     <input type="text" className="mt-1 w-full border px-2 py-1 rounded" value={editData.locationPhrase || ''} onChange={e => setEditData({ ...editData, locationPhrase: e.target.value })} />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Dirección</label>
+                    <label className="block text-sm font-medium text-gray-700">{t.address}</label>
                     <input type="text" className="mt-1 w-full border px-2 py-1 rounded" value={editData.address || ''} onChange={e => setEditData({ ...editData, address: e.target.value })} />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Alrededores (separados por coma)</label>
+                    <label className="block text-sm font-medium text-gray-700">{t.surroundingsComma}</label>
                     <input
                       type="text"
                       className="mt-1 w-full border px-2 py-1 rounded"
@@ -562,30 +665,30 @@ export default function AdminDashboard() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Tipo de hotel</label>
+                    <label className="block text-sm font-medium text-gray-700">{t.hotelType}</label>
                     <select
                       className="mt-1 w-full border px-2 py-1 rounded"
                       value={editData.hotelType || ''}
                       onChange={e => setEditData({ ...editData, hotelType: e.target.value })}
                       required
                     >
-                      <option value="">Selecciona una opción</option>
-                      <option value="Hotel 4 o 5 estrellas">Hotel 4 o 5 estrellas</option>
-                      <option value="Hotel 3 o menos estrellas">Hotel 3 o menos estrellas</option>
-                      <option value="Hostal / Bed and Breakfast">Hostal / Bed and Breakfast</option>
-                      <option value="Hostería de campo">Hostería de campo</option>
-                      <option value="Hacienda">Hacienda</option>
-                      <option value="Resort">Resort</option>
+                      <option value="">{t.selectOption}</option>
+                      <option value="Hotel 4 o 5 estrellas">{t.hotel4or5}</option>
+                      <option value="Hotel 3 o menos estrellas">{t.hotel3orLess}</option>
+                      <option value="Hostal / Bed and Breakfast">{t.hostel}</option>
+                      <option value="Hostería de campo">{t.countryInn}</option>
+                      <option value="Hacienda">{t.hacienda}</option>
+                      <option value="Resort">{t.resort}</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Link de Reserva</label>
+                    <label className="block text-sm font-medium text-gray-700">{t.bookingLink}</label>
                     <input type="text" className="mt-1 w-full border px-2 py-1 rounded" value={editData.bookingLink || ''} onChange={e => setEditData({ ...editData, bookingLink: e.target.value })} />
                   </div>
                 </div>
                 <div className="flex justify-end space-x-3 mt-6">
-                  <button onClick={() => setEditingHotel(null)} type="button" className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors">Cancelar</button>
-                  <button onClick={saveHotelEdits} type="button" className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">Guardar</button>
+                  <button onClick={() => setEditingHotel(null)} type="button" className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors">{t.cancel}</button>
+                  <button onClick={saveHotelEdits} type="button" className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">{t.save}</button>
                 </div>
               </div>
             </div>

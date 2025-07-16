@@ -21,6 +21,24 @@ export default function ChatWidget({
   theme = 'light',
   position = 'bottom-right'
 }: ChatWidgetProps) {
+  // Language state
+  const [language, setLanguage] = useState<'es' | 'en'>('es')
+
+  // Translation object
+  const t = {
+    // Chat interface
+    assistantTitle: language === 'es' ? 'AHOTEC Asistente' : 'AHOTEC Assistant',
+    openChat: language === 'es' ? 'Abrir chat' : 'Open chat',
+    closeChat: language === 'es' ? 'Cerrar chat' : 'Close chat',
+    welcomeMessage: language === 'es' ? '¡Hola! ¿En qué área de Ecuador buscas hoteles?' : 'Hello! In which area of Ecuador are you looking for hotels?',
+    placeholder: language === 'es' ? 'Escribe tu mensaje...' : 'Type your message...',
+    technicalError: language === 'es' ? 'Lo siento, hay un problema técnico. Por favor intenta de nuevo.' : 'Sorry, there is a technical problem. Please try again.',
+    
+    // Language toggle
+    english: 'English',
+    spanish: 'Español'
+  }
+
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [inputValue, setInputValue] = useState('')
@@ -74,7 +92,7 @@ export default function ChatWidget({
       console.error('Error sending message:', error)
       const errorMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
-        text: 'Lo siento, hay un problema técnico. Por favor intenta de nuevo.',
+        text: t.technicalError,
         isUser: false,
         timestamp: new Date()
       }
@@ -125,13 +143,23 @@ export default function ChatWidget({
     <div className={`fixed ${positionClasses[position]} z-50`}>
       {/* Chat Toggle Button */}
       {!isOpen && (
-        <button
-          onClick={() => setIsOpen(true)}
-          className={`${currentTheme.button} w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110`}
-          aria-label="Abrir chat"
-        >
-          <MessageCircle className="w-6 h-6" />
-        </button>
+        <div className="flex flex-col items-end space-y-2">
+          {/* Language Toggle */}
+          <button
+            onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
+            className={`${currentTheme.button} px-3 py-1 rounded-md text-xs shadow-lg transition-all duration-200 hover:scale-105`}
+          >
+            {language === 'es' ? t.english : t.spanish}
+          </button>
+          {/* Chat Button */}
+          <button
+            onClick={() => setIsOpen(true)}
+            className={`${currentTheme.button} w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110`}
+            aria-label={t.openChat}
+          >
+            <MessageCircle className="w-6 h-6" />
+          </button>
+        </div>
       )}
 
       {/* Chat Widget */}
@@ -141,12 +169,12 @@ export default function ChatWidget({
           <div className={`${currentTheme.header} px-4 py-3 rounded-t-lg flex items-center justify-between`}>
             <div className="flex items-center">
               <Building className="w-5 h-5 mr-2" />
-              <span className="font-semibold">AHOTEC Asistente</span>
+              <span className="font-semibold">{t.assistantTitle}</span>
             </div>
             <button
               onClick={() => setIsOpen(false)}
               className="text-white hover:text-gray-200 transition-colors"
-              aria-label="Cerrar chat"
+              aria-label={t.closeChat}
             >
               <X className="w-5 h-5" />
             </button>
@@ -157,7 +185,7 @@ export default function ChatWidget({
             {messages.length === 0 ? (
               <div className="text-center text-gray-500">
                 <MessageCircle className="w-8 h-8 mx-auto mb-2" />
-                <p className="text-sm">¡Hola! ¿En qué área de Ecuador buscas hoteles?</p>
+                <p className="text-sm">{t.welcomeMessage}</p>
               </div>
             ) : (
               messages.map((message) => (
@@ -199,7 +227,7 @@ export default function ChatWidget({
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Escribe tu mensaje..."
+                placeholder={t.placeholder}
                 disabled={isLoading}
                 className={`flex-1 px-3 py-2 rounded-md text-sm border focus:outline-none focus:ring-2 focus:ring-blue-500 ${currentTheme.input}`}
               />
