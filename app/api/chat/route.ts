@@ -16,19 +16,34 @@ export async function POST(request: NextRequest) {
     if (locationMatch) location = locationMatch[1].trim()
     if (typeMatch) hotelType = typeMatch[1].trim()
 
-    // Buscar hoteles aprobados y pagados que coincidan
-    const hotels = await prisma.hotel.findMany({
+    // Buscar todos los hoteles aprobados y pagados
+    const allHotels = await prisma.hotel.findMany({
       where: {
         status: 'APPROVED',
         isPaid: true,
         hotelType: hotelType ? { contains: hotelType, mode: 'insensitive' } : undefined,
-        OR: [
-          { city: { contains: location, mode: 'insensitive' } },
-          { region: { contains: location, mode: 'insensitive' } },
-          { address: { contains: location, mode: 'insensitive' } },
-          { locationPhrase: { contains: location, mode: 'insensitive' } }
-        ]
       }
+    })
+
+    const locationLower = location.toLowerCase()
+    // Considerar coincidencia si el término aparece en cualquier campo relevante o en los alrededores
+    const finalHotels = allHotels.filter(hotel => {
+      const fields = [
+        hotel.name,
+        hotel.city,
+        hotel.region,
+        hotel.address,
+        hotel.locationPhrase
+      ]
+      // Coincidencia en campos principales
+      if (fields.some(f => typeof f === 'string' && f.toLowerCase().includes(locationLower))) {
+        return true
+      }
+      // Coincidencia en alrededores
+      if (hotel.surroundings && Array.isArray(hotel.surroundings)) {
+        return hotel.surroundings.some(s => s.toLowerCase().includes(locationLower))
+      }
+      return false
     })
 
     // Guardar la sesión como antes
@@ -44,7 +59,7 @@ export async function POST(request: NextRequest) {
 
     const botMessage = {
       role: 'assistant',
-      content: hotels.length > 0 ? 'Hoteles encontrados' : 'No se encontraron hoteles compatibles',
+      content: finalHotels.length > 0 ? 'Hoteles encontrados' : 'No se encontraron hoteles compatibles',
       timestamp: new Date().toISOString()
     }
 
@@ -66,7 +81,7 @@ export async function POST(request: NextRequest) {
 
     // Devolver los hoteles compatibles (array)
     return NextResponse.json({ 
-      hotels,
+      hotels: finalHotels,
       timestamp: new Date().toISOString()
     })
   } catch (error) {
