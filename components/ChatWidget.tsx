@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { MessageCircle, X, Send, Building } from 'lucide-react'
+import { useLanguage } from '@/context/LanguageContext'
+import { translations } from '@/lib/translations'
 
 interface ChatMessage {
   id: string
@@ -16,11 +18,13 @@ interface ChatWidgetProps {
   position?: 'bottom-right' | 'bottom-left'
 }
 
-export default function ChatWidget({ 
-  apiUrl = '/api/chat', 
+export default function ChatWidget({
+  apiUrl = '/api/chat',
   theme = 'light',
   position = 'bottom-right'
 }: ChatWidgetProps) {
+  const { language } = useLanguage()
+  const t = translations[language]
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [inputValue, setInputValue] = useState('')
@@ -157,7 +161,7 @@ export default function ChatWidget({
             {messages.length === 0 ? (
               <div className="text-center text-gray-500">
                 <MessageCircle className="w-8 h-8 mx-auto mb-2" />
-                <p className="text-sm">¡Hola! ¿En qué área de Ecuador buscas hoteles?</p>
+                <p className="text-sm">{t.locationPrompt}</p>
               </div>
             ) : (
               messages.map((message) => (
@@ -199,7 +203,7 @@ export default function ChatWidget({
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Escribe tu mensaje..."
+                placeholder={t.placeholder}
                 disabled={isLoading}
                 className={`flex-1 px-3 py-2 rounded-md text-sm border focus:outline-none focus:ring-2 focus:ring-blue-500 ${currentTheme.input}`}
               />

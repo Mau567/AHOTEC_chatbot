@@ -1,8 +1,13 @@
 'use client'
 
 import ChatWidget from '@/components/ChatWidget'
+import LanguageToggle from '@/components/LanguageToggle'
+import { useLanguage } from '@/context/LanguageContext'
+import { translations } from '@/lib/translations'
 
 export default function WidgetDemo() {
+  const { language } = useLanguage()
+  const t = translations[language]
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -15,6 +20,7 @@ export default function WidgetDemo() {
               </div>
               <span className="ml-2 text-xl font-bold text-gray-900">AHOTEC Demo</span>
             </div>
+            <LanguageToggle />
           </div>
         </div>
       </div>
@@ -26,7 +32,7 @@ export default function WidgetDemo() {
             Chat Widget Demo
           </h1>
           <p className="text-xl text-gray-600">
-            Este es un ejemplo de cómo se vería el widget de chat integrado en el sitio web de AHOTEC
+            {language === 'es' ? 'Este es un ejemplo de cómo se vería el widget de chat integrado en el sitio web de AHOTEC' : 'This is an example of how the chat widget would look integrated on AHOTEC\'s website'}
           </p>
         </div>
 

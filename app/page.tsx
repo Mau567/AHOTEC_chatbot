@@ -2,7 +2,10 @@
 
 import { useState } from 'react'
 import { MessageCircle, Building, Users } from 'lucide-react'
+import LanguageToggle from '@/components/LanguageToggle'
 import HotelDetailModal from '@/components/HotelDetailModal'
+import { useLanguage } from '@/context/LanguageContext'
+import { translations } from '@/lib/translations'
 
 interface HotelFormData {
   hotelName: string
@@ -27,6 +30,8 @@ interface ChatMessage {
 }
 
 export default function Home() {
+  const { language } = useLanguage()
+  const t = translations[language]
   const [formData, setFormData] = useState<HotelFormData>({
     hotelName: '',
     region: '',
@@ -249,12 +254,13 @@ export default function Home() {
               <span className="ml-2 text-xl font-bold text-gray-900">AHOTEC</span>
             </div>
             <div className="flex items-center space-x-4">
-              <a 
-                href="/admin" 
+              <LanguageToggle />
+              <a
+                href="/admin"
                 className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
               >
                 <Users className="w-4 h-4 mr-1" />
-                Admin
+                {t.admin}
               </a>
             </div>
           </div>
@@ -266,7 +272,7 @@ export default function Home() {
           {/* Header */}
           <div className="text-center">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">AHOTEC - Asociación de Hoteles del Ecuador</h1>
-            <p className="text-gray-600">Descubre los mejores hoteles de Ecuador con nuestro asistente inteligente</p>
+            <p className="text-gray-600">{t.discover}</p>
           </div>
 
           {/* Success Message */}
@@ -289,7 +295,7 @@ export default function Home() {
 
           {/* Hotel Submission Form */}
           <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-6">Registra tu Hotel</h2>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-6">{t.registerHotel}</h2>
             <form onSubmit={handleFormSubmit} className="space-y-6">
               {/* Mensaje para el viajero */}
               <div>
@@ -534,7 +540,7 @@ export default function Home() {
                     type="text"
                     value={userLocation}
                     onChange={e => setUserLocation(e.target.value)}
-                    placeholder="Ciudad, región o dirección"
+                    placeholder={t.locationPrompt}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     onKeyDown={e => {
                       if (e.key === 'Enter' && userLocation.trim()) {
@@ -547,13 +553,13 @@ export default function Home() {
                     disabled={!userLocation.trim()}
                     onClick={() => setChatStep('tipo')}
                   >
-                    Siguiente
+                    {t.next}
                   </button>
                 </div>
               )}
               {chatStep === 'tipo' && (
                 <div className="text-center text-gray-700 mt-8">
-                  <p className="mb-4">¿Qué tipo de hotel buscas?</p>
+                  <p className="mb-4">{t.hotelTypePrompt}</p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                     {hotelTypeOptions.map(option => (
                       <button
@@ -574,9 +580,9 @@ export default function Home() {
               {/* Aquí se mostrarán los resultados en el siguiente paso */}
               {chatStep === 'resultados' && (
                 <div className="text-center text-gray-700 mt-8">
-                  {isLoading && <p>Buscando hoteles compatibles...</p>}
+                  {isLoading && <p>{t.searching}</p>}
                   {!isLoading && noResults && (
-                    <div className="text-red-600 font-semibold mt-4">Lo siento, no encontramos un hotel que coincida con tu búsqueda.</div>
+                    <div className="text-red-600 font-semibold mt-4">{t.noResults}</div>
                   )}
                   {!isLoading && hotelResults.length > 0 && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
@@ -601,7 +607,7 @@ export default function Home() {
                             </div>
                           )}
                           {hotel.bookingLink && (
-                            <a href={hotel.bookingLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline mt-2">Ver sitio web</a>
+                            <a href={hotel.bookingLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline mt-2">{t.viewSite}</a>
                           )}
                         </div>
                       ))}
@@ -622,7 +628,7 @@ export default function Home() {
                 value={userInput}
                 onChange={(e) => setUserInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Pregunta sobre hoteles en Ecuador..."
+                placeholder={t.placeholder}
                 disabled={isLoading}
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
               />
@@ -631,7 +637,7 @@ export default function Home() {
                 disabled={!userInput.trim() || isLoading}
                 className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
-                Enviar
+                {t.send}
               </button>
             </div>
           </div>
