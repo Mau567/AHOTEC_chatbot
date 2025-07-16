@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { MessageCircle, Building, Users } from 'lucide-react'
 import HotelDetailModal from '@/components/HotelDetailModal'
 
@@ -46,6 +46,7 @@ export default function Home() {
   const [userInput, setUserInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [formSubmitted, setFormSubmitted] = useState(false)
+  const successMsgRef = useRef<HTMLDivElement | null>(null)
   const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`)
 
   // 1. Estado para el flujo guiado del chatbot
@@ -185,7 +186,12 @@ export default function Home() {
           surroundings: Array(10).fill(''),
           hotelType: '',
         })
-        setOtherRecreation('')
+        // Hacer scroll al mensaje de éxito
+        setTimeout(() => {
+          if (successMsgRef.current) {
+            successMsgRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          }
+        }, 100)
       } else {
         alert('Error al enviar el formulario. Por favor intenta de nuevo.')
       }
@@ -311,7 +317,7 @@ export default function Home() {
 
           {/* Success Message */}
           {formSubmitted && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <div ref={successMsgRef} className="bg-green-50 border border-green-200 rounded-lg p-4">
               <div className="flex">
                 <div className="flex-shrink-0">
                   <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
