@@ -1,5 +1,6 @@
 import './globals.css'
 import type { Metadata } from 'next'
+import { LanguageProvider } from '@/lib/LanguageContext'
 
 export const metadata: Metadata = {
   title: 'AHOTECT Hotel Chatbot',
@@ -14,8 +15,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen bg-gray-50">
-        {children}
+        <LanguageProvider>{children}</LanguageProvider>
       </body>
     </html>
   )
-} 
+}

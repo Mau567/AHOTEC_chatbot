@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { CheckCircle, XCircle, Clock, Eye, Trash2, Edit } from 'lucide-react'
+import { useLanguage } from '@/lib/LanguageContext'
+import { translations } from '@/lib/translations'
 
 interface Hotel {
   id: string
@@ -25,6 +27,8 @@ interface Hotel {
 }
 
 export default function AdminDashboard() {
+  const { language } = useLanguage()
+  const t = translations[language]
   const [hotels, setHotels] = useState<Hotel[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED'>('ALL')
@@ -145,7 +149,7 @@ export default function AdminDashboard() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-sm">
-          <h2 className="text-2xl font-bold mb-6 text-center">Admin Login</h2>
+          <h2 className="text-2xl font-bold mb-6 text-center">{language === 'es' ? 'Ingreso de Admin' : 'Admin Login'}</h2>
           <form
             onSubmit={e => {
               e.preventDefault()
@@ -153,13 +157,13 @@ export default function AdminDashboard() {
                 setLoggedIn(true)
                 setLoginError('')
               } else {
-                setLoginError('Clave o contraseña incorrecta')
+                setLoginError(language === 'es' ? 'Clave o contraseña incorrecta' : 'Incorrect username or password')
               }
             }}
             className="space-y-4"
           >
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Clave</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{language === 'es' ? 'Clave' : 'Username'}</label>
               <input
                 type="text"
                 value={username}
@@ -170,7 +174,7 @@ export default function AdminDashboard() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{language === 'es' ? 'Contraseña' : 'Password'}</label>
               <input
                 type="password"
                 value={password}
@@ -184,7 +188,7 @@ export default function AdminDashboard() {
               type="submit"
               className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition-colors font-semibold"
             >
-              Entrar
+              {language === 'es' ? 'Entrar' : 'Login'}
             </button>
           </form>
         </div>

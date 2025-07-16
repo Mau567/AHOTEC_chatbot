@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { MessageCircle, X, Send, Building } from 'lucide-react'
+import { useLanguage } from '@/lib/LanguageContext'
+import { translations } from '@/lib/translations'
 
 interface ChatMessage {
   id: string
@@ -21,6 +23,8 @@ export default function ChatWidget({
   theme = 'light',
   position = 'bottom-right'
 }: ChatWidgetProps) {
+  const { language } = useLanguage()
+  const t = translations[language]
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [inputValue, setInputValue] = useState('')
@@ -199,7 +203,7 @@ export default function ChatWidget({
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Escribe tu mensaje..."
+                placeholder={language === 'es' ? 'Escribe tu mensaje...' : 'Type your message...'}
                 disabled={isLoading}
                 className={`flex-1 px-3 py-2 rounded-md text-sm border focus:outline-none focus:ring-2 focus:ring-blue-500 ${currentTheme.input}`}
               />

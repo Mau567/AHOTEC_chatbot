@@ -3,6 +3,9 @@
 import { useState } from 'react'
 import { MessageCircle, Building, Users } from 'lucide-react'
 import HotelDetailModal from '@/components/HotelDetailModal'
+import LanguageToggle from '@/components/LanguageToggle'
+import { useLanguage } from '@/lib/LanguageContext'
+import { translations } from '@/lib/translations'
 
 interface HotelFormData {
   hotelName: string
@@ -27,6 +30,8 @@ interface ChatMessage {
 }
 
 export default function Home() {
+  const { language } = useLanguage()
+  const t = translations[language]
   const [formData, setFormData] = useState<HotelFormData>({
     hotelName: '',
     region: '',
@@ -249,13 +254,14 @@ export default function Home() {
               <span className="ml-2 text-xl font-bold text-gray-900">AHOTEC</span>
             </div>
             <div className="flex items-center space-x-4">
-              <a 
-                href="/admin" 
+              <a
+                href="/admin"
                 className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
               >
                 <Users className="w-4 h-4 mr-1" />
-                Admin
+                {t.admin}
               </a>
+              <LanguageToggle />
             </div>
           </div>
         </div>
@@ -265,8 +271,8 @@ export default function Home() {
         <div className="max-w-4xl mx-auto space-y-8">
           {/* Header */}
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">AHOTEC - Asociación de Hoteles del Ecuador</h1>
-            <p className="text-gray-600">Descubre los mejores hoteles de Ecuador con nuestro asistente inteligente</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">{t.headerTitle}</h1>
+            <p className="text-gray-600">{t.headerSubtitle}</p>
           </div>
 
           {/* Success Message */}
@@ -280,7 +286,9 @@ export default function Home() {
                 </div>
                 <div className="ml-3">
                   <p className="text-sm text-green-800">
-                    ¡Hotel enviado exitosamente! Nuestro equipo lo revisará y te contactaremos pronto.
+                    {language === 'es'
+                      ? '¡Hotel enviado exitosamente! Nuestro equipo lo revisará y te contactaremos pronto.'
+                      : 'Hotel submitted successfully! Our team will review it and contact you soon.'}
                   </p>
                 </div>
               </div>
@@ -289,12 +297,12 @@ export default function Home() {
 
           {/* Hotel Submission Form */}
           <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-6">Registra tu Hotel</h2>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-6">{t.registerHotel}</h2>
             <form onSubmit={handleFormSubmit} className="space-y-6">
               {/* Mensaje para el viajero */}
               <div>
                 <label htmlFor="aboutMessage" className="block text-sm font-medium text-gray-700 mb-2">
-                  Cuando el usuario hace clic en "Sobre el hotel", ¿qué mensaje te gustaría darle al viajero?
+                  {t.aboutMessageLabel}
                 </label>
                 <textarea
                   id="aboutMessage"
@@ -303,14 +311,14 @@ export default function Home() {
                   onChange={handleFormChange}
                   rows={2}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Ejemplo: ¡Bienvenido a nuestro hotel, tu casa en Ecuador!"
+                  placeholder={t.aboutMessagePlaceholder}
                 />
               </div>
 
               {/* Áreas recreativas */}
               <div>
                 <label htmlFor="recreationAreas" className="block text-sm font-medium text-gray-700 mb-2">
-                  ¿Qué áreas recreativas ofrece el hotel?
+                  {t.recreationAreasLabel}
                 </label>
                 <input
                   type="text"
@@ -319,14 +327,14 @@ export default function Home() {
                   value={formData.recreationAreas}
                   onChange={handleFormChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Piscina, spa, gimnasio, juegos infantiles, etc."
+                  placeholder={t.recreationAreasPlaceholder}
                 />
               </div>
 
               {/* Localización en una frase */}
               <div>
                 <label htmlFor="locationPhrase" className="block text-sm font-medium text-gray-700 mb-2">
-                  Escribe en una frase la localización del hotel:
+                  {t.locationPhraseLabel}
                 </label>
                 <input
                   type="text"
@@ -335,14 +343,14 @@ export default function Home() {
                   value={formData.locationPhrase}
                   onChange={handleFormChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="En el corazón de Quito, cerca del parque La Carolina."
+                  placeholder={t.locationPhrasePlaceholder}
                 />
               </div>
 
               {/* Dirección */}
               <div>
                 <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
-                  Dirección
+                  {t.addressLabel}
                 </label>
                 <input
                   type="text"
@@ -351,14 +359,14 @@ export default function Home() {
                   value={formData.address}
                   onChange={handleFormChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Av. Amazonas N34-120 y Av. Naciones Unidas, Quito"
+                  placeholder={t.addressPlaceholder}
                 />
               </div>
 
               {/* Puntos importantes alrededor */}
               <div>
                 <label htmlFor="surroundings" className="block text-sm font-medium text-gray-700 mb-2">
-                  Puntos importantes al rededor del hotel. <span className="text-gray-500">Ejemplo: estadio de futbol, centro comercial, parque natural, barrio, montaña, cascada, etc.</span>
+                  {t.surroundingsLabel} <span className="text-gray-500">Ejemplo: estadio de futbol, centro comercial, parque natural, barrio, montaña, cascada, etc.</span>
                 </label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   {formData.surroundings.map((point, idx) => (
@@ -370,7 +378,7 @@ export default function Home() {
                       value={point}
                       onChange={e => handleSurroundingChange(idx, e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder={`Punto ${idx + 1}`}
+                      placeholder={`${t.pointPlaceholder} ${idx + 1}`}
                       required
                     />
                   ))}
@@ -380,7 +388,7 @@ export default function Home() {
               {/* Tipo de hotel */}
               <div>
                 <label htmlFor="hotelType" className="block text-sm font-medium text-gray-700 mb-2">
-                  Tipo de hotel
+                  {t.hotelTypeLabel}
                 </label>
                 <select
                   id="hotelType"
@@ -390,13 +398,13 @@ export default function Home() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   required
                 >
-                  <option value="">Selecciona una opción</option>
-                  <option value="Hotel 4 o 5 estrellas">Hotel 4 o 5 estrellas</option>
-                  <option value="Hotel 3 o menos estrellas">Hotel 3 o menos estrellas</option>
-                  <option value="Hostal / Bed and Breakfast">Hostal / Bed and Breakfast</option>
-                  <option value="Hostería de campo">Hostería de campo</option>
-                  <option value="Hacienda">Hacienda</option>
-                  <option value="Resort">Resort</option>
+                  <option value="">{t.selectOption}</option>
+                  <option value="Hotel 4 o 5 estrellas">{t.option1}</option>
+                  <option value="Hotel 3 o menos estrellas">{t.option2}</option>
+                  <option value="Hostal / Bed and Breakfast">{t.option3}</option>
+                  <option value="Hostería de campo">{t.option4}</option>
+                  <option value="Hacienda">{t.option5}</option>
+                  <option value="Resort">{t.option6}</option>
                 </select>
               </div>
 
@@ -404,7 +412,7 @@ export default function Home() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label htmlFor="hotelName" className="block text-sm font-medium text-gray-700 mb-2">
-                    Nombre del Hotel *
+                    {t.hotelNameLabel}
                   </label>
                   <input
                     type="text"
@@ -414,13 +422,13 @@ export default function Home() {
                     onChange={handleFormChange}
                     required
                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Nombre del hotel"
+                    placeholder={language === 'es' ? 'Nombre del hotel' : 'Hotel name'}
                   />
                 </div>
 
                 <div>
                   <label htmlFor="region" className="block text-sm font-medium text-gray-700 mb-2">
-                    Región *
+                    {t.regionLabel}
                   </label>
                   <input
                     type="text"
@@ -430,14 +438,14 @@ export default function Home() {
                     onChange={handleFormChange}
                     required
                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="ej. Costa, Sierra, Amazonía"
+                    placeholder={t.regionPlaceholder}
                   />
                 </div>
               </div>
 
               <div>
                 <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-2">
-                  Ciudad *
+                  {t.cityLabel}
                 </label>
                 <input
                   type="text"
@@ -447,13 +455,13 @@ export default function Home() {
                   onChange={handleFormChange}
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="ej. Quito, Guayaquil, Cuenca"
+                  placeholder={language === 'es' ? 'ej. Quito, Guayaquil, Cuenca' : 'e.g. Quito, Guayaquil, Cuenca'}
                 />
               </div>
 
               <div>
                 <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
-                  Descripción *
+                  {language === 'es' ? 'Descripción *' : 'Description *'}
                 </label>
                 <textarea
                   id="description"
@@ -463,14 +471,14 @@ export default function Home() {
                   required
                   rows={4}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Describe las características únicas de tu hotel"
+                  placeholder={language === 'es' ? 'Describe las características únicas de tu hotel' : 'Describe the unique features of your hotel'}
                 />
               </div>
 
               {/* Link a hotel */}
               <div>
                 <label htmlFor="bookingLink" className="block text-sm font-medium text-gray-700 mb-2">
-                  Link a hotel
+                  {language === 'es' ? 'Link a hotel' : 'Hotel link'}
                 </label>
                 <input
                   type="url"
@@ -479,13 +487,17 @@ export default function Home() {
                   value={formData.bookingLink}
                   onChange={handleFormChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="https://tu-sitio-web.com/reservas"
+                  placeholder={language === 'es' ? 'https://tu-sitio-web.com/reservas' : 'https://your-website.com/book'}
                 />
               </div>
 
               <div>
                 <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-2">
-                  Foto del hotel <span className="text-red-500">*</span>
+                  {language === 'es' ? (
+                    <>Foto del hotel <span className="text-red-500">*</span></>
+                  ) : (
+                    <>Hotel photo <span className="text-red-500">*</span></>
+                  )}
                 </label>
                 <input
                   type="file"
@@ -512,7 +524,7 @@ export default function Home() {
                   type="submit"
                   className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
                 >
-                  Enviar Solicitud
+                  {t.submitLabel}
                 </button>
               </div>
             </form>
@@ -522,19 +534,19 @@ export default function Home() {
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-2xl font-semibold text-gray-900 mb-6 flex items-center">
               <MessageCircle className="w-6 h-6 mr-2 text-blue-600" />
-              Asistente de Hoteles
+              {t.assistantTitle}
             </h2>
             
             {/* Chat Messages */}
             <div className="h-96 overflow-y-auto border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50">
               {chatStep === 'ubicacion' && (
                 <div className="text-center text-gray-700 mt-8">
-                  <p className="mb-4">¿Dónde te gustaría buscar un hotel?</p>
+                  <p className="mb-4">{t.stepLocation}</p>
                   <input
                     type="text"
                     value={userLocation}
                     onChange={e => setUserLocation(e.target.value)}
-                    placeholder="Ciudad, región o dirección"
+                    placeholder={t.locationPlaceholder}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     onKeyDown={e => {
                       if (e.key === 'Enter' && userLocation.trim()) {
@@ -547,13 +559,13 @@ export default function Home() {
                     disabled={!userLocation.trim()}
                     onClick={() => setChatStep('tipo')}
                   >
-                    Siguiente
+                    {t.next}
                   </button>
                 </div>
               )}
               {chatStep === 'tipo' && (
                 <div className="text-center text-gray-700 mt-8">
-                  <p className="mb-4">¿Qué tipo de hotel buscas?</p>
+                  <p className="mb-4">{t.stepType}</p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                     {hotelTypeOptions.map(option => (
                       <button
@@ -574,9 +586,9 @@ export default function Home() {
               {/* Aquí se mostrarán los resultados en el siguiente paso */}
               {chatStep === 'resultados' && (
                 <div className="text-center text-gray-700 mt-8">
-                  {isLoading && <p>Buscando hoteles compatibles...</p>}
+                  {isLoading && <p>{t.searching}</p>}
                   {!isLoading && noResults && (
-                    <div className="text-red-600 font-semibold mt-4">Lo siento, no encontramos un hotel que coincida con tu búsqueda.</div>
+                    <div className="text-red-600 font-semibold mt-4">{t.noResults}</div>
                   )}
                   {!isLoading && hotelResults.length > 0 && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
@@ -592,16 +604,16 @@ export default function Home() {
                           <h3 className="text-xl font-bold mb-1">{hotel.name}</h3>
                           <div className="text-sm text-gray-600 mb-2">{hotel.hotelType}</div>
                           <div className="text-gray-800 mb-2 line-clamp-3">{hotel.description}</div>
-                          {hotel.address && <div className="text-gray-500 text-sm mb-1"><b>Dirección:</b> {hotel.address}</div>}
-                          {hotel.locationPhrase && <div className="text-gray-500 text-sm mb-1"><b>Ubicación:</b> {hotel.locationPhrase}</div>}
-                          {hotel.recreationAreas && <div className="text-gray-500 text-sm mb-1"><b>Áreas recreativas:</b> {hotel.recreationAreas}</div>}
+                          {hotel.address && <div className="text-gray-500 text-sm mb-1"><b>{t.addressLabel}:</b> {hotel.address}</div>}
+                          {hotel.locationPhrase && <div className="text-gray-500 text-sm mb-1"><b>{language === 'es' ? 'Ubicación' : 'Location'}:</b> {hotel.locationPhrase}</div>}
+                          {hotel.recreationAreas && <div className="text-gray-500 text-sm mb-1"><b>{t.recreationAreasLabel}:</b> {hotel.recreationAreas}</div>}
                           {hotel.surroundings && hotel.surroundings.length > 0 && (
                             <div className="text-gray-500 text-sm mb-1">
-                              <b>Alrededores:</b> {hotel.surroundings.join(', ')}
+                              <b>{t.surroundingsTitle}:</b> {hotel.surroundings.join(', ')}
                             </div>
                           )}
                           {hotel.bookingLink && (
-                            <a href={hotel.bookingLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline mt-2">Ver sitio web</a>
+                            <a href={hotel.bookingLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline mt-2">{t.viewWebsite}</a>
                           )}
                         </div>
                       ))}
@@ -622,7 +634,7 @@ export default function Home() {
                 value={userInput}
                 onChange={(e) => setUserInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Pregunta sobre hoteles en Ecuador..."
+                placeholder={t.askPlaceholder}
                 disabled={isLoading}
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
               />
@@ -631,7 +643,7 @@ export default function Home() {
                 disabled={!userInput.trim() || isLoading}
                 className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
-                Enviar
+                {t.send}
               </button>
             </div>
           </div>
