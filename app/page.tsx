@@ -12,7 +12,7 @@ interface HotelFormData {
   bookingLink: string // Renombrar a linkHotel
   image?: File | null
   aboutMessage: string // Mensaje para el viajero
-  recreationAreas: string // Áreas recreativas
+  recreationAreas: string[] // Áreas recreativas ahora es array
   locationPhrase: string // Localización en una frase
   address: string // Dirección
   surroundings: string[] // 10 puntos importantes alrededor
@@ -35,7 +35,7 @@ export default function Home() {
     bookingLink: '',
     image: null,
     aboutMessage: '',
-    recreationAreas: '',
+    recreationAreas: [], // Cambiado a array
     locationPhrase: '',
     address: '',
     surroundings: Array(10).fill(''),
@@ -66,6 +66,32 @@ export default function Home() {
     'Hacienda',
     'Resort'
   ]
+
+  // Opciones de áreas recreativas
+  const recreationOptions = [
+    'Restaurante',
+    'Bar',
+    'Instalaciones para conferencias',
+    'Generador eléctrico',
+    'WiFi gratuito',
+    'Parqueadero propio',
+    'Gimnasio',
+    'Sala de juegos',
+    'Juegos infantiles',
+    'SPA',
+    'Mascotas permitidas',
+    'Estación de carga para coches eléctricos',
+    'Traslado al aeropuerto',
+    'Acceso a la playa: Cerca de la playa',
+    'Acceso a la playa: Directamente en la playa',
+    'Jardines privados',
+    'Piscina al aire libre',
+    'Piscina cubierta',
+    'Cancha de Tenis',
+    'Cancha de fútbol',
+    'Cancha de Volleyball',
+  ]
+  const [otherRecreation, setOtherRecreation] = useState('')
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -98,6 +124,18 @@ export default function Home() {
     }))
   }
 
+  const handleRecreationChange = (option: string, checked: boolean) => {
+    setFormData(prev => {
+      let newAreas = prev.recreationAreas
+      if (checked) {
+        newAreas = [...newAreas, option]
+      } else {
+        newAreas = newAreas.filter(a => a !== option)
+      }
+      return { ...prev, recreationAreas: newAreas }
+    })
+  }
+
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     // Validar que los 10 puntos estén llenos
@@ -105,7 +143,8 @@ export default function Home() {
       alert('Por favor ingresa los 10 puntos importantes alrededor del hotel.')
       return
     }
-    
+    // Unir recreationAreas en string para backend
+    let recreationAreasString = formData.recreationAreas.join(', ')
     try {
       const form = new FormData()
       form.append('name', formData.hotelName)
@@ -118,7 +157,7 @@ export default function Home() {
       }
       form.append('surroundings', formData.surroundings.join(','))
       form.append('aboutMessage', formData.aboutMessage)
-      form.append('recreationAreas', formData.recreationAreas)
+      form.append('recreationAreas', recreationAreasString)
       form.append('locationPhrase', formData.locationPhrase)
       form.append('address', formData.address)
       form.append('hotelType', formData.hotelType)
@@ -140,12 +179,13 @@ export default function Home() {
           bookingLink: '',
           image: null,
           aboutMessage: '',
-          recreationAreas: '',
+          recreationAreas: [],
           locationPhrase: '',
           address: '',
           surroundings: Array(10).fill(''),
           hotelType: '',
         })
+        setOtherRecreation('')
       } else {
         alert('Error al enviar el formulario. Por favor intenta de nuevo.')
       }
@@ -309,18 +349,22 @@ export default function Home() {
 
               {/* Áreas recreativas */}
               <div>
-                <label htmlFor="recreationAreas" className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   ¿Qué áreas recreativas ofrece el hotel?
                 </label>
-                <input
-                  type="text"
-                  id="recreationAreas"
-                  name="recreationAreas"
-                  value={formData.recreationAreas}
-                  onChange={handleFormChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Piscina, spa, gimnasio, juegos infantiles, etc."
-                />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {recreationOptions.map(option => (
+                    <label key={option} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={formData.recreationAreas.includes(option)}
+                        onChange={e => handleRecreationChange(option, e.target.checked)}
+                        className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+                      />
+                      <span>{option}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
 
               {/* Localización en una frase */}
