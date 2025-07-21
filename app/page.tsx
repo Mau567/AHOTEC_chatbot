@@ -129,6 +129,14 @@ export default function Home() {
   const [noResults, setNoResults] = useState(false)
   const [selectedHotel, setSelectedHotel] = useState<any | null>(null)
 
+  // Add state for free-form chatbot
+  const [freeInput, setFreeInput] = useState('')
+  const [freeIsLoading, setFreeIsLoading] = useState(false)
+  const [freeBotMessage, setFreeBotMessage] = useState('')
+  const [freeHotelResults, setFreeHotelResults] = useState<any[]>([])
+  const [freeNoResults, setFreeNoResults] = useState(false)
+  const [freeSelectedHotel, setFreeSelectedHotel] = useState<any | null>(null)
+
   const hotelTypeOptions = [
     'Hotel 4 o 5 estrellas',
     'Hotel 3 o menos estrellas',
@@ -379,6 +387,37 @@ export default function Home() {
     setNoResults(false)
     setSelectedHotel(null)
     setUserInput('')
+  }
+
+  const handleSendFreeMessage = async () => {
+    if (!freeInput.trim()) return
+    setFreeIsLoading(true)
+    setFreeBotMessage('')
+    setFreeHotelResults([])
+    setFreeNoResults(false)
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: freeInput,
+          sessionId: `free_${sessionId}`,
+          lang: language
+        })
+      })
+      const data = await response.json()
+      setFreeBotMessage(data.message)
+      if (Array.isArray(data.hotels) && data.hotels.length > 0) {
+        setFreeHotelResults(data.hotels)
+      } else {
+        setFreeNoResults(true)
+      }
+      setFreeIsLoading(false)
+    } catch (error) {
+      setFreeBotMessage(language === 'en' ? 'Sorry, there was a technical problem.' : 'Lo siento, hay un problema técnico.')
+      setFreeNoResults(true)
+      setFreeIsLoading(false)
+    }
   }
 
   return (
@@ -784,24 +823,74 @@ export default function Home() {
               <HotelDetailModal hotel={selectedHotel} onClose={() => setSelectedHotel(null)} />
             )}
 
-            {/* Chat Input */}
-            <div className="flex space-x-2">
-              <input
-                type="text"
-                value={userInput}
-                onChange={(e) => setUserInput(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder={t.chatPlaceholder}
-                disabled={isLoading}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
-              />
-              <button
-                onClick={handleSendMessage}
-                disabled={!userInput.trim() || isLoading}
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
-              >
-                {t.sendButton}
-              </button>
+            {/* Free-form Chatbot */}
+            <div className="bg-gray-50 border border-gray-200 rounded-lg shadow p-6 mt-8">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-6 flex items-center">
+                <MessageCircle className="w-6 h-6 mr-2 text-blue-600" />
+                {language === 'es' ? 'Chatbot libre' : 'Free-form Chatbot'}
+              </h2>
+              <div className="flex flex-col items-center">
+                {/* Update the free-form chatbot input/button row: */}
+                <div className="w-full flex space-x-2 mb-4">
+                  <input
+                    type="text"
+                    value={freeInput}
+                    onChange={e => setFreeInput(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') handleSendFreeMessage() }}
+                    placeholder={t.chatPlaceholder}
+                    disabled={freeIsLoading}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
+                  />
+                  <button
+                    onClick={handleSendFreeMessage}
+                    disabled={!freeInput.trim() || freeIsLoading}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  >
+                    {t.sendButton}
+                  </button>
+                </div>
+                {freeIsLoading && <p className="text-center text-gray-500 w-full">{t.loadingMessage}</p>}
+                {freeBotMessage && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 text-gray-900 text-left w-full max-w-xl">
+                    {freeBotMessage}
+                  </div>
+                )}
+                {freeNoResults && !freeIsLoading && (
+                  <div className="text-red-600 font-semibold mt-4 text-center w-full">{t.noResultsMessage}</div>
+                )}
+                {freeHotelResults.length > 0 && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4 w-full">
+                    {freeHotelResults.map((hotel, idx) => (
+                      <div
+                        key={hotel.id || idx}
+                        onClick={() => setFreeSelectedHotel(hotel)}
+                        className="bg-white border rounded-lg shadow p-4 flex flex-col items-start text-left cursor-pointer hover:shadow-lg transition"
+                      >
+                        {hotel.imageUrl && (
+                          <img src={hotel.imageUrl} alt={hotel.name} className="w-full h-40 object-cover rounded mb-3" />
+                        )}
+                        <h3 className="text-xl font-bold mb-1">{hotel.name}</h3>
+                        <div className="text-sm text-gray-600 mb-2">{hotel.hotelType}</div>
+                        <div className="text-gray-800 mb-2 line-clamp-3">{hotel.description}</div>
+                        {hotel.address && <div className="text-gray-500 text-sm mb-1"><b>Dirección:</b> {hotel.address}</div>}
+                        {hotel.locationPhrase && <div className="text-gray-500 text-sm mb-1"><b>Ubicación:</b> {hotel.locationPhrase}</div>}
+                        {hotel.recreationAreas && <div className="text-gray-500 text-sm mb-1"><b>Áreas recreativas:</b> {hotel.recreationAreas}</div>}
+                        {hotel.surroundings && hotel.surroundings.length > 0 && (
+                          <div className="text-gray-500 text-sm mb-1">
+                            <b>Alrededores:</b> {hotel.surroundings.join(', ')}
+                          </div>
+                        )}
+                        {hotel.bookingLink && (
+                          <a href={hotel.bookingLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline mt-2">{t.bookingLinkLabel}</a>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {freeSelectedHotel && (
+                  <HotelDetailModal hotel={freeSelectedHotel} onClose={() => setFreeSelectedHotel(null)} />
+                )}
+              </div>
             </div>
           </div>
         </div>

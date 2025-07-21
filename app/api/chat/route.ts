@@ -1,22 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { getHotelsBySemanticLocation } from '@/lib/mistral'
+import { getHotelRecommendations, getHotelsBySemanticLocation } from '@/lib/mistral'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { message, sessionId } = body
+    const { message, sessionId, lang = 'es' } = body
 
-    // Extraer ubicación y tipo de hotel del mensaje
-    // Esperamos el formato: "Ubicación: ...\nTipo de hotel: ..."
-    let location = ''
-    let hotelType = ''
+    // Detect guided search
     const locationMatch = message.match(/Ubicación:\s*(.*)/i)
     const typeMatch = message.match(/Tipo de hotel:\s*(.*)/i)
+    let location = ''
+    let hotelType = ''
     if (locationMatch) location = locationMatch[1].trim()
     if (typeMatch) hotelType = typeMatch[1].trim()
 
-    // Buscar todos los hoteles aprobados y pagados que coincidan con el tipo
+    // Buscar todos los hoteles aprobados y pagados (filtrar por tipo si aplica)
     const allHotels = await prisma.hotel.findMany({
       where: {
         status: 'APPROVED',
@@ -25,10 +24,20 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // Usar IA para filtrar por ubicación semántica
+    let chatbotMessage = ''
     let finalHotels = allHotels
-    if (location && allHotels.length > 0) {
-      const aiHotelIds = await getHotelsBySemanticLocation(location, allHotels)
+
+    if (location && hotelType) {
+      // Guided search: use semantic location filter
+      const aiHotelIds = await getHotelsBySemanticLocation(location, allHotels, lang)
+      finalHotels = allHotels.filter(hotel => aiHotelIds.includes(hotel.id))
+      chatbotMessage = lang === 'en'
+        ? (finalHotels.length > 0 ? 'Here are the hotels that match your search.' : 'Sorry, no hotels matched your search.')
+        : (finalHotels.length > 0 ? 'Estos son los hoteles que coinciden con tu búsqueda.' : 'Lo siento, no se encontraron hoteles compatibles.')
+    } else {
+      // Free-form question: use AI for both answer and hotel selection
+      chatbotMessage = await getHotelRecommendations(message, allHotels, lang)
+      const aiHotelIds = await getHotelsBySemanticLocation(message, allHotels, lang)
       finalHotels = allHotels.filter(hotel => aiHotelIds.includes(hotel.id))
     }
 
@@ -45,7 +54,7 @@ export async function POST(request: NextRequest) {
 
     const botMessage = {
       role: 'assistant',
-      content: finalHotels.length > 0 ? 'Hoteles encontrados' : 'No se encontraron hoteles compatibles',
+      content: chatbotMessage,
       timestamp: new Date().toISOString()
     }
 
@@ -65,8 +74,9 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Devolver los hoteles compatibles (array)
+    // Devolver el mensaje del chatbot y los hoteles compatibles (array)
     return NextResponse.json({ 
+      message: chatbotMessage,
       hotels: finalHotels,
       timestamp: new Date().toISOString()
     })
