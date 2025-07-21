@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react'
 import { MessageCircle, Building, Users } from 'lucide-react'
 import HotelDetailModal from '@/components/HotelDetailModal'
+import ReactMarkdown from 'react-markdown'
 
 interface HotelFormData {
   hotelName: string
@@ -132,7 +133,11 @@ export default function Home() {
   // Add state for free-form chatbot
   const [freeInput, setFreeInput] = useState('')
   const [freeIsLoading, setFreeIsLoading] = useState(false)
-  const [freeBotMessage, setFreeBotMessage] = useState('')
+  // Set initial freeBotMessage state to a friendly welcome message
+  const [freeBotMessage, setFreeBotMessage] = useState(language === 'es'
+    ? '¡Hola! 😊 Soy el asistente de hoteles de AHOTEC. ¿Dónde te gustaría hospedarte? 🏨✨'
+    : "Hello! 😊 I'm the AHOTEC hotel assistant. Where would you like to stay? 🏨✨"
+  )
   const [freeHotelResults, setFreeHotelResults] = useState<any[]>([])
   const [freeNoResults, setFreeNoResults] = useState(false)
   const [freeSelectedHotel, setFreeSelectedHotel] = useState<any | null>(null)
@@ -852,7 +857,7 @@ export default function Home() {
                 {freeIsLoading && <p className="text-center text-gray-500 w-full">{t.loadingMessage}</p>}
                 {freeBotMessage && (
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 text-gray-900 text-left w-full max-w-xl">
-                    {freeBotMessage}
+                    <ReactMarkdown>{freeBotMessage}</ReactMarkdown>
                   </div>
                 )}
                 {freeNoResults && !freeIsLoading && (
