@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { getHotelRecommendations } from '@/lib/mistral'
+import { getHotelsBySemanticLocation } from '@/lib/mistral'
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     if (locationMatch) location = locationMatch[1].trim()
     if (typeMatch) hotelType = typeMatch[1].trim()
 
-    // Buscar todos los hoteles aprobados y pagados
+    // Buscar todos los hoteles aprobados y pagados que coincidan con el tipo
     const allHotels = await prisma.hotel.findMany({
       where: {
         status: 'APPROVED',
@@ -25,26 +25,12 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    const locationLower = location.toLowerCase()
-    // Considerar coincidencia si el término aparece en cualquier campo relevante o en los alrededores
-    const finalHotels = allHotels.filter(hotel => {
-      const fields = [
-        hotel.name,
-        hotel.city,
-        hotel.region,
-        hotel.address,
-        hotel.locationPhrase
-      ]
-      // Coincidencia en campos principales
-      if (fields.some(f => typeof f === 'string' && f.toLowerCase().includes(locationLower))) {
-        return true
-      }
-      // Coincidencia en alrededores
-      if (hotel.surroundings && Array.isArray(hotel.surroundings)) {
-        return hotel.surroundings.some(s => s.toLowerCase().includes(locationLower))
-      }
-      return false
-    })
+    // Usar IA para filtrar por ubicación semántica
+    let finalHotels = allHotels
+    if (location && allHotels.length > 0) {
+      const aiHotelIds = await getHotelsBySemanticLocation(location, allHotels)
+      finalHotels = allHotels.filter(hotel => aiHotelIds.includes(hotel.id))
+    }
 
     // Guardar la sesión como antes
     const existingSession = await prisma.chatSession.findUnique({
