@@ -2,7 +2,7 @@ import './globals.css'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'AHOTECT Hotel Chatbot',
+  title: 'AHOTEC Hotel Chatbot',
   description: 'Hotel submission form and chatbot interface',
 }
 
