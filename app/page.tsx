@@ -4,6 +4,7 @@ import { useState, useRef } from 'react'
 import { MessageCircle, Building, Users } from 'lucide-react'
 import HotelDetailModal from '@/components/HotelDetailModal'
 import ReactMarkdown from 'react-markdown'
+import ChatWidget from '@/components/ChatWidget'
 
 interface HotelFormData {
   hotelName: string
@@ -906,6 +907,7 @@ export default function Home() {
           </div>
         </div>
       </div>
+      <ChatWidget apiUrl="/api/chat" theme="light" position="bottom-right" />
     </div>
   )
 } 
