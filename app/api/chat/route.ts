@@ -24,44 +24,52 @@ export async function POST(request: NextRequest) {
       }
     })
 
+    // List of known cities and regions (add more as needed)
+    const knownCities = ['quito', 'guayaquil', 'cuenca', 'manta', 'esmeraldas', 'puembo']
+    const knownRegions = ['costa', 'sierra', 'amazonía', 'galápagos']
+
     let chatbotMessage = ''
     let finalHotels = allHotels
-
-    // If location is present, filter hotels by city or region before calling the AI
     let filteredHotels = allHotels
+    let useCityRegionFilter = false
     if (location) {
-      const locLower = location.toLowerCase()
-      filteredHotels = allHotels.filter(hotel =>
-        (hotel.city && hotel.city.toLowerCase().includes(locLower)) ||
-        (hotel.region && hotel.region.toLowerCase().includes(locLower))
-      )
+      const locLower = location.toLowerCase().trim()
+      if (knownCities.includes(locLower) || knownRegions.includes(locLower)) {
+        filteredHotels = allHotels.filter(hotel =>
+          (hotel.city && hotel.city.toLowerCase().includes(locLower)) ||
+          (hotel.region && hotel.region.toLowerCase().includes(locLower))
+        )
+        useCityRegionFilter = true
+      }
     }
 
     if (location && hotelType) {
-      // Guided search: use semantic location filter, but only with hotels in the city/region
-      if (filteredHotels.length === 0) {
+      // Guided search: use semantic location filter
+      if (useCityRegionFilter && filteredHotels.length === 0) {
         chatbotMessage = lang === 'en'
           ? 'Sorry, no hotels found in that city or region.'
           : 'Lo siento, no se encontraron hoteles en esa ciudad o región.'
         finalHotels = []
       } else {
-        const aiHotelIds = await getHotelsBySemanticLocation(location, filteredHotels, lang)
-        finalHotels = filteredHotels.filter(hotel => aiHotelIds.includes(hotel.id))
+        const hotelsToSearch = useCityRegionFilter ? filteredHotels : allHotels
+        const aiHotelIds = await getHotelsBySemanticLocation(location, hotelsToSearch, lang)
+        finalHotels = hotelsToSearch.filter(hotel => aiHotelIds.includes(hotel.id))
         chatbotMessage = lang === 'en'
           ? (finalHotels.length > 0 ? 'Here are the hotels that match your search.' : 'Sorry, no hotels matched your search.')
           : (finalHotels.length > 0 ? 'Estos son los hoteles que coinciden con tu búsqueda.' : 'Lo siento, no se encontraron hoteles compatibles.')
       }
     } else if (location) {
-      // Free-form: filter by city/region before AI
-      if (filteredHotels.length === 0) {
+      // Free-form: filter by city/region only if exact match
+      if (useCityRegionFilter && filteredHotels.length === 0) {
         chatbotMessage = lang === 'en'
           ? 'Sorry, no hotels found in that city or region.'
           : 'Lo siento, no se encontraron hoteles en esa ciudad o región.'
         finalHotels = []
       } else {
-        chatbotMessage = await getHotelRecommendations(message, filteredHotels, lang)
-        const aiHotelIds = await getHotelsBySemanticLocation(message, filteredHotels, lang)
-        finalHotels = filteredHotels.filter(hotel => aiHotelIds.includes(hotel.id))
+        const hotelsToSearch = useCityRegionFilter ? filteredHotels : allHotels
+        chatbotMessage = await getHotelRecommendations(message, hotelsToSearch, lang)
+        const aiHotelIds = await getHotelsBySemanticLocation(message, hotelsToSearch, lang)
+        finalHotels = hotelsToSearch.filter(hotel => aiHotelIds.includes(hotel.id))
       }
     } else {
       // No location: use all hotels
