@@ -15,67 +15,50 @@ export async function POST(request: NextRequest) {
     if (locationMatch) location = locationMatch[1].trim()
     if (typeMatch) hotelType = typeMatch[1].trim()
 
-    // Buscar todos los hoteles aprobados y pagados (filtrar por tipo si aplica)
-    const allHotels = await prisma.hotel.findMany({
+    // 1. Filtrar primero por tipo de hotel (exacto, insensible a mayúsculas)
+    const filteredByType = await prisma.hotel.findMany({
       where: {
         status: 'APPROVED',
         isPaid: true,
-        hotelType: hotelType ? { contains: hotelType, mode: 'insensitive' } : undefined,
+        hotelType: hotelType ? { equals: hotelType, mode: 'insensitive' } : undefined,
       }
     })
 
-    // List of known cities and regions (add more as needed)
-    const knownCities = ['quito', 'guayaquil', 'cuenca', 'manta', 'esmeraldas', 'puembo']
-    const knownRegions = ['costa', 'sierra', 'amazonía', 'galápagos']
-
     let chatbotMessage = ''
-    let finalHotels = allHotels
-    let filteredHotels = allHotels
-    let useCityRegionFilter = false
-    if (location) {
-      const locLower = location.toLowerCase().trim()
-      if (knownCities.includes(locLower) || knownRegions.includes(locLower)) {
-        filteredHotels = allHotels.filter(hotel =>
-          (hotel.city && hotel.city.toLowerCase().includes(locLower)) ||
-          (hotel.region && hotel.region.toLowerCase().includes(locLower))
-        )
-        useCityRegionFilter = true
-      }
-    }
+    let finalHotels = filteredByType
 
+    // 2. Si hay ubicación y tipo, usar AI SOLO con los hoteles filtrados por tipo
     if (location && hotelType) {
-      // Guided search: use semantic location filter
-      if (useCityRegionFilter && filteredHotels.length === 0) {
+      if (filteredByType.length === 0) {
         chatbotMessage = lang === 'en'
-          ? 'Sorry, no hotels found in that city or region.'
-          : 'Lo siento, no se encontraron hoteles en esa ciudad o región.'
+          ? 'Sorry, no hotels found for that type.'
+          : 'Lo siento, no se encontraron hoteles de ese tipo.'
         finalHotels = []
       } else {
-        const hotelsToSearch = useCityRegionFilter ? filteredHotels : allHotels
-        const aiHotelIds = await getHotelsBySemanticLocation(location, hotelsToSearch, lang)
-        finalHotels = hotelsToSearch.filter(hotel => aiHotelIds.includes(hotel.id))
+        const aiHotelIds = await getHotelsBySemanticLocation(location, filteredByType, lang)
+        finalHotels = filteredByType.filter(hotel => aiHotelIds.includes(hotel.id))
         chatbotMessage = lang === 'en'
           ? (finalHotels.length > 0 ? 'Here are the hotels that match your search.' : 'Sorry, no hotels matched your search.')
           : (finalHotels.length > 0 ? 'Estos son los hoteles que coinciden con tu búsqueda.' : 'Lo siento, no se encontraron hoteles compatibles.')
       }
-    } else if (location) {
-      // Free-form: filter by city/region only if exact match
-      if (useCityRegionFilter && filteredHotels.length === 0) {
-        chatbotMessage = lang === 'en'
-          ? 'Sorry, no hotels found in that city or region.'
-          : 'Lo siento, no se encontraron hoteles en esa ciudad o región.'
-        finalHotels = []
-      } else {
-        const hotelsToSearch = useCityRegionFilter ? filteredHotels : allHotels
-        chatbotMessage = await getHotelRecommendations(message, hotelsToSearch, lang)
-        const aiHotelIds = await getHotelsBySemanticLocation(message, hotelsToSearch, lang)
-        finalHotels = hotelsToSearch.filter(hotel => aiHotelIds.includes(hotel.id))
-      }
+    } else if (hotelType) {
+      // Si solo hay tipo, mostrar todos los hoteles de ese tipo
+      chatbotMessage = lang === 'en'
+        ? (filteredByType.length > 0 ? 'Here are the hotels of the selected type.' : 'Sorry, no hotels found for that type.')
+        : (filteredByType.length > 0 ? 'Estos son los hoteles de ese tipo.' : 'Lo siento, no se encontraron hoteles de ese tipo.')
+      finalHotels = filteredByType
     } else {
-      // No location: use all hotels
-      chatbotMessage = await getHotelRecommendations(message, allHotels, lang)
-      const aiHotelIds = await getHotelsBySemanticLocation(message, allHotels, lang)
-      finalHotels = allHotels.filter(hotel => aiHotelIds.includes(hotel.id))
+      // Si no hay tipo, usar todos los hoteles aprobados y pagados
+      const allHotels = await prisma.hotel.findMany({
+        where: {
+          status: 'APPROVED',
+          isPaid: true
+        }
+      })
+      chatbotMessage = lang === 'en'
+        ? (allHotels.length > 0 ? 'Here are all available hotels.' : 'Sorry, no hotels found.')
+        : (allHotels.length > 0 ? 'Estos son todos los hoteles disponibles.' : 'Lo siento, no se encontraron hoteles.')
+      finalHotels = allHotels
     }
 
     // Guardar la sesión como antes
