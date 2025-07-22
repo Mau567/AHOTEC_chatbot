@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { MessageCircle, X, Building } from 'lucide-react'
 import HotelDetailModal from '@/components/HotelDetailModal'
+import MapModal from '@/components/MapModal'
 
 const hotelTypeOptions = [
   'Hotel 4 o 5 estrellas',
@@ -31,6 +32,7 @@ export default function ChatWidget({
   const [isLoading, setIsLoading] = useState(false)
   const [noResults, setNoResults] = useState(false)
   const [selectedHotel, setSelectedHotel] = useState<any | null>(null)
+  const [isMapOpen, setIsMapOpen] = useState(false)
   const [sessionId] = useState(() => `widget_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`)
 
   const t = {
@@ -43,6 +45,7 @@ export default function ChatWidget({
     loadingMessage: language === 'es' ? 'Buscando hoteles compatibles...' : 'Searching for compatible hotels...',
     noResultsMessage: language === 'es' ? 'Lo siento, no encontramos un hotel que coincida con tu búsqueda.' : 'Sorry, we couldn\'t find a hotel that matches your search.',
     resetButton: language === 'es' ? 'Reiniciar búsqueda' : 'Reset search',
+    mapButton: language === 'es' ? 'Ver mapa' : 'View map',
     chatPlaceholder: language === 'es' ? 'Ciudad, región o dirección' : 'City, region or address',
     sendButton: language === 'es' ? 'Enviar' : 'Send',
     bookingLinkLabel: language === 'es' ? 'Link a hotel' : 'Hotel link',
@@ -214,8 +217,16 @@ export default function ChatWidget({
               </div>
             )}
           </div>
-          {/* Reset Button */}
-          <div className="p-2 border-t border-gray-200 flex justify-end">
+          {/* Footer Buttons */}
+          <div className="p-2 border-t border-gray-200 flex justify-between">
+            {step === 'resultados' && hotelResults.length > 0 && (
+              <button
+                onClick={() => setIsMapOpen(true)}
+                className="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 transition-colors text-xs"
+              >
+                {t.mapButton}
+              </button>
+            )}
             <button
               onClick={handleChatReset}
               className="bg-gray-200 text-gray-700 px-3 py-1 rounded-md hover:bg-gray-300 transition-colors text-xs"
@@ -229,6 +240,12 @@ export default function ChatWidget({
       {selectedHotel && (
         <HotelDetailModal hotel={selectedHotel} onClose={() => setSelectedHotel(null)} />
       )}
+      {isMapOpen && (
+        <MapModal
+          highlightedIds={hotelResults.map(h => h.id)}
+          onClose={() => setIsMapOpen(false)}
+        />
+      )}
     </div>
   )
-} 
+}
