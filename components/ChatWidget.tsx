@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { MessageCircle, X, Building } from 'lucide-react'
+import { MessageCircle, X, Building, Map as MapIcon } from 'lucide-react'
 import HotelDetailModal from '@/components/HotelDetailModal'
+import MapModal from '@/components/MapModal'
 
 const hotelTypeOptions = [
   'Hotel 4 o 5 estrellas',
@@ -31,6 +32,7 @@ export default function ChatWidget({
   const [isLoading, setIsLoading] = useState(false)
   const [noResults, setNoResults] = useState(false)
   const [selectedHotel, setSelectedHotel] = useState<any | null>(null)
+  const [showMap, setShowMap] = useState(false)
   const [sessionId] = useState(() => `widget_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`)
 
   const t = {
@@ -43,6 +45,7 @@ export default function ChatWidget({
     loadingMessage: language === 'es' ? 'Buscando hoteles compatibles...' : 'Searching for compatible hotels...',
     noResultsMessage: language === 'es' ? 'Lo siento, no encontramos un hotel que coincida con tu búsqueda.' : 'Sorry, we couldn\'t find a hotel that matches your search.',
     resetButton: language === 'es' ? 'Reiniciar búsqueda' : 'Reset search',
+    viewMapButton: language === 'es' ? 'Ver mapa' : 'View map',
     chatPlaceholder: language === 'es' ? 'Ciudad, región o dirección' : 'City, region or address',
     sendButton: language === 'es' ? 'Enviar' : 'Send',
     bookingLinkLabel: language === 'es' ? 'Link a hotel' : 'Hotel link',
@@ -84,6 +87,7 @@ export default function ChatWidget({
     setHotelResults([])
     setNoResults(false)
     setSelectedHotel(null)
+    setShowMap(false)
   }
 
   const positionClasses = {
@@ -183,7 +187,16 @@ export default function ChatWidget({
                   <div className="text-red-600 font-semibold mt-4">{t.noResultsMessage}</div>
                 )}
                 {!isLoading && hotelResults.length > 0 && (
-                  <div className="space-y-3 flex-1 overflow-y-auto">
+                  <>
+                    <div className="mb-2 flex justify-end">
+                      <button
+                        onClick={() => setShowMap(true)}
+                        className="text-blue-600 text-sm flex items-center gap-1 hover:underline"
+                      >
+                        <MapIcon className="w-4 h-4" /> {t.viewMapButton}
+                      </button>
+                    </div>
+                    <div className="space-y-3 flex-1 overflow-y-auto">
                     {hotelResults.map((hotel, idx) => (
                       <div
                         key={hotel.id || idx}
@@ -209,7 +222,8 @@ export default function ChatWidget({
                         )}
                       </div>
                     ))}
-                  </div>
+                    </div>
+                  </>
                 )}
               </div>
             )}
@@ -229,6 +243,12 @@ export default function ChatWidget({
       {selectedHotel && (
         <HotelDetailModal hotel={selectedHotel} onClose={() => setSelectedHotel(null)} />
       )}
+      {showMap && (
+        <MapModal
+          hotelsToHighlight={hotelResults.map(h => h.id)}
+          onClose={() => setShowMap(false)}
+        />
+      )}
     </div>
   )
-} 
+}
