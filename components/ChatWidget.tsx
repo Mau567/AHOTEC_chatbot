@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { MessageCircle, X, Building } from 'lucide-react'
 import HotelDetailModal from '@/components/HotelDetailModal'
+import MapModal from '@/components/MapModal'
 
 const hotelTypeOptions = [
   'Hotel 4 o 5 estrellas',
@@ -31,6 +32,7 @@ export default function ChatWidget({
   const [isLoading, setIsLoading] = useState(false)
   const [noResults, setNoResults] = useState(false)
   const [selectedHotel, setSelectedHotel] = useState<any | null>(null)
+  const [isMapOpen, setIsMapOpen] = useState(false)
   const [sessionId] = useState(() => `widget_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`)
 
   const t = {
@@ -46,6 +48,7 @@ export default function ChatWidget({
     chatPlaceholder: language === 'es' ? 'Ciudad, región o dirección' : 'City, region or address',
     sendButton: language === 'es' ? 'Enviar' : 'Send',
     bookingLinkLabel: language === 'es' ? 'Link a hotel' : 'Hotel link',
+    mapButton: language === 'es' ? 'Ver mapa' : 'View map',
     english: 'English',
     spanish: 'Español'
   }
@@ -84,6 +87,7 @@ export default function ChatWidget({
     setHotelResults([])
     setNoResults(false)
     setSelectedHotel(null)
+    setIsMapOpen(false)
   }
 
   const positionClasses = {
@@ -183,6 +187,7 @@ export default function ChatWidget({
                   <div className="text-red-600 font-semibold mt-4">{t.noResultsMessage}</div>
                 )}
                 {!isLoading && hotelResults.length > 0 && (
+                  <>
                   <div className="space-y-3 flex-1 overflow-y-auto">
                     {hotelResults.map((hotel, idx) => (
                       <div
@@ -210,6 +215,13 @@ export default function ChatWidget({
                       </div>
                     ))}
                   </div>
+                  <button
+                    onClick={() => setIsMapOpen(true)}
+                    className="mt-3 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 text-sm"
+                  >
+                    {t.mapButton}
+                  </button>
+                  </>
                 )}
               </div>
             )}
@@ -229,6 +241,9 @@ export default function ChatWidget({
       {selectedHotel && (
         <HotelDetailModal hotel={selectedHotel} onClose={() => setSelectedHotel(null)} />
       )}
+      {isMapOpen && (
+        <MapModal highlightedHotels={hotelResults} onClose={() => setIsMapOpen(false)} />
+      )}
     </div>
   )
-} 
+}
