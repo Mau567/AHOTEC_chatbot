@@ -438,12 +438,6 @@ export default function Home() {
             </div>
             <div className="flex items-center space-x-4">
               <a
-                href="/mock"
-                className="text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                Test
-              </a>
-              <a
                 href="/admin"
                 className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
               >
