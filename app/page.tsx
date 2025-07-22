@@ -436,12 +436,18 @@ export default function Home() {
               <span className="ml-2 text-xl font-bold text-gray-900">AHOTEC</span>
             </div>
             <div className="flex items-center space-x-4">
-              <a 
-                href="/admin" 
+              <a
+                href="/admin"
                 className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
               >
                 <Users className="w-4 h-4 mr-1" />
                 Admin
+              </a>
+              <a
+                href="/prototype"
+                className="text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                Test
               </a>
             </div>
           </div>
