@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { MessageCircle, X, Building } from 'lucide-react'
 import HotelDetailModal from '@/components/HotelDetailModal'
+import MapModal from '@/components/MapModal'
 
 const hotelTypeOptions = [
   'Hotel 4 o 5 estrellas',
@@ -31,6 +32,7 @@ export default function ChatWidget({
   const [isLoading, setIsLoading] = useState(false)
   const [noResults, setNoResults] = useState(false)
   const [selectedHotel, setSelectedHotel] = useState<any | null>(null)
+  const [showMap, setShowMap] = useState(false)
   const [sessionId] = useState(() => `widget_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`)
 
   const t = {
@@ -46,6 +48,7 @@ export default function ChatWidget({
     chatPlaceholder: language === 'es' ? 'Ciudad, región o dirección' : 'City, region or address',
     sendButton: language === 'es' ? 'Enviar' : 'Send',
     bookingLinkLabel: language === 'es' ? 'Link a hotel' : 'Hotel link',
+    mapButton: language === 'es' ? 'Ver mapa' : 'Show map',
     english: 'English',
     spanish: 'Español'
   }
@@ -211,6 +214,14 @@ export default function ChatWidget({
                     ))}
                   </div>
                 )}
+                {!isLoading && hotelResults.length > 0 && (
+                  <button
+                    className="mt-3 bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 text-xs self-center"
+                    onClick={() => setShowMap(true)}
+                  >
+                    {t.mapButton}
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -229,6 +240,12 @@ export default function ChatWidget({
       {selectedHotel && (
         <HotelDetailModal hotel={selectedHotel} onClose={() => setSelectedHotel(null)} />
       )}
+      {showMap && (
+        <MapModal
+          highlightIds={hotelResults.map(h => h.id)}
+          onClose={() => setShowMap(false)}
+        />
+      )}
     </div>
   )
-} 
+}
