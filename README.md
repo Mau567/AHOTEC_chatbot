@@ -1,6 +1,6 @@
-# AHOTEC Chatbot - Asociación de Hoteles del Ecuador
+# AHOTEC Chatbot - Federación Hotelera del Ecuador
 
-Un sistema completo de chatbot inteligente para la Asociación de Hoteles del Ecuador (AHOTEC) que permite a turistas y locales encontrar los mejores hoteles en Ecuador mediante inteligencia artificial.
+Un sistema completo de chatbot inteligente para la Federación Hotelera del Ecuador (AHOTEC) que permite a turistas y locales encontrar los mejores hoteles en Ecuador mediante inteligencia artificial.
 
 ## 🏨 **Características Principales**
 
@@ -269,4 +269,4 @@ Para más información sobre el proyecto AHOTEC Chatbot, contacta a:
 
 ---
 
-**Desarrollado con ❤️ para la Asociación de Hoteles del Ecuador** 
+**Desarrollado con ❤️ para la Federación Hotelera del Ecuador**

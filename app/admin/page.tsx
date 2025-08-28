@@ -66,11 +66,11 @@ export default function AdminDashboard() {
     // Modal labels
     description: language === 'es' ? 'Descripción' : 'Description',
     message: language === 'es' ? 'Mensaje' : 'Message',
-    recreationAreas: language === 'es' ? 'Áreas recreativas' : 'Recreation areas',
+    recreationAreas: language === 'es' ? 'Servicios / áreas recreativas' : 'Services / recreational areas',
     locationPhrase: language === 'es' ? 'Frase de ubicación' : 'Location phrase',
     address: language === 'es' ? 'Dirección' : 'Address',
     surroundings: language === 'es' ? 'Alrededores' : 'Surroundings',
-    hotelType: language === 'es' ? 'Tipo de hotel' : 'Hotel type',
+    hotelType: language === 'es' ? 'Tipo / Categoría de hotel' : 'Hotel type / category',
     bookingLink: language === 'es' ? 'Link de Reserva' : 'Booking Link',
     close: language === 'es' ? 'Cerrar' : 'Close',
     

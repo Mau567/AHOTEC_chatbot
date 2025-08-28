@@ -9,7 +9,7 @@ export async function getHotelRecommendations(query: string, hotels: any[], lang
     ).join('\n\n')
 
     const prompt = lang === 'en'
-      ? `You are a helpful hotel concierge for AHOTEC (Association of Hotels of Ecuador).
+      ? `You are a helpful hotel concierge for AHOTEC (Ecuador Hotel Federation).
 
 Available hotels in our database:
 ${hotelContext}
@@ -19,7 +19,7 @@ User query: "${query}"
 Please provide helpful recommendations based on the user's query. If they're asking about a specific area, recommend hotels in that area. If they mention specific amenities or preferences, prioritize hotels that match those criteria.
 
 Respond in a friendly, helpful manner in English. Keep your response concise but informative.`
-      : `Eres un asistente hotelero para AHOTEC (Asociación de Hoteles del Ecuador).
+      : `Eres un asistente hotelero para AHOTEC (Federación Hotelera del Ecuador).
 
 Hoteles disponibles en nuestra base de datos:
 ${hotelContext}

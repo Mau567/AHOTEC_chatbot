@@ -16,7 +16,7 @@ interface HotelFormData {
   recreationAreas: string[] // Áreas recreativas ahora es array
   locationPhrase: string // Localización en una frase
   address: string // Dirección
-  surroundings: string[] // 10 puntos importantes alrededor
+  surroundings: string[] // 6 puntos importantes alrededor
   hotelType: string // Tipo de hotel
 }
 
@@ -34,7 +34,7 @@ export default function Home() {
   // Translation object
   const t = {
     // Header
-    title: language === 'es' ? 'AHOTEC - Asociación de Hoteles del Ecuador' : 'AHOTEC - Ecuador Hotels Association',
+    title: language === 'es' ? 'AHOTEC - Federación Hotelera del Ecuador' : 'AHOTEC - Ecuador Hotel Federation',
     subtitle: language === 'es' ? 'Descubre los mejores hoteles de Ecuador con nuestro asistente inteligente' : 'Discover the best hotels in Ecuador with our intelligent assistant',
     
     // Form labels
@@ -43,15 +43,15 @@ export default function Home() {
     cityLabel: language === 'es' ? 'Ciudad *' : 'City *',
     addressLabel: language === 'es' ? 'Dirección *' : 'Address *',
     locationPhraseLabel: language === 'es' ? 'Escribe en una frase la localización del hotel: *' : 'Write the hotel location in one phrase: *',
-    hotelTypeLabel: language === 'es' ? 'Tipo de hotel *' : 'Hotel type *',
+    hotelTypeLabel: language === 'es' ? 'Tipo / Categoría de hotel *' : 'Hotel type / category *',
     descriptionLabel: language === 'es' ? 'Descripción *' : 'Description *',
-    recreationAreasLabel: language === 'es' ? '¿Qué áreas recreativas ofrece el hotel? *' : 'What recreational areas does the hotel offer? *',
+    recreationAreasLabel: language === 'es' ? '¿Qué servicios / áreas recreativas ofrece el hotel? *' : 'What services / recreational areas does the hotel offer? *',
     surroundingsLabel: language === 'es' ? 'Puntos importantes alrededor del hotel. *' : 'Important points around the hotel. *',
     bookingLinkLabel: language === 'es' ? 'Link a hotel' : 'Hotel link',
     imageLabel: language === 'es' ? 'Fotografía del hotel' : 'Hotel photo',
     
     // Placeholders
-    hotelNamePlaceholder: language === 'es' ? 'Nombre del hotel' : 'Hotel name',
+    hotelNamePlaceholder: language === 'es' ? 'Ej.: Hotel NN, Hostal NN, Hostería NN, Lodge NN, Resort NN' : 'e.g. Hotel NN, Hostel NN, Inn NN, Lodge NN, Resort NN',
     regionPlaceholder: language === 'es' ? 'ej. Costa, Sierra, Amazonía' : 'e.g. Coast, Highlands, Amazon',
     cityPlaceholder: language === 'es' ? 'ej. Quito, Guayaquil, Cuenca' : 'e.g. Quito, Guayaquil, Cuenca',
     addressPlaceholder: language === 'es' ? 'Av. Amazonas N34-120 y Av. Naciones Unidas, Quito' : 'Av. Amazonas N34-120 and Av. Naciones Unidas, Quito',
@@ -63,12 +63,10 @@ export default function Home() {
     // Select options
     selectOption: language === 'es' ? 'Selecciona una opción' : 'Select an option',
     selectRegion: language === 'es' ? 'Selecciona una región' : 'Select a region',
-    option1: language === 'es' ? 'Hotel 4 o 5 estrellas' : '4 or 5 star hotel',
-    option2: language === 'es' ? 'Hotel 3 o menos estrellas' : '3 star or less hotel',
-    option3: language === 'es' ? 'Hostal / Bed and Breakfast' : 'Hostel / Bed and Breakfast',
-    option4: language === 'es' ? 'Hostería de campo' : 'Country inn',
-    option5: language === 'es' ? 'Hacienda' : 'Hacienda',
-    option6: language === 'es' ? 'Resort' : 'Resort',
+    option1: language === 'es' ? 'Hotel / Resort / 5* o 4*' : 'Hotel / Resort / 5* or 4*',
+    option2: language === 'es' ? 'Hotel / 2* o 3*' : 'Hotel / 2* or 3*',
+    option3: language === 'es' ? 'Hostal / Bed and Breakfast / 3*, 2* o 1*' : 'Hostel / Bed and Breakfast / 3*, 2* or 1*',
+    option4: language === 'es' ? 'Hostería / Hacienda / Lodge / 5*, 4* o 3*' : 'Inn / Hacienda / Lodge / 5*, 4* or 3*',
     
     // Region options
     costa: 'Costa',
@@ -79,15 +77,15 @@ export default function Home() {
     // Messages
     submitButton: language === 'es' ? 'Enviar Solicitud' : 'Submit Request',
     successMessage: language === 'es' ? '¡Hotel enviado exitosamente! Nuestro equipo lo revisará y te contactaremos pronto.' : 'Hotel submitted successfully! Our team will review it and contact you soon.',
-    validationMessage: language === 'es' ? 'Por favor ingresa los 10 puntos importantes alrededor del hotel.' : 'Please enter the 10 important points around the hotel.',
+    validationMessage: language === 'es' ? 'Por favor ingresa los 6 puntos importantes alrededor del hotel.' : 'Please enter the 6 important points around the hotel.',
     imageError: language === 'es' ? 'Solo se permiten imágenes JPG, JPEG, PNG, WEBP o GIF.' : 'Only JPG, JPEG, PNG, WEBP or GIF images are allowed.',
     sizeError: language === 'es' ? 'El tamaño máximo permitido es 4MB.' : 'Maximum size allowed is 4MB.',
     imageFormats: language === 'es' ? 'Formatos permitidos: JPG, JPEG, PNG, WEBP, GIF. Tamaño máximo: 4MB.' : 'Allowed formats: JPG, JPEG, PNG, WEBP, GIF. Maximum size: 4MB.',
-    recreationError: language === 'es' ? 'Selecciona al menos una área recreativa.' : 'Select at least one recreational area.',
+    recreationError: language === 'es' ? 'Selecciona al menos un servicio o área recreativa.' : 'Select at least one service or recreational area.',
     
     // Chat
-    chatTitle: language === 'es' ? 'Asistente de Hoteles' : 'Hotel Assistant',
-    locationQuestion: language === 'es' ? '¿Dónde te gustaría buscar un hotel?' : 'Where would you like to search for a hotel?',
+    chatTitle: 'Sofia',
+    locationQuestion: language === 'es' ? 'Hola, soy tu asistente virtual. ¿Dónde te gustaría buscar un hotel?' : "Hi, I'm your virtual assistant. Where would you like to search for a hotel?",
     typeQuestion: language === 'es' ? '¿Qué tipo de hotel buscas?' : 'What type of hotel are you looking for?',
     nextButton: language === 'es' ? 'Siguiente' : 'Next',
     loadingMessage: language === 'es' ? 'Buscando hoteles compatibles...' : 'Searching for compatible hotels...',
@@ -110,7 +108,7 @@ export default function Home() {
     recreationAreas: [], // Cambiado a array
     locationPhrase: '',
     address: '',
-    surroundings: Array(10).fill(''),
+    surroundings: Array(6).fill(''),
     hotelType: '',
   })
 
@@ -157,14 +155,15 @@ export default function Home() {
     'Restaurante',
     'Bar',
     'Instalaciones para conferencias',
-    'Generador eléctrico',
+    'Centro de Negocios / Coworking',
     'WiFi gratuito',
     'Parqueadero propio',
     'Gimnasio',
     'Sala de juegos',
     'Juegos infantiles',
-    'SPA',
+    'SPA / Sauna / turco / hidromasaje',
     'Mascotas permitidas',
+    'Facilidades para discapacitados',
     'Estación de carga para coches eléctricos',
     'Traslado al aeropuerto',
     'Acceso a la playa: Cerca de la playa',
@@ -172,11 +171,20 @@ export default function Home() {
     'Jardines privados',
     'Piscina al aire libre',
     'Piscina cubierta',
-    'Cancha de Tenis',
-    'Cancha de fútbol',
-    'Cancha de Volleyball',
+    'Áreas deportivas (canchas: tenis / volley / fútbol)',
+    'Generador eléctrico',
   ]
   const [otherRecreation, setOtherRecreation] = useState('')
+
+  const formatRecreationAreas = (areas: string[]) => {
+    const list = [...areas]
+    const idx = list.findIndex(a => a.toLowerCase() === 'generador eléctrico')
+    if (idx !== -1) {
+      const [gen] = list.splice(idx, 1)
+      list.push(gen)
+    }
+    return list.join(', ')
+  }
 
   // Allowed image types and max size
   const allowedImageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
@@ -242,13 +250,13 @@ export default function Home() {
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Validar que los 10 puntos estén llenos
+    // Validar que los 6 puntos estén llenos
     if (formData.surroundings.some(s => !s.trim())) {
       alert(t.validationMessage)
       return
     }
     // Unir recreationAreas en string para backend
-    let recreationAreasString = formData.recreationAreas.join(', ')
+    let recreationAreasString = formatRecreationAreas(formData.recreationAreas)
     try {
       const form = new FormData()
       form.append('name', formData.hotelName)
@@ -284,7 +292,7 @@ export default function Home() {
           recreationAreas: [],
           locationPhrase: '',
           address: '',
-          surroundings: Array(10).fill(''),
+          surroundings: Array(6).fill(''),
           hotelType: '',
         })
         // Hacer scroll al mensaje de éxito
@@ -592,12 +600,10 @@ export default function Home() {
                   required
                 >
                   <option value="">{t.selectOption}</option>
-                  <option value="Hotel 4 o 5 estrellas">{t.option1}</option>
-                  <option value="Hotel 3 o menos estrellas">{t.option2}</option>
-                  <option value="Hostal / Bed and Breakfast">{t.option3}</option>
-                  <option value="Hostería de campo">{t.option4}</option>
-                  <option value="Hacienda">{t.option5}</option>
-                  <option value="Resort">{t.option6}</option>
+                  <option value="Hotel / Resort / 5* o 4*">{t.option1}</option>
+                  <option value="Hotel / 2* o 3*">{t.option2}</option>
+                  <option value="Hostal / Bed and Breakfast / 3*, 2* o 1*">{t.option3}</option>
+                  <option value="Hostería / Hacienda / Lodge / 5*, 4* o 3*">{t.option4}</option>
                 </select>
               </div>
 
@@ -620,7 +626,7 @@ export default function Home() {
                 <div className="text-xs text-gray-500 text-right">{formData.description.length}/200</div>
               </div>
 
-              {/* Áreas recreativas */}
+              {/* Servicios / áreas recreativas */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   {t.recreationAreasLabel}
@@ -797,11 +803,14 @@ export default function Home() {
                             <img src={hotel.imageUrl} alt={hotel.name} className="w-full h-40 object-cover rounded mb-3" />
                           )}
                           <h3 className="text-xl font-bold mb-1">{hotel.name}</h3>
-                          <div className="text-sm text-gray-600 mb-2">{hotel.hotelType}</div>
                           <div className="text-gray-800 mb-2 line-clamp-3">{hotel.description}</div>
                           {hotel.address && <div className="text-gray-500 text-sm mb-1"><b>Dirección:</b> {hotel.address}</div>}
                           {hotel.locationPhrase && <div className="text-gray-500 text-sm mb-1"><b>Ubicación:</b> {hotel.locationPhrase}</div>}
-                          {hotel.recreationAreas && <div className="text-gray-500 text-sm mb-1"><b>Áreas recreativas:</b> {hotel.recreationAreas}</div>}
+                          {hotel.recreationAreas && (
+                            <div className="text-gray-500 text-sm mb-1">
+                              <b>Servicios / áreas recreativas:</b> {formatRecreationAreas(hotel.recreationAreas.split(',').map(a => a.trim()))}
+                            </div>
+                          )}
                           {hotel.surroundings && hotel.surroundings.length > 0 && (
                             <div className="text-gray-500 text-sm mb-1">
                               <b>Alrededores:</b> {hotel.surroundings.join(', ')}
@@ -876,11 +885,14 @@ export default function Home() {
                           <img src={hotel.imageUrl} alt={hotel.name} className="w-full h-40 object-cover rounded mb-3" />
                         )}
                         <h3 className="text-xl font-bold mb-1">{hotel.name}</h3>
-                        <div className="text-sm text-gray-600 mb-2">{hotel.hotelType}</div>
                         <div className="text-gray-800 mb-2 line-clamp-3">{hotel.description}</div>
                         {hotel.address && <div className="text-gray-500 text-sm mb-1"><b>Dirección:</b> {hotel.address}</div>}
                         {hotel.locationPhrase && <div className="text-gray-500 text-sm mb-1"><b>Ubicación:</b> {hotel.locationPhrase}</div>}
-                        {hotel.recreationAreas && <div className="text-gray-500 text-sm mb-1"><b>Áreas recreativas:</b> {hotel.recreationAreas}</div>}
+                        {hotel.recreationAreas && (
+                          <div className="text-gray-500 text-sm mb-1">
+                            <b>Servicios / áreas recreativas:</b> {formatRecreationAreas(hotel.recreationAreas.split(',').map(a => a.trim()))}
+                          </div>
+                        )}
                         {hotel.surroundings && hotel.surroundings.length > 0 && (
                           <div className="text-gray-500 text-sm mb-1">
                             <b>Alrededores:</b> {hotel.surroundings.join(', ')}
