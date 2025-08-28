@@ -43,21 +43,19 @@ export default function DualChatWidget({
   const [guidedNoResults, setGuidedNoResults] = useState(false)
 
   const hotelTypeOptions = [
-    'Hotel 4 o 5 estrellas',
-    'Hotel 3 o menos estrellas',
-    'Hostal / Bed and Breakfast',
-    'Hostería de campo',
-    'Hacienda',
-    'Resort'
+    'Hotel / Resort / 5* o 4*',
+    'Hotel / 2* o 3*',
+    'Hostal / Bed and Breakfast / 3*, 2* o 1*',
+    'Hostería / Hacienda / Lodge / 5*, 4* o 3*'
   ]
 
   const t = {
-    assistantTitle: language === 'es' ? 'Asistente AHOTEC' : 'AHOTEC Assistant',
+    assistantTitle: language === 'es' ? 'Sofia' : 'Sofia',
     openChat: language === 'es' ? 'Abrir chat' : 'Open chat',
     closeChat: language === 'es' ? 'Cerrar chat' : 'Close chat',
     guidedTab: language === 'es' ? 'Guiado' : 'Guided',
     freeTab: language === 'es' ? 'Libre' : 'Free',
-    locationQuestion: language === 'es' ? '¿Dónde te gustaría buscar un hotel?' : 'Where would you like to search for a hotel?',
+    locationQuestion: language === 'es' ? 'Hola, soy tu asistente virtual. ¿Dónde te gustaría buscar un hotel?' : 'Hello, I am your virtual assistant. Where would you like to search for a hotel?',
     typeQuestion: language === 'es' ? '¿Qué tipo de hotel buscas?' : 'What type of hotel are you looking for?',
     nextButton: language === 'es' ? 'Siguiente' : 'Next',
     resetButton: language === 'es' ? 'Reiniciar' : 'Reset',

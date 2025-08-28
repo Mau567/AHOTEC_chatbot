@@ -66,11 +66,11 @@ export default function AdminDashboard() {
     // Modal labels
     description: language === 'es' ? 'Descripción' : 'Description',
     message: language === 'es' ? 'Mensaje' : 'Message',
-    recreationAreas: language === 'es' ? 'Áreas recreativas' : 'Recreation areas',
+    recreationAreas: language === 'es' ? 'Servicios / áreas recreativas' : 'Services / recreation areas',
     locationPhrase: language === 'es' ? 'Frase de ubicación' : 'Location phrase',
     address: language === 'es' ? 'Dirección' : 'Address',
     surroundings: language === 'es' ? 'Alrededores' : 'Surroundings',
-    hotelType: language === 'es' ? 'Tipo de hotel' : 'Hotel type',
+    hotelType: language === 'es' ? 'Tipo / Categoría de hotel' : 'Hotel type / Category',
     bookingLink: language === 'es' ? 'Link de Reserva' : 'Booking Link',
     close: language === 'es' ? 'Cerrar' : 'Close',
     
@@ -99,12 +99,10 @@ export default function AdminDashboard() {
     technicalError: language === 'es' ? 'Lo siento, hay un problema técnico. Por favor intenta de nuevo.' : 'Sorry, there is a technical problem. Please try again.',
     
     // Hotel type options
-    hotel4or5: language === 'es' ? 'Hotel 4 o 5 estrellas' : '4 or 5 star hotel',
-    hotel3orLess: language === 'es' ? 'Hotel 3 o menos estrellas' : '3 star or less hotel',
-    hostel: language === 'es' ? 'Hostal / Bed and Breakfast' : 'Hostel / Bed and Breakfast',
-    countryInn: language === 'es' ? 'Hostería de campo' : 'Country inn',
-    hacienda: language === 'es' ? 'Hacienda' : 'Hacienda',
-    resort: language === 'es' ? 'Resort' : 'Resort',
+    hotel4or5: language === 'es' ? 'Hotel / Resort / 5* o 4*' : 'Hotel / Resort / 5* or 4*',
+    hotel3orLess: language === 'es' ? 'Hotel / 2* o 3*' : 'Hotel / 2* or 3*',
+    hostel: language === 'es' ? 'Hostal / Bed and Breakfast / 3*, 2* o 1*' : 'Hostel / Bed and Breakfast / 3*, 2* or 1*',
+    countryInn: language === 'es' ? 'Hostería / Hacienda / Lodge / 5*, 4* o 3*' : 'Hostería / Hacienda / Lodge / 5*, 4* or 3*',
     
     // Language toggle
     english: 'English',
@@ -673,12 +671,10 @@ export default function AdminDashboard() {
                       required
                     >
                       <option value="">{t.selectOption}</option>
-                      <option value="Hotel 4 o 5 estrellas">{t.hotel4or5}</option>
-                      <option value="Hotel 3 o menos estrellas">{t.hotel3orLess}</option>
-                      <option value="Hostal / Bed and Breakfast">{t.hostel}</option>
-                      <option value="Hostería de campo">{t.countryInn}</option>
-                      <option value="Hacienda">{t.hacienda}</option>
-                      <option value="Resort">{t.resort}</option>
+                      <option value="Hotel / Resort / 5* o 4*">{t.hotel4or5}</option>
+                      <option value="Hotel / 2* o 3*">{t.hotel3orLess}</option>
+                      <option value="Hostal / Bed and Breakfast / 3*, 2* o 1*">{t.hostel}</option>
+                      <option value="Hostería / Hacienda / Lodge / 5*, 4* o 3*">{t.countryInn}</option>
                     </select>
                   </div>
                   <div>
