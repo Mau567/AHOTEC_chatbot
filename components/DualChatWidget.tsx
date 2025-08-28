@@ -52,12 +52,15 @@ export default function DualChatWidget({
   ]
 
   const t = {
-    assistantTitle: language === 'es' ? 'Asistente AHOTEC' : 'AHOTEC Assistant',
+    assistantTitle: 'Sofia',
     openChat: language === 'es' ? 'Abrir chat' : 'Open chat',
     closeChat: language === 'es' ? 'Cerrar chat' : 'Close chat',
     guidedTab: language === 'es' ? 'Guiado' : 'Guided',
     freeTab: language === 'es' ? 'Libre' : 'Free',
-    locationQuestion: language === 'es' ? '¿Dónde te gustaría buscar un hotel?' : 'Where would you like to search for a hotel?',
+    locationQuestion:
+      language === 'es'
+        ? 'Hola, soy Sofia, tu asistente virtual. ¿Dónde te gustaría buscar un hotel?'
+        : 'Hi, I\'m Sofia, your virtual assistant. Where would you like to search for a hotel?',
     typeQuestion: language === 'es' ? '¿Qué tipo de hotel buscas?' : 'What type of hotel are you looking for?',
     nextButton: language === 'es' ? 'Siguiente' : 'Next',
     resetButton: language === 'es' ? 'Reiniciar' : 'Reset',

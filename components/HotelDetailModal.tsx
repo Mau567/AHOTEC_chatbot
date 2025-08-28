@@ -1,6 +1,6 @@
 'use client'
 
-import { X, MapPin, Building, MessageCircle, Waves, Navigation, Home, Map, ExternalLink } from 'lucide-react'
+import { X, MapPin, MessageCircle, Waves, Navigation, Home, Map, ExternalLink } from 'lucide-react'
 
 interface Hotel {
   id: string
@@ -43,20 +43,13 @@ export default function HotelDetailModal({ hotel, onClose }: HotelDetailModalPro
         )}
 
         <div className="p-6 space-y-6">
-          {/* Location and Type Section */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Location Section */}
+          <div className="grid grid-cols-1 gap-4">
             <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
               <MapPin className="w-5 h-5 text-blue-600" />
               <div>
-                <p className="text-sm text-gray-600">Ubicación</p>
+                <p className="text-sm text-gray-600">Ciudad / Región</p>
                 <p className="font-medium text-gray-900">{hotel.city}, {hotel.region}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-              <Building className="w-5 h-5 text-green-600" />
-              <div>
-                <p className="text-sm text-gray-600">Tipo de hotel</p>
-                <p className="font-medium text-gray-900">{hotel.hotelType}</p>
               </div>
             </div>
           </div>
@@ -85,7 +78,7 @@ export default function HotelDetailModal({ hotel, onClose }: HotelDetailModalPro
               <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-lg">
                 <Waves className="w-5 h-5 text-purple-600" />
                 <div>
-                  <p className="text-sm text-gray-600">Áreas recreativas</p>
+                  <p className="text-sm text-gray-600">Servicios / áreas recreativas</p>
                   <p className="font-medium text-gray-900">{hotel.recreationAreas}</p>
                 </div>
               </div>
