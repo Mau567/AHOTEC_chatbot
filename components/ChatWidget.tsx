@@ -6,12 +6,10 @@ import HotelDetailModal from '@/components/HotelDetailModal'
 import MapModal from '@/components/MapModal'
 
 const hotelTypeOptions = [
-  'Hotel 4 o 5 estrellas',
-  'Hotel 3 o menos estrellas',
-  'Hostal / Bed and Breakfast',
-  'Hostería de campo',
-  'Hacienda',
-  'Resort'
+  'Hotel / Resort / 5* o 4*',
+  'Hotel / 2* o 3*',
+  'Hostal / Bed and Breakfast / 3*, 2* o 1*',
+  'Hostería / Hacienda / Lodge / 5*, 4* o 3*'
 ]
 
 export default function ChatWidget({ 
@@ -36,10 +34,10 @@ export default function ChatWidget({
   const [sessionId] = useState(() => `widget_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`)
 
   const t = {
-    assistantTitle: language === 'es' ? 'AHOTEC Asistente' : 'AHOTEC Assistant',
+    assistantTitle: language === 'es' ? 'Sofía - Asistente virtual' : 'Sofia - Virtual Assistant',
     openChat: language === 'es' ? 'Abrir chat' : 'Open chat',
     closeChat: language === 'es' ? 'Cerrar chat' : 'Close chat',
-    locationQuestion: language === 'es' ? '¿Dónde te gustaría buscar un hotel?' : 'Where would you like to search for a hotel?',
+    locationQuestion: language === 'es' ? 'Hola, soy Sofía, tu asistente virtual. ¿Dónde te gustaría buscar un hotel?' : 'Hi, I\'m Sofia, your virtual assistant. Where would you like to search for a hotel?',
     typeQuestion: language === 'es' ? '¿Qué tipo de hotel buscas?' : 'What type of hotel are you looking for?',
     nextButton: language === 'es' ? 'Siguiente' : 'Next',
     loadingMessage: language === 'es' ? 'Buscando hoteles compatibles...' : 'Searching for compatible hotels...',
@@ -92,6 +90,16 @@ export default function ChatWidget({
   const positionClasses = {
     'bottom-right': 'bottom-4 right-4',
     'bottom-left': 'bottom-4 left-4'
+  }
+
+  const formatRecreationAreas = (areas: string | string[]) => {
+    const parts = Array.isArray(areas) ? [...areas] : areas.split(',').map(a => a.trim())
+    const idx = parts.findIndex(p => p.toLowerCase() === 'generador eléctrico')
+    if (idx !== -1) {
+      const [gen] = parts.splice(idx, 1)
+      parts.push(gen)
+    }
+    return parts.join(', ')
   }
 
   return (
@@ -197,11 +205,10 @@ export default function ChatWidget({
                           <img src={hotel.imageUrl} alt={hotel.name} className="w-full h-28 object-cover rounded mb-2" />
                         )}
                         <h3 className="text-base font-bold mb-1">{hotel.name}</h3>
-                        <div className="text-xs text-gray-600 mb-1">{hotel.hotelType}</div>
                         <div className="text-xs mb-1 line-clamp-2">{hotel.description}</div>
                         {hotel.address && <div className="text-gray-500 text-xs mb-1"><b>Dirección:</b> {hotel.address}</div>}
                         {hotel.locationPhrase && <div className="text-gray-500 text-xs mb-1"><b>Ubicación:</b> {hotel.locationPhrase}</div>}
-                        {hotel.recreationAreas && <div className="text-gray-500 text-xs mb-1"><b>Áreas recreativas:</b> {hotel.recreationAreas}</div>}
+                        {hotel.recreationAreas && <div className="text-gray-500 text-xs mb-1"><b>Servicios / áreas recreativas:</b> {formatRecreationAreas(hotel.recreationAreas)}</div>}
                         {hotel.surroundings && hotel.surroundings.length > 0 && (
                           <div className="text-gray-500 text-xs mb-1">
                             <b>Alrededores:</b> {hotel.surroundings.join(', ')}

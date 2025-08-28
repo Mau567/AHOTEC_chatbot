@@ -1,6 +1,6 @@
 'use client'
 
-import { X, MapPin, Building, MessageCircle, Waves, Navigation, Home, Map, ExternalLink } from 'lucide-react'
+import { X, MapPin, MessageCircle, Waves, Navigation, Home, Map, ExternalLink } from 'lucide-react'
 
 interface Hotel {
   id: string
@@ -24,6 +24,16 @@ interface HotelDetailModalProps {
 }
 
 export default function HotelDetailModal({ hotel, onClose }: HotelDetailModalProps) {
+  const formatRecreationAreas = (areas: string | string[]) => {
+    const parts = Array.isArray(areas) ? [...areas] : areas.split(',').map(a => a.trim())
+    const idx = parts.findIndex(p => p.toLowerCase() === 'generador eléctrico')
+    if (idx !== -1) {
+      const [gen] = parts.splice(idx, 1)
+      parts.push(gen)
+    }
+    return parts.join(', ')
+  }
+
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-lg w-11/12 md:w-3/4 lg:w-1/2 max-h-[90vh] overflow-y-auto">
@@ -43,20 +53,13 @@ export default function HotelDetailModal({ hotel, onClose }: HotelDetailModalPro
         )}
 
         <div className="p-6 space-y-6">
-          {/* Location and Type Section */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Location Section */}
+          <div className="grid grid-cols-1 gap-4">
             <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
               <MapPin className="w-5 h-5 text-blue-600" />
               <div>
-                <p className="text-sm text-gray-600">Ubicación</p>
+                <p className="text-sm text-gray-600">Ciudad / Región</p>
                 <p className="font-medium text-gray-900">{hotel.city}, {hotel.region}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-              <Building className="w-5 h-5 text-green-600" />
-              <div>
-                <p className="text-sm text-gray-600">Tipo de hotel</p>
-                <p className="font-medium text-gray-900">{hotel.hotelType}</p>
               </div>
             </div>
           </div>
@@ -85,8 +88,8 @@ export default function HotelDetailModal({ hotel, onClose }: HotelDetailModalPro
               <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-lg">
                 <Waves className="w-5 h-5 text-purple-600" />
                 <div>
-                  <p className="text-sm text-gray-600">Áreas recreativas</p>
-                  <p className="font-medium text-gray-900">{hotel.recreationAreas}</p>
+                  <p className="text-sm text-gray-600">Servicios / áreas recreativas</p>
+                  <p className="font-medium text-gray-900">{formatRecreationAreas(hotel.recreationAreas)}</p>
                 </div>
               </div>
             )}
