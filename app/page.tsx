@@ -436,10 +436,24 @@ export default function Home() {
       <nav className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <Building className="w-8 h-8 text-blue-600" />
-              <span className="ml-2 text-xl font-bold text-gray-900">AHOTEC</span>
-            </div>
+                      <div className="flex items-center">
+            {/* Logo AHOTEC 2022 - Navegación (más visible) */}
+            <img 
+              src="/images/logoAHOTEC2022.png" 
+              alt="AHOTEC Logo" 
+              className="w-24 h-24 object-contain"
+              style={{ minWidth: '64px', minHeight: '64px' }}
+              onError={(e) => {
+                // Fallback si no hay logo, mostrar el ícono Building
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                const fallback = target.nextElementSibling as HTMLElement;
+                if (fallback) fallback.style.display = 'block';
+              }}
+            />
+            <Building className="w-8 h-8 text-blue-600 hidden" />
+            <span className="ml-3 text-xl font-bold text-gray-900">AHOTEC</span>
+          </div>
             <div className="flex items-center space-x-4">
               <a
                 href="/admin"
@@ -465,6 +479,26 @@ export default function Home() {
                 {language === 'es' ? 'English' : 'Español'}
               </button>
             </div>
+            
+            {/* Logo principal - Header (más grande y prominente) */}
+            <div className="flex justify-center mb-6">
+              <img 
+                src="/images/logoAHOTEC2022.png" 
+                alt="AHOTEC Logo" 
+                className="max-w-2xl max-h-56 object-contain"
+                style={{ 
+                  minWidth: '200px', 
+                  minHeight: '200px',
+                  maxWidth: '100%'
+                }}
+                onError={(e) => {
+                  // Fallback si no hay logo
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                }}
+              />
+            </div>
+            
             <h1 className="text-3xl font-bold text-gray-900 mb-2">{t.title}</h1>
             <p className="text-gray-600">{t.subtitle}</p>
           </div>
@@ -830,14 +864,14 @@ export default function Home() {
               <HotelDetailModal hotel={selectedHotel} onClose={() => setSelectedHotel(null)} />
             )}
 
-            {/* Free-form Chatbot */}
+            {/* Free-form Chatbot - TEMPORARILY HIDDEN FOR PRESENTATION */}
+            {/* 
             <div className="bg-gray-50 border border-gray-200 rounded-lg shadow p-6 mt-8">
               <h2 className="text-2xl font-semibold text-gray-900 mb-6 flex items-center">
                 <MessageCircle className="w-6 h-6 mr-2 text-blue-600" />
                 {language === 'es' ? 'Chatbot libre' : 'Free-form Chatbot'}
               </h2>
               <div className="flex flex-col items-center">
-                {/* Update the free-form chatbot input/button row: */}
                 <div className="w-full flex space-x-2 mb-4">
                   <input
                     type="text"
@@ -898,6 +932,7 @@ export default function Home() {
                 )}
               </div>
             </div>
+            */}
           </div>
         </div>
       </div>
