@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { MessageCircle, X, Building } from 'lucide-react'
 import HotelDetailModal from '@/components/HotelDetailModal'
-import MapModal from '@/components/MapModal'
+// import MapModal from '@/components/MapModal' // TEMPORARILY HIDDEN FOR PRESENTATION
 
 const hotelTypeOptions = [
   'Hotel / Resort / 5* o 4*',
@@ -30,8 +30,8 @@ export default function ChatWidget({
   const [isLoading, setIsLoading] = useState(false)
   const [noResults, setNoResults] = useState(false)
   const [selectedHotel, setSelectedHotel] = useState<any | null>(null)
-  const [showMap, setShowMap] = useState(false)
-  const [sessionId] = useState(() => `widget_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`)
+  // const [showMap, setShowMap] = useState(false) // TEMPORARILY HIDDEN FOR PRESENTATION
+  const [sessionId] = useState(() => `widget_${Date.now()}_${Math.random().toString(36).substr(2,9)}`)
 
   const t = {
     assistantTitle: language === 'es' ? 'Sofia' : 'Sofia',
@@ -221,6 +221,8 @@ export default function ChatWidget({
                     ))}
                   </div>
                 )}
+                {/* Botón del mapa - TEMPORARILY HIDDEN FOR PRESENTATION */}
+                {/*
                 {!isLoading && hotelResults.length > 0 && (
                   <button
                     className="mt-3 bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 text-xs self-center"
@@ -229,6 +231,7 @@ export default function ChatWidget({
                     {t.mapButton}
                   </button>
                 )}
+                */}
               </div>
             )}
           </div>
@@ -247,12 +250,15 @@ export default function ChatWidget({
       {selectedHotel && (
         <HotelDetailModal hotel={selectedHotel} onClose={() => setSelectedHotel(null)} />
       )}
+      {/* Modal del mapa - TEMPORARILY HIDDEN FOR PRESENTATION */}
+      {/*
       {showMap && (
         <MapModal
           highlightIds={hotelResults.map(h => h.id)}
           onClose={() => setShowMap(false)}
         />
       )}
+      */}
     </div>
   )
 }
