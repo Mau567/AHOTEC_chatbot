@@ -11,7 +11,8 @@ interface HotelFormData {
   region: string
   city: string
   description: string
-  bookingLink: string // Renombrar a linkHotel
+  bookingLink: string // Link de reserva
+  websiteLink: string // Página web
   image?: File | null
   recreationAreas: string[] // Servicios / áreas recreativas ahora es array
   locationPhrase: string // Localización en una frase
@@ -47,7 +48,8 @@ export default function Home() {
     descriptionLabel: language === 'es' ? 'Descripción *' : 'Description *',
     recreationAreasLabel: language === 'es' ? '¿Qué servicios / áreas recreativas ofrece el hotel? *' : 'What services / recreational areas does the hotel offer? *',
     surroundingsLabel: language === 'es' ? 'Puntos importantes alrededor del hotel. *' : 'Important points around the hotel. *',
-    bookingLinkLabel: language === 'es' ? 'Link a hotel' : 'Hotel link',
+    bookingLinkLabel: language === 'es' ? 'Link de reserva' : 'Booking link',
+    websiteLinkLabel: language === 'es' ? 'Página web' : 'Website',
     imageLabel: language === 'es' ? 'Fotografía del hotel' : 'Hotel photo',
     
     // Placeholders
@@ -58,6 +60,7 @@ export default function Home() {
     locationPhrasePlaceholder: language === 'es' ? 'En el corazón de Quito, cerca del parque La Carolina.' : 'In the heart of Quito, near La Carolina park.',
     descriptionPlaceholder: language === 'es' ? 'Describe las características únicas de tu hotel' : 'Describe the unique features of your hotel',
     bookingLinkPlaceholder: language === 'es' ? 'https://tu-sitio-web.com/reservas' : 'https://your-website.com/book',
+    websiteLinkPlaceholder: language === 'es' ? 'https://tu-sitio-web.com' : 'https://your-website.com',
     pointPlaceholder: language === 'es' ? 'Punto' : 'Point',
     
     // Select options
@@ -84,7 +87,7 @@ export default function Home() {
     recreationError: language === 'es' ? 'Selecciona al menos un servicio o área recreativa.' : 'Select at least one service or recreational area.',
     
     // Chat
-    chatTitle: language === 'es' ? 'Sofia - Asistente de Hoteles' : 'Sofia - Hotel Assistant',
+    chatTitle: language === 'es' ? 'Lucia - Asistente de Hoteles' : 'Lucia - Hotel Assistant',
     locationQuestion: language === 'es' ? 'Hola, soy tu asistente virtual. ¿Dónde te gustaría buscar un hotel?' : 'Hello, I am your virtual assistant. Where would you like to search for a hotel?',
     typeQuestion: language === 'es' ? '¿Qué tipo de hotel buscas?' : 'What type of hotel are you looking for?',
     nextButton: language === 'es' ? 'Siguiente' : 'Next',
@@ -93,6 +96,8 @@ export default function Home() {
     resetButton: language === 'es' ? 'Reiniciar búsqueda' : 'Reset search',
     chatPlaceholder: language === 'es' ? 'Pregunta sobre hoteles en Ecuador...' : 'Ask about hotels in Ecuador...',
     sendButton: language === 'es' ? 'Enviar' : 'Send',
+    searchButton: language === 'es' ? 'Buscar' : 'Search',
+    allButton: language === 'es' ? 'Todos' : 'All',
     
     // Surroundings example
     surroundingsExample: language === 'es' ? 'Ejemplo: estadio de futbol, centro comercial, parque natural, barrio, montaña, cascada, etc.' : 'Example: football stadium, shopping center, natural park, neighborhood, mountain, waterfall, etc.'
@@ -104,6 +109,7 @@ export default function Home() {
     city: '',
     description: '',
     bookingLink: '',
+    websiteLink: '',
     image: null,
     recreationAreas: [], // Cambiado a array
     locationPhrase: '',
@@ -122,7 +128,7 @@ export default function Home() {
   // 1. Estado para el flujo guiado del chatbot
   const [chatStep, setChatStep] = useState<'ubicacion' | 'tipo' | 'resultados'>('ubicacion')
   const [userLocation, setUserLocation] = useState('')
-  const [userHotelType, setUserHotelType] = useState('')
+  const [userHotelTypes, setUserHotelTypes] = useState<string[]>([])
 
   // Estado para los resultados de hoteles
   const [hotelResults, setHotelResults] = useState<any[]>([])
@@ -134,8 +140,8 @@ export default function Home() {
   const [freeIsLoading, setFreeIsLoading] = useState(false)
   // Set initial freeBotMessage state to a friendly welcome message
   const [freeBotMessage, setFreeBotMessage] = useState(language === 'es'
-    ? '¡Hola! 😊 Soy Sofia, tu asistente virtual. ¿Dónde te gustaría buscar un hotel? 🏨✨'
-    : "Hello! 😊 I'm Sofia, your virtual assistant. Where would you like to search for a hotel? 🏨✨"
+    ? '¡Hola! 😊 Soy Lucia, tu asistente virtual. ¿Dónde te gustaría buscar un hotel? 🏨✨'
+    : "Hello! 😊 I'm Lucia, your virtual assistant. Where would you like to search for a hotel? 🏨✨"
   )
   const [freeHotelResults, setFreeHotelResults] = useState<any[]>([])
   const [freeNoResults, setFreeNoResults] = useState(false)
@@ -260,6 +266,7 @@ export default function Home() {
       form.append('city', formData.city)
       form.append('description', formData.description)
       form.append('bookingLink', formData.bookingLink)
+      form.append('websiteLink', formData.websiteLink)
       if (formData.image) {
         form.append('image', formData.image)
       }
@@ -284,6 +291,7 @@ export default function Home() {
           city: '',
           description: '',
           bookingLink: '',
+          websiteLink: '',
           image: null,
           recreationAreas: [],
           locationPhrase: '',
@@ -361,7 +369,7 @@ export default function Home() {
   }
 
   // 3. Preparar el envío de la consulta al backend cuando se tengan ambos datos
-  const handleSendGuidedQuery = async (location: string, hotelType: string) => {
+  const handleSendGuidedQuery = async (location: string, hotelTypes: string[]) => {
     setIsLoading(true)
     setNoResults(false)
     setHotelResults([])
@@ -370,14 +378,15 @@ export default function Home() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: `Ubicación: ${location}\nTipo de hotel: ${hotelType}`,
-          sessionId
+          message: `Ubicación: ${location}\nTipo de hotel: ${hotelTypes.join(', ') || 'Todos'}`,
+          sessionId,
+          lang: language,
+          hotelTypes
         })
       })
       const data = await response.json()
-      // Esperamos que el backend devuelva un array de hoteles en data.hotels
       if (Array.isArray(data.hotels) && data.hotels.length > 0) {
-        setHotelResults(data.hotels)
+        setHotelResults(data.hotels.sort(() => Math.random() - 0.5))
       } else {
         setNoResults(true)
       }
@@ -392,7 +401,7 @@ export default function Home() {
   const handleChatReset = () => {
     setChatStep('ubicacion')
     setUserLocation('')
-    setUserHotelType('')
+    setUserHotelTypes([])
     setHotelResults([])
     setNoResults(false)
     setSelectedHotel(null)
@@ -418,7 +427,7 @@ export default function Home() {
       const data = await response.json()
       setFreeBotMessage(data.message)
       if (Array.isArray(data.hotels) && data.hotels.length > 0) {
-        setFreeHotelResults(data.hotels)
+        setFreeHotelResults(data.hotels.sort(() => Math.random() - 0.5))
       } else {
         setFreeNoResults(true)
       }
@@ -703,7 +712,23 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Link a hotel (opcional) */}
+              {/* Página web del hotel */}
+              <div>
+                <label htmlFor="websiteLink" className="block text-sm font-medium text-gray-700 mb-2">
+                  {t.websiteLinkLabel}
+                </label>
+                <input
+                  type="url"
+                  id="websiteLink"
+                  name="websiteLink"
+                  value={formData.websiteLink}
+                  onChange={handleFormChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder={t.websiteLinkPlaceholder}
+                />
+              </div>
+
+              {/* Link de reserva (opcional) */}
               <div>
                 <label htmlFor="bookingLink" className="block text-sm font-medium text-gray-700 mb-2">
                   {t.bookingLinkLabel}
@@ -797,20 +822,43 @@ export default function Home() {
               {chatStep === 'tipo' && (
                 <div className="text-center text-gray-700 mt-8">
                   <p className="mb-4">{t.typeQuestion}</p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-4">
                     {hotelTypeOptions.map(option => (
                       <button
                         key={option}
-                        className={`px-4 py-2 rounded-md border ${userHotelType === option ? 'bg-blue-600 text-white' : 'bg-white text-gray-900 hover:bg-blue-100'}`}
+                        className={`px-4 py-2 rounded-md border ${userHotelTypes.includes(option) ? 'bg-blue-600 text-white' : 'bg-white text-gray-900 hover:bg-blue-100'}`}
                         onClick={() => {
-                          setUserHotelType(option)
-                          setChatStep('resultados')
-                          handleSendGuidedQuery(userLocation, option)
+                          setUserHotelTypes(prev =>
+                            prev.includes(option)
+                              ? prev.filter(t => t !== option)
+                              : [...prev, option]
+                          )
                         }}
                       >
                         {option}
                       </button>
                     ))}
+                  </div>
+                  <div className="flex justify-center space-x-2">
+                    <button
+                      className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300"
+                      onClick={() => {
+                        setChatStep('resultados')
+                        handleSendGuidedQuery(userLocation, [])
+                      }}
+                    >
+                      {t.allButton}
+                    </button>
+                    <button
+                      className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:bg-blue-300"
+                      disabled={userHotelTypes.length === 0}
+                      onClick={() => {
+                        setChatStep('resultados')
+                        handleSendGuidedQuery(userLocation, userHotelTypes)
+                      }}
+                    >
+                      {t.searchButton}
+                    </button>
                   </div>
                 </div>
               )}
@@ -842,8 +890,11 @@ export default function Home() {
                               <b>Alrededores:</b> {hotel.surroundings.join(', ')}
                             </div>
                           )}
+                          {hotel.websiteLink && (
+                            <a href={hotel.websiteLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline mt-2 block">{t.websiteLinkLabel}</a>
+                          )}
                           {hotel.bookingLink && (
-                            <a href={hotel.bookingLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline mt-2">Ver sitio web</a>
+                            <a href={hotel.bookingLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline mt-1 block">{t.bookingLinkLabel}</a>
                           )}
                         </div>
                       ))}
@@ -861,7 +912,7 @@ export default function Home() {
               </button>
             </div>
             {selectedHotel && (
-              <HotelDetailModal hotel={selectedHotel} onClose={() => setSelectedHotel(null)} />
+              <HotelDetailModal hotel={selectedHotel} onClose={() => setSelectedHotel(null)} language={language} />
             )}
 
             {/* Free-form Chatbot - TEMPORARILY HIDDEN FOR PRESENTATION */}
@@ -915,20 +966,23 @@ export default function Home() {
                         {hotel.address && <div className="text-gray-500 text-sm mb-1"><b>Dirección:</b> {hotel.address}</div>}
                         {hotel.locationPhrase && <div className="text-gray-500 text-sm mb-1"><b>Ubicación:</b> {hotel.locationPhrase}</div>}
                         {hotel.recreationAreas && <div className="text-gray-500 text-sm mb-1"><b>Servicios / áreas recreativas:</b> {formatRecreationAreas(hotel.recreationAreas)}</div>}
-                        {hotel.surroundings && hotel.surroundings.length > 0 && (
-                          <div className="text-gray-500 text-sm mb-1">
-                            <b>Alrededores:</b> {hotel.surroundings.join(', ')}
-                          </div>
-                        )}
-                        {hotel.bookingLink && (
-                          <a href={hotel.bookingLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline mt-2">{t.bookingLinkLabel}</a>
-                        )}
+        {hotel.surroundings && hotel.surroundings.length > 0 && (
+          <div className="text-gray-500 text-sm mb-1">
+            <b>Alrededores:</b> {hotel.surroundings.join(', ')}
+          </div>
+        )}
+        {hotel.websiteLink && (
+          <a href={hotel.websiteLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline mt-2 block">{t.websiteLinkLabel}</a>
+        )}
+        {hotel.bookingLink && (
+          <a href={hotel.bookingLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline mt-1 block">{t.bookingLinkLabel}</a>
+        )}
                       </div>
                     ))}
                   </div>
                 )}
                 {freeSelectedHotel && (
-                  <HotelDetailModal hotel={freeSelectedHotel} onClose={() => setFreeSelectedHotel(null)} />
+                  <HotelDetailModal hotel={freeSelectedHotel} onClose={() => setFreeSelectedHotel(null)} language={language} />
                 )}
               </div>
             </div>

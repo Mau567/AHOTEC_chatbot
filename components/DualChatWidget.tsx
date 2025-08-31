@@ -36,7 +36,7 @@ export default function DualChatWidget({
   // Guided chat states
   const [chatStep, setChatStep] = useState<'location' | 'type' | 'result'>('location')
   const [userLocation, setUserLocation] = useState('')
-  const [userHotelType, setUserHotelType] = useState('')
+  const [userHotelTypes, setUserHotelTypes] = useState<string[]>([])
   const [guidedMessage, setGuidedMessage] = useState('')
   const [guidedHotels, setGuidedHotels] = useState<any[]>([])
   const [guidedLoading, setGuidedLoading] = useState(false)
@@ -50,7 +50,7 @@ export default function DualChatWidget({
   ]
 
   const t = {
-    assistantTitle: language === 'es' ? 'Sofia' : 'Sofia',
+    assistantTitle: language === 'es' ? 'Lucia' : 'Lucia',
     openChat: language === 'es' ? 'Abrir chat' : 'Open chat',
     closeChat: language === 'es' ? 'Cerrar chat' : 'Close chat',
     guidedTab: language === 'es' ? 'Guiado' : 'Guided',
@@ -58,6 +58,8 @@ export default function DualChatWidget({
     locationQuestion: language === 'es' ? 'Hola, soy tu asistente virtual. ¿Dónde te gustaría buscar un hotel?' : 'Hello, I am your virtual assistant. Where would you like to search for a hotel?',
     typeQuestion: language === 'es' ? '¿Qué tipo de hotel buscas?' : 'What type of hotel are you looking for?',
     nextButton: language === 'es' ? 'Siguiente' : 'Next',
+    searchButton: language === 'es' ? 'Buscar' : 'Search',
+    allButton: language === 'es' ? 'Todos' : 'All',
     resetButton: language === 'es' ? 'Reiniciar' : 'Reset',
     loadingMessage: language === 'es' ? 'Buscando hoteles compatibles...' : 'Searching for compatible hotels...',
     noResultsMessage: language === 'es' ? 'Lo siento, no encontramos un hotel que coincida con tu búsqueda.' : "Sorry, we couldn't find a hotel that matches your search.",
@@ -96,7 +98,8 @@ export default function DualChatWidget({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: inputValue,
-          sessionId
+          sessionId,
+          lang: language
         })
       })
 
@@ -130,7 +133,7 @@ export default function DualChatWidget({
     }
   }
 
-  const handleSendGuided = async () => {
+  const handleSendGuided = async (types: string[]) => {
     setGuidedLoading(true)
     setGuidedMessage('')
     setGuidedHotels([])
@@ -140,14 +143,16 @@ export default function DualChatWidget({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: `Ubicación: ${userLocation}\nTipo de hotel: ${userHotelType}`,
-          sessionId
+          message: `Ubicación: ${userLocation}\nTipo de hotel: ${types.join(', ') || 'Todos'}`,
+          sessionId,
+          lang: language,
+          hotelTypes: types
         })
       })
       const data = await response.json()
       setGuidedMessage(data.message)
       if (Array.isArray(data.hotels) && data.hotels.length > 0) {
-        setGuidedHotels(data.hotels)
+        setGuidedHotels(data.hotels.sort(() => Math.random() - 0.5))
       } else {
         setGuidedNoResults(true)
       }
@@ -162,7 +167,7 @@ export default function DualChatWidget({
   const resetGuided = () => {
     setChatStep('location')
     setUserLocation('')
-    setUserHotelType('')
+    setUserHotelTypes([])
     setGuidedMessage('')
     setGuidedHotels([])
     setGuidedNoResults(false)
@@ -317,20 +322,43 @@ export default function DualChatWidget({
                 {chatStep === 'type' && (
                   <div className="text-center text-gray-700 mt-8">
                     <p className="mb-4">{t.typeQuestion}</p>
-                    <div className="grid grid-cols-1 gap-2">
+                    <div className="grid grid-cols-1 gap-2 mb-4">
                       {hotelTypeOptions.map(option => (
                         <button
                           key={option}
-                          className={`px-4 py-2 rounded-md border ${userHotelType === option ? 'bg-blue-600 text-white' : 'bg-white text-gray-900 hover:bg-blue-100'}`}
+                          className={`px-4 py-2 rounded-md border ${userHotelTypes.includes(option) ? 'bg-blue-600 text-white' : 'bg-white text-gray-900 hover:bg-blue-100'}`}
                           onClick={() => {
-                            setUserHotelType(option)
-                            setChatStep('result')
-                            handleSendGuided()
+                            setUserHotelTypes(prev =>
+                              prev.includes(option)
+                                ? prev.filter(t => t !== option)
+                                : [...prev, option]
+                            )
                           }}
                         >
                           {option}
                         </button>
                       ))}
+                    </div>
+                    <div className="flex justify-center space-x-2">
+                      <button
+                        className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300"
+                        onClick={() => {
+                          setChatStep('result')
+                          handleSendGuided([])
+                        }}
+                      >
+                        {t.allButton}
+                      </button>
+                      <button
+                        className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:bg-blue-300"
+                        disabled={userHotelTypes.length === 0}
+                        onClick={() => {
+                          setChatStep('result')
+                          handleSendGuided(userHotelTypes)
+                        }}
+                      >
+                        {t.searchButton}
+                      </button>
                     </div>
                   </div>
                 )}
