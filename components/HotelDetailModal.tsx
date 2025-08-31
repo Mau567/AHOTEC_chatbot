@@ -9,6 +9,7 @@ interface Hotel {
   city: string
   description: string
   bookingLink?: string
+  website?: string
   imageUrl?: string
   aboutMessage?: string
   recreationAreas?: string
@@ -129,13 +130,28 @@ export default function HotelDetailModal({ hotel, onClose }: HotelDetailModalPro
             </div>
           )}
 
+          {/* Website Link */}
+          {hotel.website && (
+            <div className="pt-4 border-t">
+              <a
+                href={hotel.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-gray-200 text-gray-800 px-6 py-3 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+              >
+                <ExternalLink className="w-4 h-4" />
+                Sitio web
+              </a>
+            </div>
+          )}
+
           {/* Booking Link */}
           {hotel.bookingLink && (
             <div className="pt-4 border-t">
-              <a 
-                href={hotel.bookingLink} 
-                target="_blank" 
-                rel="noopener noreferrer" 
+              <a
+                href={hotel.bookingLink}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
               >
                 <ExternalLink className="w-4 h-4" />

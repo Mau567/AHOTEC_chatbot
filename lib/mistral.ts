@@ -82,4 +82,35 @@ export async function getHotelsBySemanticLocation(locationQuery: string, hotels:
     console.error('Error calling Mistral AI (semantic location):', error)
     return []
   }
-} 
+}
+
+export async function translateText(text: string, targetLang: 'en' | 'es') {
+  if (!text) return text
+  if (targetLang === 'es') return text
+  try {
+    const prompt = `Traduce al ${targetLang === 'en' ? 'inglés' : 'español'} el siguiente texto:\n${text}`
+    const response = await client.chat({
+      model: 'mistral-small-latest',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.3,
+      maxTokens: text.length + 60
+    })
+    return response.choices[0]?.message?.content?.trim() || text
+  } catch {
+    return text
+  }
+}
+
+export async function translateHotelData(hotel: any, lang: 'en' | 'es') {
+  if (lang === 'es') return hotel
+  return {
+    ...hotel,
+    name: await translateText(hotel.name, lang),
+    description: await translateText(hotel.description, lang),
+    locationPhrase: hotel.locationPhrase ? await translateText(hotel.locationPhrase, lang) : undefined,
+    recreationAreas: hotel.recreationAreas ? await translateText(hotel.recreationAreas, lang) : undefined,
+    address: hotel.address ? await translateText(hotel.address, lang) : undefined,
+    surroundings: hotel.surroundings ? await Promise.all(hotel.surroundings.map((s: string) => translateText(s, lang))) : undefined,
+    aboutMessage: hotel.aboutMessage ? await translateText(hotel.aboutMessage, lang) : undefined
+  }
+}

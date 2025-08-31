@@ -10,6 +10,7 @@ export async function POST(request: NextRequest) {
     const city = formData.get('city') as string
     const description = formData.get('description') as string
     const bookingLink = formData.get('bookingLink') as string
+    const website = formData.get('website') as string
     const aboutMessage = formData.get('aboutMessage') as string
     const recreationAreas = formData.get('recreationAreas') as string
     const locationPhrase = formData.get('locationPhrase') as string
@@ -50,6 +51,7 @@ export async function POST(request: NextRequest) {
         city,
         description,
         bookingLink,
+        website,
         aboutMessage,
         recreationAreas,
         locationPhrase,
