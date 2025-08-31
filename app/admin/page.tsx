@@ -11,6 +11,7 @@ interface Hotel {
   city: string
   description: string
   bookingLink?: string
+  websiteLink?: string
   aboutMessage?: string
   recreationAreas?: string
   locationPhrase?: string
@@ -72,6 +73,7 @@ export default function AdminDashboard() {
     surroundings: language === 'es' ? 'Alrededores' : 'Surroundings',
     hotelType: language === 'es' ? 'Tipo / Categoría de hotel' : 'Hotel type / Category',
     bookingLink: language === 'es' ? 'Link de Reserva' : 'Booking Link',
+    websiteLink: language === 'es' ? 'Página web' : 'Website',
     close: language === 'es' ? 'Cerrar' : 'Close',
     
     // Edit modal
@@ -573,12 +575,24 @@ export default function AdminDashboard() {
                       <p className="mt-1 text-sm text-gray-900">{selectedHotel.hotelType}</p>
                     </div>
                   )}
-                  {selectedHotel.bookingLink && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">{t.bookingLink}</label>
-                      <a href={selectedHotel.bookingLink} target="_blank" rel="noopener noreferrer" className="mt-1 text-sm text-blue-600 hover:text-blue-800">
-                        {selectedHotel.bookingLink}
-                      </a>
+                  {(selectedHotel.bookingLink || selectedHotel.websiteLink) && (
+                    <div className="space-y-1">
+                      {selectedHotel.bookingLink && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">{t.bookingLink}</label>
+                          <a href={selectedHotel.bookingLink} target="_blank" rel="noopener noreferrer" className="mt-1 text-sm text-blue-600 hover:text-blue-800">
+                            {selectedHotel.bookingLink}
+                          </a>
+                        </div>
+                      )}
+                      {selectedHotel.websiteLink && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">{t.websiteLink}</label>
+                          <a href={selectedHotel.websiteLink} target="_blank" rel="noopener noreferrer" className="mt-1 text-sm text-blue-600 hover:text-blue-800">
+                            {selectedHotel.websiteLink}
+                          </a>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -677,9 +691,15 @@ export default function AdminDashboard() {
                       <option value="Hostería / Hacienda / Lodge / 5*, 4* o 3*">{t.countryInn}</option>
                     </select>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">{t.bookingLink}</label>
-                    <input type="text" className="mt-1 w-full border px-2 py-1 rounded" value={editData.bookingLink || ''} onChange={e => setEditData({ ...editData, bookingLink: e.target.value })} />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">{t.bookingLink}</label>
+                      <input type="text" className="mt-1 w-full border px-2 py-1 rounded" value={editData.bookingLink || ''} onChange={e => setEditData({ ...editData, bookingLink: e.target.value })} />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">{t.websiteLink}</label>
+                      <input type="text" className="mt-1 w-full border px-2 py-1 rounded" value={editData.websiteLink || ''} onChange={e => setEditData({ ...editData, websiteLink: e.target.value })} />
+                    </div>
                   </div>
                 </div>
                 <div className="flex justify-end space-x-3 mt-6">

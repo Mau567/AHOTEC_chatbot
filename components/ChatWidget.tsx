@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState } from 'react'
 import { MessageCircle, X, Building } from 'lucide-react'
 import HotelDetailModal from '@/components/HotelDetailModal'
 // import MapModal from '@/components/MapModal' // TEMPORARILY HIDDEN FOR PRESENTATION
@@ -25,7 +25,7 @@ export default function ChatWidget({
   const [isOpen, setIsOpen] = useState(false)
   const [step, setStep] = useState<'ubicacion' | 'tipo' | 'resultados'>('ubicacion')
   const [userLocation, setUserLocation] = useState('')
-  const [userHotelType, setUserHotelType] = useState('')
+  const [userHotelTypes, setUserHotelTypes] = useState<string[]>([])
   const [hotelResults, setHotelResults] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [noResults, setNoResults] = useState(false)
@@ -34,18 +34,21 @@ export default function ChatWidget({
   const [sessionId] = useState(() => `widget_${Date.now()}_${Math.random().toString(36).substr(2,9)}`)
 
   const t = {
-    assistantTitle: language === 'es' ? 'Sofia' : 'Sofia',
+    assistantTitle: language === 'es' ? 'Lucia' : 'Lucia',
     openChat: language === 'es' ? 'Abrir chat' : 'Open chat',
     closeChat: language === 'es' ? 'Cerrar chat' : 'Close chat',
     locationQuestion: language === 'es' ? 'Hola, soy tu asistente virtual. ¿Dónde te gustaría buscar un hotel?' : 'Hello, I am your virtual assistant. Where would you like to search for a hotel?',
     typeQuestion: language === 'es' ? '¿Qué tipo de hotel buscas?' : 'What type of hotel are you looking for?',
     nextButton: language === 'es' ? 'Siguiente' : 'Next',
+    searchButton: language === 'es' ? 'Buscar' : 'Search',
     loadingMessage: language === 'es' ? 'Buscando hoteles compatibles...' : 'Searching for compatible hotels...',
     noResultsMessage: language === 'es' ? 'Lo siento, no encontramos un hotel que coincida con tu búsqueda.' : 'Sorry, we couldn\'t find a hotel that matches your search.',
     resetButton: language === 'es' ? 'Reiniciar búsqueda' : 'Reset search',
     chatPlaceholder: language === 'es' ? 'Ciudad, región o dirección' : 'City, region or address',
     sendButton: language === 'es' ? 'Enviar' : 'Send',
-    bookingLinkLabel: language === 'es' ? 'Link a hotel' : 'Hotel link',
+    bookingLinkLabel: language === 'es' ? 'Reserva' : 'Booking',
+    websiteLinkLabel: language === 'es' ? 'Sitio web' : 'Website',
+    allButton: language === 'es' ? 'Todos' : 'All',
     mapButton: language === 'es' ? 'Ver mapa' : 'Show map',
     english: 'English',
     spanish: 'Español'
@@ -61,7 +64,7 @@ export default function ChatWidget({
     return items.join(', ')
   }
 
-  const handleSendGuidedQuery = async (location: string, hotelType: string) => {
+  const handleSendGuidedQuery = async (location: string, hotelTypes: string[]) => {
     setIsLoading(true)
     setNoResults(false)
     setHotelResults([])
@@ -70,14 +73,14 @@ export default function ChatWidget({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: `Ubicación: ${location}\nTipo de hotel: ${hotelType}`,
+          message: `Ubicación: ${location}\nTipo de hotel: ${hotelTypes.join(', ')}`,
           sessionId,
           lang: language
         })
       })
       const data = await response.json()
       if (Array.isArray(data.hotels) && data.hotels.length > 0) {
-        setHotelResults(data.hotels)
+        setHotelResults([...data.hotels].sort(() => Math.random() - 0.5))
       } else {
         setNoResults(true)
       }
@@ -88,10 +91,16 @@ export default function ChatWidget({
     }
   }
 
+  const toggleHotelType = (option: string) => {
+    setUserHotelTypes(prev =>
+      prev.includes(option) ? prev.filter(o => o !== option) : [...prev, option]
+    )
+  }
+
   const handleChatReset = () => {
     setStep('ubicacion')
     setUserLocation('')
-    setUserHotelType('')
+    setUserHotelTypes([])
     setHotelResults([])
     setNoResults(false)
     setSelectedHotel(null)
@@ -170,20 +179,39 @@ export default function ChatWidget({
             {step === 'tipo' && (
               <div className="text-center text-gray-700 mt-4">
                 <p className="mb-4 font-medium">{t.typeQuestion}</p>
-                <div className="grid grid-cols-1 gap-2">
+                <div className="grid grid-cols-1 gap-2 mb-4 text-left">
                   {hotelTypeOptions.map(option => (
-                    <button
-                      key={option}
-                      className={`px-4 py-2 rounded-md border ${userHotelType === option ? 'bg-blue-600 text-white' : 'bg-white text-gray-900 hover:bg-blue-100'}`}
-                      onClick={() => {
-                        setUserHotelType(option)
-                        setStep('resultados')
-                        handleSendGuidedQuery(userLocation, option)
-                      }}
-                    >
-                      {option}
-                    </button>
+                    <label key={option} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4 text-blue-600"
+                        checked={userHotelTypes.includes(option)}
+                        onChange={() => toggleHotelType(option)}
+                      />
+                      <span>{option}</span>
+                    </label>
                   ))}
+                </div>
+                <div className="flex justify-center space-x-2">
+                  <button
+                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
+                    disabled={userHotelTypes.length === 0}
+                    onClick={() => {
+                      setStep('resultados')
+                      handleSendGuidedQuery(userLocation, userHotelTypes)
+                    }}
+                  >
+                    {t.searchButton}
+                  </button>
+                  <button
+                    className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300"
+                    onClick={() => {
+                      setStep('resultados')
+                      handleSendGuidedQuery(userLocation, [])
+                    }}
+                  >
+                    {t.allButton}
+                  </button>
                 </div>
               </div>
             )}
@@ -214,9 +242,14 @@ export default function ChatWidget({
                             <b>Alrededores:</b> {hotel.surroundings.join(', ')}
                           </div>
                         )}
-                        {hotel.bookingLink && (
-                          <a href={hotel.bookingLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline mt-1 text-xs">{t.bookingLinkLabel}</a>
-                        )}
+                        <div className="flex space-x-2 mt-1">
+                          {hotel.bookingLink && (
+                            <a href={hotel.bookingLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs">{t.bookingLinkLabel}</a>
+                          )}
+                          {hotel.websiteLink && (
+                            <a href={hotel.websiteLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs">{t.websiteLinkLabel}</a>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>

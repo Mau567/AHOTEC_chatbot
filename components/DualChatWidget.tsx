@@ -50,7 +50,7 @@ export default function DualChatWidget({
   ]
 
   const t = {
-    assistantTitle: language === 'es' ? 'Sofia' : 'Sofia',
+    assistantTitle: language === 'es' ? 'Lucia' : 'Lucia',
     openChat: language === 'es' ? 'Abrir chat' : 'Open chat',
     closeChat: language === 'es' ? 'Cerrar chat' : 'Close chat',
     guidedTab: language === 'es' ? 'Guiado' : 'Guided',

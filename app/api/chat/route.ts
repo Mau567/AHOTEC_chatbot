@@ -1,26 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { getHotelRecommendations, getHotelsBySemanticLocation } from '@/lib/mistral'
+import { getHotelsBySemanticLocation } from '@/lib/mistral'
+import { translateText } from '@/lib/translate'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const { message, sessionId, lang = 'es' } = body
 
-    // Detect guided search
-    const locationMatch = message.match(/Ubicación:\s*(.*)/i)
-    const typeMatch = message.match(/Tipo de hotel:\s*(.*)/i)
+    const locationMatch = message?.match(/Ubicación:\s*(.*)/i)
+    const typeMatch = message?.match(/Tipo de hotel:\s*(.*)/i)
     let location = ''
-    let hotelType = ''
+    let hotelTypes: string[] = []
     if (locationMatch) location = locationMatch[1].trim()
-    if (typeMatch) hotelType = typeMatch[1].trim()
+    if (typeMatch) hotelTypes = typeMatch[1].split(',').map(t => t.trim()).filter(Boolean)
 
     // 1. Filtrar primero por tipo de hotel (exacto, insensible a mayúsculas)
     const filteredByType = await prisma.hotel.findMany({
       where: {
         status: 'APPROVED',
         isPaid: true,
-        hotelType: hotelType ? { equals: hotelType, mode: 'insensitive' } : undefined,
+        hotelType: hotelTypes.length > 0 ? { in: hotelTypes, mode: 'insensitive' } : undefined,
       }
     })
 
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     let finalHotels = filteredByType
 
     // 2. Si hay ubicación y tipo, usar AI SOLO con los hoteles filtrados por tipo
-    if (location && hotelType) {
+    if (location && hotelTypes.length > 0) {
       if (filteredByType.length === 0) {
         chatbotMessage = lang === 'en'
           ? 'Sorry, no hotels found for that type.'
@@ -41,8 +41,7 @@ export async function POST(request: NextRequest) {
           ? (finalHotels.length > 0 ? 'Here are the hotels that match your search.' : 'Sorry, no hotels matched your search.')
           : (finalHotels.length > 0 ? 'Estos son los hoteles que coinciden con tu búsqueda.' : 'Lo siento, no se encontraron hoteles compatibles.')
       }
-    } else if (hotelType) {
-      // Si solo hay tipo, mostrar todos los hoteles de ese tipo
+    } else if (hotelTypes.length > 0) {
       chatbotMessage = lang === 'en'
         ? (filteredByType.length > 0 ? 'Here are the hotels of the selected type.' : 'Sorry, no hotels found for that type.')
         : (filteredByType.length > 0 ? 'Estos son los hoteles de ese tipo.' : 'Lo siento, no se encontraron hoteles de ese tipo.')
@@ -59,6 +58,22 @@ export async function POST(request: NextRequest) {
         ? (allHotels.length > 0 ? 'Here are all available hotels.' : 'Sorry, no hotels found.')
         : (allHotels.length > 0 ? 'Estos son todos los hoteles disponibles.' : 'Lo siento, no se encontraron hoteles.')
       finalHotels = allHotels
+    }
+
+    // Randomize order
+    finalHotels = finalHotels.sort(() => Math.random() - 0.5)
+
+    // Translate hotel content if needed
+    if (lang === 'en') {
+      finalHotels = await Promise.all(finalHotels.map(async (hotel) => ({
+        ...hotel,
+        name: await translateText(hotel.name, 'en'),
+        description: await translateText(hotel.description, 'en'),
+        address: hotel.address ? await translateText(hotel.address, 'en') : null,
+        locationPhrase: hotel.locationPhrase ? await translateText(hotel.locationPhrase, 'en') : null,
+        recreationAreas: hotel.recreationAreas ? await translateText(hotel.recreationAreas, 'en') : null,
+        surroundings: hotel.surroundings ? await Promise.all(hotel.surroundings.map((s: string) => translateText(s, 'en'))) : []
+      })))
     }
 
     // Guardar la sesión como antes
