@@ -11,6 +11,7 @@ interface Hotel {
   city: string
   description: string
   bookingLink?: string
+  websiteLink?: string
   aboutMessage?: string
   recreationAreas?: string
   locationPhrase?: string

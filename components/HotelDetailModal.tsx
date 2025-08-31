@@ -9,6 +9,7 @@ interface Hotel {
   city: string
   description: string
   bookingLink?: string
+  websiteLink?: string
   imageUrl?: string
   aboutMessage?: string
   recreationAreas?: string
@@ -20,10 +21,21 @@ interface Hotel {
 
 interface HotelDetailModalProps {
   hotel: Hotel
+  language: 'es' | 'en'
   onClose: () => void
 }
 
-export default function HotelDetailModal({ hotel, onClose }: HotelDetailModalProps) {
+export default function HotelDetailModal({ hotel, language, onClose }: HotelDetailModalProps) {
+  const t = {
+    location: language === 'es' ? 'Ciudad / Región' : 'City / Region',
+    description: language === 'es' ? 'Descripción' : 'Description',
+    recreation: language === 'es' ? 'Servicios / áreas recreativas' : 'Services / recreation areas',
+    locationPhrase: language === 'es' ? 'Ubicación' : 'Location',
+    address: language === 'es' ? 'Dirección' : 'Address',
+    surroundings: language === 'es' ? 'Alrededores' : 'Surroundings',
+    bookNow: language === 'es' ? 'Reservar ahora' : 'Book now',
+    website: language === 'es' ? 'Sitio web' : 'Website'
+  }
   const formatRecreationAreas = (areas: string) => {
     const items = areas.split(',').map(a => a.trim())
     const genIndex = items.findIndex(a => a.toLowerCase() === 'generador eléctrico')
@@ -57,7 +69,7 @@ export default function HotelDetailModal({ hotel, onClose }: HotelDetailModalPro
             <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
               <MapPin className="w-5 h-5 text-blue-600" />
               <div>
-                <p className="text-sm text-gray-600">Ciudad / Región</p>
+                <p className="text-sm text-gray-600">{t.location}</p>
                 <p className="font-medium text-gray-900">{hotel.city}, {hotel.region}</p>
               </div>
             </div>
@@ -77,7 +89,7 @@ export default function HotelDetailModal({ hotel, onClose }: HotelDetailModalPro
 
           {/* Description */}
           <div>
-            <h4 className="text-lg font-semibold text-gray-900 mb-3">Descripción</h4>
+            <h4 className="text-lg font-semibold text-gray-900 mb-3">{t.description}</h4>
             <p className="text-gray-700 leading-relaxed">{hotel.description}</p>
           </div>
 
@@ -87,7 +99,7 @@ export default function HotelDetailModal({ hotel, onClose }: HotelDetailModalPro
               <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-lg">
                 <Waves className="w-5 h-5 text-purple-600" />
                 <div>
-                  <p className="text-sm text-gray-600">Servicios / áreas recreativas</p>
+                  <p className="text-sm text-gray-600">{t.recreation}</p>
                   <p className="font-medium text-gray-900">{formatRecreationAreas(hotel.recreationAreas)}</p>
                 </div>
               </div>
@@ -96,7 +108,7 @@ export default function HotelDetailModal({ hotel, onClose }: HotelDetailModalPro
               <div className="flex items-center gap-3 p-3 bg-indigo-50 rounded-lg">
                 <Navigation className="w-5 h-5 text-indigo-600" />
                 <div>
-                  <p className="text-sm text-gray-600">Ubicación</p>
+                  <p className="text-sm text-gray-600">{t.locationPhrase}</p>
                   <p className="font-medium text-gray-900">{hotel.locationPhrase}</p>
                 </div>
               </div>
@@ -105,7 +117,7 @@ export default function HotelDetailModal({ hotel, onClose }: HotelDetailModalPro
               <div className="flex items-center gap-3 p-3 bg-orange-50 rounded-lg">
                 <Home className="w-5 h-5 text-orange-600" />
                 <div>
-                  <p className="text-sm text-gray-600">Dirección</p>
+                  <p className="text-sm text-gray-600">{t.address}</p>
                   <p className="font-medium text-gray-900">{hotel.address}</p>
                 </div>
               </div>
@@ -117,7 +129,7 @@ export default function HotelDetailModal({ hotel, onClose }: HotelDetailModalPro
             <div>
               <div className="flex items-center gap-3 mb-3">
                 <Map className="w-5 h-5 text-gray-600" />
-                <h4 className="text-lg font-semibold text-gray-900">Alrededores</h4>
+                <h4 className="text-lg font-semibold text-gray-900">{t.surroundings}</h4>
               </div>
               <div className="flex flex-wrap gap-2">
                 {hotel.surroundings.map((surrounding, index) => (
@@ -129,18 +141,31 @@ export default function HotelDetailModal({ hotel, onClose }: HotelDetailModalPro
             </div>
           )}
 
-          {/* Booking Link */}
-          {hotel.bookingLink && (
-            <div className="pt-4 border-t">
-              <a 
-                href={hotel.bookingLink} 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
-              >
-                <ExternalLink className="w-4 h-4" />
-                Reservar ahora
-              </a>
+          {/* Links */}
+          {(hotel.bookingLink || hotel.websiteLink) && (
+            <div className="pt-4 border-t flex gap-3 flex-wrap">
+              {hotel.bookingLink && (
+                <a
+                  href={hotel.bookingLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  {t.bookNow}
+                </a>
+              )}
+              {hotel.websiteLink && (
+                <a
+                  href={hotel.websiteLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 bg-gray-100 text-gray-900 px-6 py-3 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  {t.website}
+                </a>
+              )}
             </div>
           )}
         </div>

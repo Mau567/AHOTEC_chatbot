@@ -12,6 +12,7 @@ interface HotelFormData {
   city: string
   description: string
   bookingLink: string // Renombrar a linkHotel
+  websiteLink?: string
   image?: File | null
   recreationAreas: string[] // Servicios / áreas recreativas ahora es array
   locationPhrase: string // Localización en una frase
@@ -47,7 +48,8 @@ export default function Home() {
     descriptionLabel: language === 'es' ? 'Descripción *' : 'Description *',
     recreationAreasLabel: language === 'es' ? '¿Qué servicios / áreas recreativas ofrece el hotel? *' : 'What services / recreational areas does the hotel offer? *',
     surroundingsLabel: language === 'es' ? 'Puntos importantes alrededor del hotel. *' : 'Important points around the hotel. *',
-    bookingLinkLabel: language === 'es' ? 'Link a hotel' : 'Hotel link',
+    bookingLinkLabel: language === 'es' ? 'Link de reserva' : 'Booking link',
+    websiteLinkLabel: language === 'es' ? 'Sitio web' : 'Website',
     imageLabel: language === 'es' ? 'Fotografía del hotel' : 'Hotel photo',
     
     // Placeholders
@@ -84,7 +86,7 @@ export default function Home() {
     recreationError: language === 'es' ? 'Selecciona al menos un servicio o área recreativa.' : 'Select at least one service or recreational area.',
     
     // Chat
-    chatTitle: language === 'es' ? 'Sofia - Asistente de Hoteles' : 'Sofia - Hotel Assistant',
+    chatTitle: language === 'es' ? 'Lucia - Asistente de Hoteles' : 'Lucia - Hotel Assistant',
     locationQuestion: language === 'es' ? 'Hola, soy tu asistente virtual. ¿Dónde te gustaría buscar un hotel?' : 'Hello, I am your virtual assistant. Where would you like to search for a hotel?',
     typeQuestion: language === 'es' ? '¿Qué tipo de hotel buscas?' : 'What type of hotel are you looking for?',
     nextButton: language === 'es' ? 'Siguiente' : 'Next',
@@ -104,6 +106,7 @@ export default function Home() {
     city: '',
     description: '',
     bookingLink: '',
+    websiteLink: '',
     image: null,
     recreationAreas: [], // Cambiado a array
     locationPhrase: '',
@@ -134,8 +137,8 @@ export default function Home() {
   const [freeIsLoading, setFreeIsLoading] = useState(false)
   // Set initial freeBotMessage state to a friendly welcome message
   const [freeBotMessage, setFreeBotMessage] = useState(language === 'es'
-    ? '¡Hola! 😊 Soy Sofia, tu asistente virtual. ¿Dónde te gustaría buscar un hotel? 🏨✨'
-    : "Hello! 😊 I'm Sofia, your virtual assistant. Where would you like to search for a hotel? 🏨✨"
+    ? '¡Hola! 😊 Soy Lucia, tu asistente virtual. ¿Dónde te gustaría buscar un hotel? 🏨✨'
+    : "Hello! 😊 I'm Lucia, your virtual assistant. Where would you like to search for a hotel? 🏨✨"
   )
   const [freeHotelResults, setFreeHotelResults] = useState<any[]>([])
   const [freeNoResults, setFreeNoResults] = useState(false)
@@ -260,6 +263,7 @@ export default function Home() {
       form.append('city', formData.city)
       form.append('description', formData.description)
       form.append('bookingLink', formData.bookingLink)
+      form.append('websiteLink', formData.websiteLink || '')
       if (formData.image) {
         form.append('image', formData.image)
       }
@@ -843,7 +847,10 @@ export default function Home() {
                             </div>
                           )}
                           {hotel.bookingLink && (
-                            <a href={hotel.bookingLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline mt-2">Ver sitio web</a>
+                            <a href={hotel.bookingLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline mt-2 mr-2">{t.bookingLinkLabel}</a>
+                          )}
+                          {hotel.websiteLink && (
+                            <a href={hotel.websiteLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline mt-2">{t.websiteLinkLabel}</a>
                           )}
                         </div>
                       ))}
@@ -861,7 +868,7 @@ export default function Home() {
               </button>
             </div>
             {selectedHotel && (
-              <HotelDetailModal hotel={selectedHotel} onClose={() => setSelectedHotel(null)} />
+              <HotelDetailModal hotel={selectedHotel} language={language} onClose={() => setSelectedHotel(null)} />
             )}
 
             {/* Free-form Chatbot - TEMPORARILY HIDDEN FOR PRESENTATION */}
@@ -921,14 +928,17 @@ export default function Home() {
                           </div>
                         )}
                         {hotel.bookingLink && (
-                          <a href={hotel.bookingLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline mt-2">{t.bookingLinkLabel}</a>
+                          <a href={hotel.bookingLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline mt-2 mr-2">{t.bookingLinkLabel}</a>
+                        )}
+                        {hotel.websiteLink && (
+                          <a href={hotel.websiteLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline mt-2">{t.websiteLinkLabel}</a>
                         )}
                       </div>
                     ))}
                   </div>
                 )}
                 {freeSelectedHotel && (
-                  <HotelDetailModal hotel={freeSelectedHotel} onClose={() => setFreeSelectedHotel(null)} />
+                  <HotelDetailModal hotel={freeSelectedHotel} language={language} onClose={() => setFreeSelectedHotel(null)} />
                 )}
               </div>
             </div>
