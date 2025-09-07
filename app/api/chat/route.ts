@@ -35,11 +35,38 @@ export async function POST(request: NextRequest) {
           : 'Lo siento, no se encontraron hoteles de ese tipo.'
         finalHotels = []
       } else {
-        const aiHotelIds = await getHotelsBySemanticLocation(location, filteredByType, lang)
-        finalHotels = filteredByType.filter(hotel => aiHotelIds.includes(hotel.id))
-        chatbotMessage = lang === 'en'
-          ? (finalHotels.length > 0 ? 'Here are the hotels that match your search.' : 'Sorry, no hotels matched your search.')
-          : (finalHotels.length > 0 ? 'Estos son los hoteles que coinciden con tu búsqueda.' : 'Lo siento, no se encontraron hoteles compatibles.')
+        // Validación: detectar búsquedas vagas
+        const vagueSearches = ['aeropuerto', 'airport', 'iglesia', 'church', 'parque', 'park', 'centro', 'center', 'hotel', 'restaurante', 'restaurant', 'mall', 'downtown', 'ciudad', 'city', 'lugar', 'place', 'zona', 'zone', 'area']
+        const isVagueSearch = vagueSearches.some(vague => 
+          location.toLowerCase().trim() === vague.toLowerCase().trim()
+        )
+        
+        if (isVagueSearch) {
+          chatbotMessage = lang === 'en'
+            ? 'Please be more specific. Try searching for a specific location like "Mariscal Sucre Airport" or "Quito Airport" instead of just "airport".'
+            : 'Por favor, sé más específico. Intenta buscar una ubicación específica como "Aeropuerto Mariscal Sucre" o "Aeropuerto de Quito" en lugar de solo "aeropuerto".'
+          finalHotels = []
+        } else {
+          const aiHotelIds = await getHotelsBySemanticLocation(location, filteredByType, lang)
+          finalHotels = filteredByType.filter(hotel => aiHotelIds.includes(hotel.id))
+          
+          // Validación adicional: asegurar que los hoteles estén en la región correcta
+          if (location.toLowerCase().includes('quito') || location.toLowerCase().includes('mariscal sucre')) {
+            finalHotels = finalHotels.filter(hotel => 
+              hotel.region.toLowerCase().includes('sierra') || 
+              hotel.city.toLowerCase().includes('quito')
+            )
+          } else if (location.toLowerCase().includes('guayaquil') || location.toLowerCase().includes('olmedo')) {
+            finalHotels = finalHotels.filter(hotel => 
+              hotel.region.toLowerCase().includes('costa') || 
+              hotel.city.toLowerCase().includes('guayaquil')
+            )
+          }
+          
+          chatbotMessage = lang === 'en'
+            ? (finalHotels.length > 0 ? 'Here are the hotels that match your search.' : 'Sorry, no hotels matched your search.')
+            : (finalHotels.length > 0 ? 'Estos son los hoteles que coinciden con tu búsqueda.' : 'Lo siento, no se encontraron hoteles compatibles.')
+        }
       }
     } else if (hotelType) {
       // Si solo hay tipo, mostrar todos los hoteles de ese tipo
