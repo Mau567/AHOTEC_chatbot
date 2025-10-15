@@ -28,7 +28,8 @@ model Hotel {
   region      String
   city        String
   description String
-  bookingLink String?
+  websiteLink String?      // Link to hotel website
+  bookingLink String?      // Link to booking page
   status      HotelStatus  @default(PENDING)
   isPaid      Boolean      @default(false)
   price       Float?

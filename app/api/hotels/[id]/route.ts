@@ -16,6 +16,7 @@ export async function PATCH(
       region,
       city,
       description,
+      websiteLink,
       bookingLink,
       aboutMessage,
       recreationAreas,
@@ -40,6 +41,7 @@ export async function PATCH(
     if (region !== undefined) data.region = region
     if (city !== undefined) data.city = city
     if (description !== undefined) data.description = description
+    if (websiteLink !== undefined) data.websiteLink = websiteLink
     if (bookingLink !== undefined) data.bookingLink = bookingLink
     if (aboutMessage !== undefined) data.aboutMessage = aboutMessage
     if (recreationAreas !== undefined) data.recreationAreas = recreationAreas

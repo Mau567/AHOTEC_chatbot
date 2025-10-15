@@ -229,9 +229,14 @@ export default function ChatWidget({
                             <b>Alrededores:</b> {hotel.surroundings.join(', ')}
                           </div>
                         )}
-                        {hotel.bookingLink && (
-                          <a href={hotel.bookingLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline mt-1 text-xs">{t.bookingLinkLabel}</a>
-                        )}
+                        <div className="flex gap-2 mt-1">
+                          {hotel.websiteLink && (
+                            <a href={hotel.websiteLink} target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:underline text-xs">Sitio web</a>
+                          )}
+                          {hotel.bookingLink && (
+                            <a href={hotel.bookingLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs">Reservar</a>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>

@@ -11,7 +11,8 @@ interface HotelFormData {
   region: string
   city: string
   description: string
-  bookingLink: string // Renombrar a linkHotel
+  websiteLink: string // Link al sitio web del hotel
+  bookingLink: string // Link a reservas
   image?: File | null
   recreationAreas: string[] // Servicios / áreas recreativas ahora es array
   locationPhrase: string // Localización en una frase
@@ -47,7 +48,8 @@ export default function Home() {
     descriptionLabel: language === 'es' ? 'Descripción *' : 'Description *',
     recreationAreasLabel: language === 'es' ? '¿Qué servicios / áreas recreativas ofrece el hotel? *' : 'What services / recreational areas does the hotel offer? *',
     surroundingsLabel: language === 'es' ? 'Puntos importantes alrededor del hotel. *' : 'Important points around the hotel. *',
-    bookingLinkLabel: language === 'es' ? 'Link a hotel' : 'Hotel link',
+    websiteLinkLabel: language === 'es' ? 'Link al sitio web del hotel' : 'Hotel website link',
+    bookingLinkLabel: language === 'es' ? 'Link a reservas' : 'Booking link',
     imageLabel: language === 'es' ? 'Fotografía del hotel' : 'Hotel photo',
     
     // Placeholders
@@ -57,6 +59,7 @@ export default function Home() {
     addressPlaceholder: language === 'es' ? 'Av. Amazonas N34-120 y Av. Naciones Unidas, Quito' : 'Av. Amazonas N34-120 and Av. Naciones Unidas, Quito',
     locationPhrasePlaceholder: language === 'es' ? 'En el corazón de Quito, cerca del parque La Carolina.' : 'In the heart of Quito, near La Carolina park.',
     descriptionPlaceholder: language === 'es' ? 'Describe las características únicas de tu hotel' : 'Describe the unique features of your hotel',
+    websiteLinkPlaceholder: language === 'es' ? 'https://tu-sitio-web.com' : 'https://your-website.com',
     bookingLinkPlaceholder: language === 'es' ? 'https://tu-sitio-web.com/reservas' : 'https://your-website.com/book',
     pointPlaceholder: language === 'es' ? 'Punto' : 'Point',
     
@@ -103,6 +106,7 @@ export default function Home() {
     region: '',
     city: '',
     description: '',
+    websiteLink: '',
     bookingLink: '',
     image: null,
     recreationAreas: [], // Cambiado a array
@@ -259,6 +263,7 @@ export default function Home() {
       form.append('region', formData.region)
       form.append('city', formData.city)
       form.append('description', formData.description)
+      form.append('websiteLink', formData.websiteLink)
       form.append('bookingLink', formData.bookingLink)
       if (formData.image) {
         form.append('image', formData.image)
@@ -283,6 +288,7 @@ export default function Home() {
           region: '',
           city: '',
           description: '',
+          websiteLink: '',
           bookingLink: '',
           image: null,
           recreationAreas: [],
@@ -703,7 +709,23 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Link a hotel (opcional) */}
+              {/* Link al sitio web (opcional) */}
+              <div>
+                <label htmlFor="websiteLink" className="block text-sm font-medium text-gray-700 mb-2">
+                  {t.websiteLinkLabel}
+                </label>
+                <input
+                  type="url"
+                  id="websiteLink"
+                  name="websiteLink"
+                  value={formData.websiteLink}
+                  onChange={handleFormChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder={t.websiteLinkPlaceholder}
+                />
+              </div>
+
+              {/* Link a reservas (opcional) */}
               <div>
                 <label htmlFor="bookingLink" className="block text-sm font-medium text-gray-700 mb-2">
                   {t.bookingLinkLabel}
@@ -854,9 +876,14 @@ export default function Home() {
                               <b>Alrededores:</b> {hotel.surroundings.join(', ')}
                             </div>
                           )}
-                          {hotel.bookingLink && (
-                            <a href={hotel.bookingLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline mt-2">Ver sitio web</a>
-                          )}
+                          <div className="flex gap-3 mt-2">
+                            {hotel.websiteLink && (
+                              <a href={hotel.websiteLink} target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:underline text-sm">Ver sitio web</a>
+                            )}
+                            {hotel.bookingLink && (
+                              <a href={hotel.bookingLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-sm">Reservar ahora</a>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>

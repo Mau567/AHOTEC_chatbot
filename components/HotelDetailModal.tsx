@@ -8,6 +8,7 @@ interface Hotel {
   region: string
   city: string
   description: string
+  websiteLink?: string
   bookingLink?: string
   imageUrl?: string
   aboutMessage?: string
@@ -129,18 +130,31 @@ export default function HotelDetailModal({ hotel, onClose }: HotelDetailModalPro
             </div>
           )}
 
-          {/* Booking Link */}
-          {hotel.bookingLink && (
-            <div className="pt-4 border-t">
-              <a 
-                href={hotel.bookingLink} 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
-              >
-                <ExternalLink className="w-4 h-4" />
-                Reservar ahora
-              </a>
+          {/* Links */}
+          {(hotel.websiteLink || hotel.bookingLink) && (
+            <div className="pt-4 border-t flex flex-wrap gap-3">
+              {hotel.websiteLink && (
+                <a 
+                  href={hotel.websiteLink} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="inline-flex items-center gap-2 bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors font-medium"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  Ver sitio web
+                </a>
+              )}
+              {hotel.bookingLink && (
+                <a 
+                  href={hotel.bookingLink} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  Reservar ahora
+                </a>
+              )}
             </div>
           )}
         </div>

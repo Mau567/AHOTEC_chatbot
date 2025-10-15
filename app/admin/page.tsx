@@ -10,6 +10,7 @@ interface Hotel {
   region: string
   city: string
   description: string
+  websiteLink?: string
   bookingLink?: string
   aboutMessage?: string
   recreationAreas?: string
@@ -71,6 +72,7 @@ export default function AdminDashboard() {
     address: language === 'es' ? 'Dirección' : 'Address',
     surroundings: language === 'es' ? 'Alrededores' : 'Surroundings',
     hotelType: language === 'es' ? 'Tipo / Categoría de hotel' : 'Hotel type / Category',
+    websiteLink: language === 'es' ? 'Link al sitio web' : 'Website Link',
     bookingLink: language === 'es' ? 'Link de Reserva' : 'Booking Link',
     close: language === 'es' ? 'Cerrar' : 'Close',
     
@@ -573,6 +575,14 @@ export default function AdminDashboard() {
                       <p className="mt-1 text-sm text-gray-900">{selectedHotel.hotelType}</p>
                     </div>
                   )}
+                  {selectedHotel.websiteLink && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">{t.websiteLink}</label>
+                      <a href={selectedHotel.websiteLink} target="_blank" rel="noopener noreferrer" className="mt-1 text-sm text-blue-600 hover:text-blue-800">
+                        {selectedHotel.websiteLink}
+                      </a>
+                    </div>
+                  )}
                   {selectedHotel.bookingLink && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700">{t.bookingLink}</label>
@@ -676,6 +686,10 @@ export default function AdminDashboard() {
                       <option value="Hostal / Bed and Breakfast / 3*, 2* o 1*">{t.hostel}</option>
                       <option value="Hostería / Hacienda / Lodge / 5*, 4* o 3*">{t.countryInn}</option>
                     </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">{t.websiteLink}</label>
+                    <input type="text" className="mt-1 w-full border px-2 py-1 rounded" value={editData.websiteLink || ''} onChange={e => setEditData({ ...editData, websiteLink: e.target.value })} />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">{t.bookingLink}</label>

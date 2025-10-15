@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma, supabase } from '@/lib/db'
 
+
 export async function POST(request: NextRequest) {
   try {
     // Parse multipart/form-data
@@ -9,6 +10,7 @@ export async function POST(request: NextRequest) {
     const region = formData.get('region') as string
     const city = formData.get('city') as string
     const description = formData.get('description') as string
+    const websiteLink = formData.get('websiteLink') as string
     const bookingLink = formData.get('bookingLink') as string
     const aboutMessage = formData.get('aboutMessage') as string
     const recreationAreas = formData.get('recreationAreas') as string
@@ -49,6 +51,7 @@ export async function POST(request: NextRequest) {
         region,
         city,
         description,
+        websiteLink,
         bookingLink,
         aboutMessage,
         recreationAreas,
