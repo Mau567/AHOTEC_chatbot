@@ -34,10 +34,10 @@ export default function ChatWidget({
   const [sessionId] = useState(() => `widget_${Date.now()}_${Math.random().toString(36).substr(2,9)}`)
 
   const t = {
-    assistantTitle: language === 'es' ? 'Sofia' : 'Sofia',
+    assistantTitle: language === 'es' ? 'Lucía' : 'Lucía',
     openChat: language === 'es' ? 'Abrir chat' : 'Open chat',
     closeChat: language === 'es' ? 'Cerrar chat' : 'Close chat',
-    locationQuestion: language === 'es' ? 'Hola, soy tu asistente virtual. ¿Dónde te gustaría buscar un hotel?' : 'Hello, I am your virtual assistant. Where would you like to search for a hotel?',
+    locationQuestion: language === 'es' ? 'Hola, soy Lucía, tu asistente virtual. ¿Dónde te gustaría buscar un hotel?' : 'Hello, I am Lucía, your virtual assistant. Where would you like to search for a hotel?',
     typeQuestion: language === 'es' ? '¿Qué tipo de hotel buscas?' : 'What type of hotel are you looking for?',
     nextButton: language === 'es' ? 'Siguiente' : 'Next',
     loadingMessage: language === 'es' ? 'Buscando hoteles compatibles...' : 'Searching for compatible hotels...',

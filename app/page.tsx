@@ -84,8 +84,8 @@ export default function Home() {
     recreationError: language === 'es' ? 'Selecciona al menos un servicio o área recreativa.' : 'Select at least one service or recreational area.',
     
     // Chat
-    chatTitle: language === 'es' ? 'Sofia - Asistente de Hoteles' : 'Sofia - Hotel Assistant',
-    locationQuestion: language === 'es' ? 'Hola, soy tu asistente virtual. ¿Dónde te gustaría buscar un hotel?' : 'Hello, I am your virtual assistant. Where would you like to search for a hotel?',
+    chatTitle: language === 'es' ? 'Lucía - Asistente de Hoteles' : 'Lucía - Hotel Assistant',
+    locationQuestion: language === 'es' ? 'Hola, soy Lucía, tu asistente virtual. ¿Dónde te gustaría buscar un hotel?' : 'Hello, I am Lucía, your virtual assistant. Where would you like to search for a hotel?',
     typeQuestion: language === 'es' ? '¿Qué tipo de hotel buscas?' : 'What type of hotel are you looking for?',
     nextButton: language === 'es' ? 'Siguiente' : 'Next',
     loadingMessage: language === 'es' ? 'Buscando hoteles compatibles...' : 'Searching for compatible hotels...',
@@ -134,8 +134,8 @@ export default function Home() {
   const [freeIsLoading, setFreeIsLoading] = useState(false)
   // Set initial freeBotMessage state to a friendly welcome message
   const [freeBotMessage, setFreeBotMessage] = useState(language === 'es'
-    ? '¡Hola! 😊 Soy Sofia, tu asistente virtual. ¿Dónde te gustaría buscar un hotel? 🏨✨'
-    : "Hello! 😊 I'm Sofia, your virtual assistant. Where would you like to search for a hotel? 🏨✨"
+    ? '¡Hola! 😊 Soy Lucía, tu asistente virtual. ¿Dónde te gustaría buscar un hotel? 🏨✨'
+    : "Hello! 😊 I'm Lucía, your virtual assistant. Where would you like to search for a hotel? 🏨✨"
   )
   const [freeHotelResults, setFreeHotelResults] = useState<any[]>([])
   const [freeNoResults, setFreeNoResults] = useState(false)
