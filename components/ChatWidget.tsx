@@ -25,7 +25,7 @@ export default function ChatWidget({
   const [isOpen, setIsOpen] = useState(false)
   const [step, setStep] = useState<'ubicacion' | 'tipo' | 'resultados'>('ubicacion')
   const [userLocation, setUserLocation] = useState('')
-  const [userHotelType, setUserHotelType] = useState('')
+  const [userHotelType, setUserHotelType] = useState<string[]>([])
   const [hotelResults, setHotelResults] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [noResults, setNoResults] = useState(false)
@@ -61,7 +61,10 @@ export default function ChatWidget({
     return items.join(', ')
   }
 
-  const handleSendGuidedQuery = async (location: string, hotelType: string) => {
+  const handleSendGuidedQuery = async (location: string, hotelTypes: string[]) => {
+    console.log('🟦 FRONTEND - Sending query with types:', hotelTypes)
+    console.log('🟦 FRONTEND - Joined types:', hotelTypes.join('|||'))
+    
     setIsLoading(true)
     setNoResults(false)
     setHotelResults([])
@@ -70,7 +73,7 @@ export default function ChatWidget({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: `Ubicación: ${location}\nTipo de hotel: ${hotelType}`,
+          message: `Ubicación: ${location}\nTipo de hotel: ${hotelTypes.join('|||')}`,
           sessionId,
           lang: language
         })
@@ -91,7 +94,7 @@ export default function ChatWidget({
   const handleChatReset = () => {
     setStep('ubicacion')
     setUserLocation('')
-    setUserHotelType('')
+    setUserHotelType([])
     setHotelResults([])
     setNoResults(false)
     setSelectedHotel(null)
@@ -174,17 +177,29 @@ export default function ChatWidget({
                   {hotelTypeOptions.map(option => (
                     <button
                       key={option}
-                      className={`px-4 py-2 rounded-md border ${userHotelType === option ? 'bg-blue-600 text-white' : 'bg-white text-gray-900 hover:bg-blue-100'}`}
+                      className={`px-4 py-2 rounded-md border ${userHotelType.includes(option) ? 'bg-blue-600 text-white' : 'bg-white text-gray-900 hover:bg-blue-100'}`}
                       onClick={() => {
-                        setUserHotelType(option)
-                        setStep('resultados')
-                        handleSendGuidedQuery(userLocation, option)
+                        setUserHotelType(prev => 
+                          prev.includes(option) 
+                            ? prev.filter(t => t !== option)
+                            : [...prev, option]
+                        )
                       }}
                     >
                       {option}
                     </button>
                   ))}
                 </div>
+                <button
+                  className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  disabled={userHotelType.length === 0}
+                  onClick={() => {
+                    setStep('resultados')
+                    handleSendGuidedQuery(userLocation, userHotelType)
+                  }}
+                >
+                  {t.nextButton}
+                </button>
               </div>
             )}
             {step === 'resultados' && (

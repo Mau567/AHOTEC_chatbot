@@ -122,7 +122,7 @@ export default function Home() {
   // 1. Estado para el flujo guiado del chatbot
   const [chatStep, setChatStep] = useState<'ubicacion' | 'tipo' | 'resultados'>('ubicacion')
   const [userLocation, setUserLocation] = useState('')
-  const [userHotelType, setUserHotelType] = useState('')
+  const [userHotelType, setUserHotelType] = useState<string[]>([])
 
   // Estado para los resultados de hoteles
   const [hotelResults, setHotelResults] = useState<any[]>([])
@@ -361,7 +361,7 @@ export default function Home() {
   }
 
   // 3. Preparar el envío de la consulta al backend cuando se tengan ambos datos
-  const handleSendGuidedQuery = async (location: string, hotelType: string) => {
+  const handleSendGuidedQuery = async (location: string, hotelTypes: string[]) => {
     setIsLoading(true)
     setNoResults(false)
     setHotelResults([])
@@ -370,7 +370,7 @@ export default function Home() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: `Ubicación: ${location}\nTipo de hotel: ${hotelType}`,
+          message: `Ubicación: ${location}\nTipo de hotel: ${hotelTypes.join('|||')}`,
           sessionId
         })
       })
@@ -392,7 +392,7 @@ export default function Home() {
   const handleChatReset = () => {
     setChatStep('ubicacion')
     setUserLocation('')
-    setUserHotelType('')
+    setUserHotelType([])
     setHotelResults([])
     setNoResults(false)
     setSelectedHotel(null)
@@ -801,17 +801,29 @@ export default function Home() {
                     {hotelTypeOptions.map(option => (
                       <button
                         key={option}
-                        className={`px-4 py-2 rounded-md border ${userHotelType === option ? 'bg-blue-600 text-white' : 'bg-white text-gray-900 hover:bg-blue-100'}`}
+                        className={`px-4 py-2 rounded-md border ${userHotelType.includes(option) ? 'bg-blue-600 text-white' : 'bg-white text-gray-900 hover:bg-blue-100'}`}
                         onClick={() => {
-                          setUserHotelType(option)
-                          setChatStep('resultados')
-                          handleSendGuidedQuery(userLocation, option)
+                          setUserHotelType(prev => 
+                            prev.includes(option) 
+                              ? prev.filter(t => t !== option)
+                              : [...prev, option]
+                          )
                         }}
                       >
                         {option}
                       </button>
                     ))}
                   </div>
+                  <button
+                    className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    disabled={userHotelType.length === 0}
+                    onClick={() => {
+                      setChatStep('resultados')
+                      handleSendGuidedQuery(userLocation, userHotelType)
+                    }}
+                  >
+                    {t.nextButton}
+                  </button>
                 </div>
               )}
               {/* Aquí se mostrarán los resultados en el siguiente paso */}

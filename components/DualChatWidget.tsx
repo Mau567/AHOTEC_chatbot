@@ -36,7 +36,7 @@ export default function DualChatWidget({
   // Guided chat states
   const [chatStep, setChatStep] = useState<'location' | 'type' | 'result'>('location')
   const [userLocation, setUserLocation] = useState('')
-  const [userHotelType, setUserHotelType] = useState('')
+  const [userHotelType, setUserHotelType] = useState<string[]>([])
   const [guidedMessage, setGuidedMessage] = useState('')
   const [guidedHotels, setGuidedHotels] = useState<any[]>([])
   const [guidedLoading, setGuidedLoading] = useState(false)
@@ -140,7 +140,7 @@ export default function DualChatWidget({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: `Ubicación: ${userLocation}\nTipo de hotel: ${userHotelType}`,
+          message: `Ubicación: ${userLocation}\nTipo de hotel: ${userHotelType.join('|||')}`,
           sessionId
         })
       })
@@ -162,7 +162,7 @@ export default function DualChatWidget({
   const resetGuided = () => {
     setChatStep('location')
     setUserLocation('')
-    setUserHotelType('')
+    setUserHotelType([])
     setGuidedMessage('')
     setGuidedHotels([])
     setGuidedNoResults(false)
@@ -321,17 +321,29 @@ export default function DualChatWidget({
                       {hotelTypeOptions.map(option => (
                         <button
                           key={option}
-                          className={`px-4 py-2 rounded-md border ${userHotelType === option ? 'bg-blue-600 text-white' : 'bg-white text-gray-900 hover:bg-blue-100'}`}
+                          className={`px-4 py-2 rounded-md border ${userHotelType.includes(option) ? 'bg-blue-600 text-white' : 'bg-white text-gray-900 hover:bg-blue-100'}`}
                           onClick={() => {
-                            setUserHotelType(option)
-                            setChatStep('result')
-                            handleSendGuided()
+                            setUserHotelType(prev => 
+                              prev.includes(option) 
+                                ? prev.filter(t => t !== option)
+                                : [...prev, option]
+                            )
                           }}
                         >
                           {option}
                         </button>
                       ))}
                     </div>
+                    <button
+                      className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                      disabled={userHotelType.length === 0}
+                      onClick={() => {
+                        setChatStep('result')
+                        handleSendGuided()
+                      }}
+                    >
+                      {t.nextButton}
+                    </button>
                   </div>
                 )}
                 {chatStep === 'result' && (
