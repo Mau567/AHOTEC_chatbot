@@ -8,6 +8,69 @@ const AIRPORT_SYNONYMS = [
   'cotopaxi airport','latacunga airport'
 ];
 
+// Landmark to city mapping for deterministic location resolution
+const LANDMARK_CITY_MAP: Record<string, string> = {
+  // Quito landmarks
+  'parque la carolina': 'Quito',
+  'la carolina': 'Quito',
+  'centro historico': 'Quito',
+  'centro histórico': 'Quito',
+  'mitad del mundo': 'Quito',
+  'teleferico': 'Quito',
+  'teleférico': 'Quito',
+  'basilica del voto nacional': 'Quito',
+  'basílica': 'Quito',
+  'plaza grande': 'Quito',
+  'plaza foch': 'Quito',
+  'la mariscal': 'Quito',
+  'mariscal': 'Quito',
+  'carolina': 'Quito',
+  'estadio olimpico atahualpa': 'Quito',
+  'atahualpa': 'Quito',
+  'parque el ejido': 'Quito',
+  'parque metropolitano': 'Quito',
+  'la ronda': 'Quito',
+  'san francisco': 'Quito',
+  'plaza san francisco': 'Quito',
+  
+  // Guayaquil landmarks
+  'malecon 2000': 'Guayaquil',
+  'malecón 2000': 'Guayaquil',
+  'malecon': 'Guayaquil',
+  'malecón': 'Guayaquil',
+  'cerro santa ana': 'Guayaquil',
+  'santa ana': 'Guayaquil',
+  'las peñas': 'Guayaquil',
+  'parque seminario': 'Guayaquil',
+  'parque de las iguanas': 'Guayaquil',
+  'unicentro': 'Guayaquil',
+  'mall del sol': 'Guayaquil',
+  
+  // Cuenca landmarks
+  'parque calderon': 'Cuenca',
+  'parque calderón': 'Cuenca',
+  'catedral nueva': 'Cuenca',
+  'rio tomebamba': 'Cuenca',
+  'río tomebamba': 'Cuenca',
+  'barranco': 'Cuenca',
+  
+  // Baños landmarks
+  'pailon del diablo': 'Baños',
+  'pailón del diablo': 'Baños',
+  'casa del arbol': 'Baños',
+  'árbol': 'Baños',
+  'columpio': 'Baños',
+  
+  // Other landmarks
+  'volcan cotopaxi': 'Latacunga',
+  'volcán cotopaxi': 'Latacunga',
+  'cotopaxi': 'Latacunga',
+  'otavalo market': 'Otavalo',
+  'mercado otavalo': 'Otavalo',
+  'mindo cloud forest': 'Mindo',
+  'bosque nublado': 'Mindo',
+};
+
 type Hotel = {
   id: string;
   name?: string;
@@ -48,6 +111,25 @@ function resolveAirportCity(q: string): string | null {
   if (s.match(/mariscal sucre|quito airport|uio|tababela/)) return 'Quito';
   if (s.match(/jose joaquin de olmedo|josé joaquín de olmedo|guayaquil airport|gye/)) return 'Guayaquil';
   if (s.match(/cotopaxi airport|latacunga airport|ltx/)) return 'Latacunga';
+  return null;
+}
+
+// Resolve landmark queries to their city
+function resolveLandmarkCity(q: string): string | null {
+  const normalized = q.toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, ''); // Remove accents for flexible matching
+  
+  // Check each landmark in the map
+  for (const [landmark, city] of Object.entries(LANDMARK_CITY_MAP)) {
+    const normalizedLandmark = landmark
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+    
+    if (normalized.includes(normalizedLandmark)) {
+      return city;
+    }
+  }
   return null;
 }
 
@@ -109,11 +191,27 @@ export async function getHotelsBySemanticLocation(locationQuery: string, hotels:
     return ids;
   }
 
+  // --- Check for known landmarks first (highest priority for precision) ---
+  const landmarkCity = resolveLandmarkCity(locationQuery);
+  if (landmarkCity) {
+    console.log(`🎯 LANDMARK DETECTED: "${locationQuery}" → ${landmarkCity} (deterministic match)`);
+  }
+  
   // --- Specific airport queries: narrow hotel set to the mapped city and later enforce airport proximity ---
   const airportCity = resolveAirportCity(locationQuery);
-  const narrowedHotels: Hotel[] = airportCity
-    ? typedHotels.filter(h => (h.city || '').toLowerCase() === airportCity.toLowerCase())
+  if (airportCity) {
+    console.log(`✈️ AIRPORT DETECTED: "${locationQuery}" → ${airportCity}`);
+  }
+  
+  // Prioritize landmark match, then airport match, then all hotels
+  const targetCity = landmarkCity || airportCity;
+  const narrowedHotels: Hotel[] = targetCity
+    ? typedHotels.filter(h => (h.city || '').toLowerCase() === targetCity.toLowerCase())
     : typedHotels;
+  
+  if (targetCity) {
+    console.log(`📍 Pre-filtered to ${targetCity}: ${narrowedHotels.length} hotels`);
+  }
 
   const hotelContext = narrowedHotels.map(hotel =>
     `ID: ${hotel.id}\nNombre: ${hotel.name}\nCiudad: ${hotel.city}\nRegión: ${hotel.region}\nDirección: ${hotel.address}\nFraseUbicacion: ${hotel.locationPhrase}\nAlrededores: ${(hotel.surroundings || []).join(', ')}`
@@ -288,12 +386,24 @@ export async function getHotelsBySemanticLocation(locationQuery: string, hotels:
     try { ids = JSON.parse(match[0]); } catch { ids = []; }
   }
 
-  // If it’s an airport-specific query, require airport signals to avoid unrelated city hotels.
+  // If it's an airport-specific query, require airport signals to avoid unrelated city hotels.
   if (airportCity || textIncludesAny(locationQuery.toLowerCase(), AIRPORT_SYNONYMS)) {
     const idSet = new Set(
       typedHotels.filter(h => hotelHasAirportSignal(h)).map(h => h.id)
     );
     ids = ids.filter(id => idSet.has(id));
+  }
+
+  // CRITICAL: If we detected a landmark, ensure ONLY hotels from that city are returned
+  // This is a safety check in case the AI returned hotels from other cities
+  if (landmarkCity) {
+    const cityHotelIds = new Set(
+      typedHotels
+        .filter(h => (h.city || '').toLowerCase() === landmarkCity.toLowerCase())
+        .map(h => h.id)
+    );
+    ids = ids.filter(id => cityHotelIds.has(id));
+    console.log(`🔒 LANDMARK SAFETY: Enforced ${landmarkCity}-only filter. Final count: ${ids.length}`);
   }
 
   return ids;
