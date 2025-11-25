@@ -313,10 +313,10 @@ export default function AdminDashboard() {
                 const data = await response.json()
                 
                 if (response.ok && data.success) {
-                  setLoggedIn(true)
-                  setLoginError('')
+                setLoggedIn(true)
+                setLoginError('')
                   fetchHotels()
-                } else {
+              } else {
                   setLoginError(t.loginError)
                 }
               } catch (error) {
@@ -382,12 +382,12 @@ export default function AdminDashboard() {
               <p className="text-gray-600 mt-2">{t.adminSubtitle}</p>
             </div>
             <div className="flex gap-2">
-              <button
-                onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
-              >
-                {language === 'es' ? t.english : t.spanish}
-              </button>
+            <button
+              onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
+              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+            >
+              {language === 'es' ? t.english : t.spanish}
+            </button>
               <button
                 onClick={async () => {
                   try {
