@@ -108,7 +108,10 @@ export default function AdminDashboard() {
     
     // Language toggle
     english: 'English',
-    spanish: 'Español'
+    spanish: 'Español',
+    
+    // Logout
+    logout: language === 'es' ? 'Cerrar Sesión' : 'Logout'
   }
 
   const [hotels, setHotels] = useState<Hotel[]>([])
@@ -125,8 +128,29 @@ export default function AdminDashboard() {
   const [password, setPassword] = useState('')
 
   useEffect(() => {
-    fetchHotels()
+    // Verificar si el usuario ya está autenticado
+    checkAuth()
   }, [])
+
+  const checkAuth = async () => {
+    try {
+      const response = await fetch('/api/auth/verify')
+      if (response.ok) {
+        const data = await response.json()
+        if (data.authenticated) {
+          setLoggedIn(true)
+          fetchHotels()
+        } else {
+          setLoading(false)
+        }
+      } else {
+        setLoading(false)
+      }
+    } catch (error) {
+      console.error('Error verificando autenticación:', error)
+      setLoading(false)
+    }
+  }
 
   const fetchHotels = async () => {
     try {
@@ -275,12 +299,28 @@ export default function AdminDashboard() {
           </div>
           <h2 className="text-2xl font-bold mb-6 text-center">{t.adminLogin}</h2>
           <form
-            onSubmit={e => {
+            onSubmit={async (e) => {
               e.preventDefault()
-              if (username === 'AHOTEC2025' && password === 'AHOTEC2025') {
-                setLoggedIn(true)
-                setLoginError('')
-              } else {
+              setLoginError('')
+              
+              try {
+                const response = await fetch('/api/auth/login', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ username, password })
+                })
+                
+                const data = await response.json()
+                
+                if (response.ok && data.success) {
+                  setLoggedIn(true)
+                  setLoginError('')
+                  fetchHotels()
+                } else {
+                  setLoginError(t.loginError)
+                }
+              } catch (error) {
+                console.error('Error en login:', error)
                 setLoginError(t.loginError)
               }
             }}
@@ -341,12 +381,29 @@ export default function AdminDashboard() {
               <h1 className="text-3xl font-bold text-gray-900">{t.adminPanel}</h1>
               <p className="text-gray-600 mt-2">{t.adminSubtitle}</p>
             </div>
-            <button
-              onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
-            >
-              {language === 'es' ? t.english : t.spanish}
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+              >
+                {language === 'es' ? t.english : t.spanish}
+              </button>
+              <button
+                onClick={async () => {
+                  try {
+                    await fetch('/api/auth/logout', { method: 'POST' })
+                    setLoggedIn(false)
+                    setUsername('')
+                    setPassword('')
+                  } catch (error) {
+                    console.error('Error en logout:', error)
+                  }
+                }}
+                className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors"
+              >
+                {t.logout}
+              </button>
+            </div>
           </div>
         </div>
 

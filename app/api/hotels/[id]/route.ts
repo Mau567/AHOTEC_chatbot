@@ -1,10 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { verifyAuth } from '@/lib/auth'
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  // Verificar autenticación
+  const auth = verifyAuth(request)
+  if (!auth.authenticated) {
+    return NextResponse.json(
+      { error: 'No autorizado. Debes iniciar sesión.' },
+      { status: 401 }
+    )
+  }
+
   try {
     const body = await request.json()
     const {
@@ -74,6 +84,15 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  // Verificar autenticación
+  const auth = verifyAuth(request)
+  if (!auth.authenticated) {
+    return NextResponse.json(
+      { error: 'No autorizado. Debes iniciar sesión.' },
+      { status: 401 }
+    )
+  }
+
   try {
     await prisma.hotel.delete({
       where: { id: params.id }

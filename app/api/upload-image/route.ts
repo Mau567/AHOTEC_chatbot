@@ -1,7 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/db'
+import { verifyAuth } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
+  // Verificar autenticación
+  const auth = verifyAuth(request)
+  if (!auth.authenticated) {
+    return NextResponse.json(
+      { error: 'No autorizado. Debes iniciar sesión.' },
+      { status: 401 }
+    )
+  }
+
   try {
     const formData = await request.formData()
     const file = formData.get('image') as File | null
