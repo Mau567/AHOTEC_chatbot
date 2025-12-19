@@ -135,6 +135,180 @@ function resolveLandmarkCity(q: string): string | null {
 
 const client = new MistralClient(process.env.MISTRAL_API_KEY || '')
 
+// Generic queries that are too vague and should return no results
+const GENERIC_QUERIES = [
+  'aeropuerto', 'airport', 'parque', 'park', 'iglesia', 'church',
+  'centro', 'center', 'hotel', 'restaurante', 'restaurant', 'mall',
+  'downtown', 'ciudad', 'city', 'lugar', 'place', 'zona', 'zone', 'area'
+]
+
+/**
+ * Validates if a user query is too generic/vague
+ * Returns true if the query is too generic (should return no results)
+ */
+export function isGenericQuery(query: string): boolean {
+  const normalized = query.trim().toLowerCase()
+  // Check if query is exactly one of the generic terms
+  return GENERIC_QUERIES.some(generic => normalized === generic)
+}
+
+/**
+ * Extracts keywords from locationPhrase or address using AI
+ * These are fields that need AI to extract searchable keywords
+ */
+export async function extractKeywordsFromText(text: string, lang: string = 'es'): Promise<string[]> {
+  if (!text || !text.trim()) return []
+  
+  try {
+    const prompt = lang === 'en'
+      ? `Extract ONLY the actual location keywords that appear in this text. Extract:
+- Neighborhood names mentioned in the text
+- Landmarks mentioned in the text
+- Points of interest mentioned in the text
+- Airport names mentioned in the text
+- Street names or areas mentioned in the text
+- Any other specific location identifiers mentioned in the text
+
+IMPORTANT: Only extract keywords that are actually written in the text. Do NOT infer or add city names that are not explicitly mentioned.
+
+Text: "${text}"
+
+Return ONLY a JSON array of keywords (strings), e.g.: ["keyword1", "keyword2", "keyword3"]
+No extra text, no explanations, just the JSON array.`
+      : `Extrae SOLO las palabras clave de ubicación que realmente aparecen en este texto. Extrae:
+- Nombres de barrios mencionados en el texto
+- Puntos de interés mencionados en el texto
+- Nombres de aeropuertos mencionados en el texto
+- Nombres de calles o áreas mencionados en el texto
+- Cualquier otro identificador de ubicación específico mencionado en el texto
+
+IMPORTANTE: Solo extrae palabras clave que estén realmente escritas en el texto. NO infieras ni agregues nombres de ciudades que no estén explícitamente mencionados.
+
+Texto: "${text}"
+
+Devuelve SOLO un array JSON de palabras clave (strings), p.ej.: ["palabra1", "palabra2", "palabra3"]
+Sin texto extra, sin explicaciones, solo el array JSON.`
+
+    const response = await client.chat({
+      model: 'mistral-small-latest',
+      messages: [
+        {
+          role: 'user',
+          content: prompt
+        }
+      ],
+      maxTokens: 200,
+      temperature: 0.0
+    })
+
+    const content = response.choices[0]?.message?.content || '[]'
+    const match = content.match(/\[[\s\S]*\]/)
+    if (match) {
+      try {
+        const keywords = JSON.parse(match[0])
+        return Array.isArray(keywords) ? keywords.filter(k => typeof k === 'string' && k.trim().length > 0) : []
+      } catch {
+        return []
+      }
+    }
+    return []
+  } catch (error) {
+    console.error('Error extracting keywords:', error)
+    return []
+  }
+}
+
+/**
+ * Builds a complete keyword set for a hotel
+ * Combines direct keywords (region, city, surroundings) with AI-extracted keywords (locationPhrase, address)
+ */
+export async function buildHotelKeywords(hotel: any, lang: string = 'es'): Promise<string[]> {
+  const keywords: string[] = []
+  
+  // Direct keywords (no AI needed)
+  if (hotel.region) keywords.push(hotel.region.toLowerCase().trim())
+  if (hotel.city) keywords.push(hotel.city.toLowerCase().trim())
+  if (hotel.surroundings && Array.isArray(hotel.surroundings)) {
+    hotel.surroundings.forEach((surrounding: string) => {
+      if (surrounding && surrounding.trim()) {
+        keywords.push(surrounding.toLowerCase().trim())
+      }
+    })
+  }
+  
+  // AI-extracted keywords
+  if (hotel.locationPhrase) {
+    const locationKeywords = await extractKeywordsFromText(hotel.locationPhrase, lang)
+    keywords.push(...locationKeywords.map(k => k.toLowerCase().trim()))
+  }
+  
+  if (hotel.address) {
+    const addressKeywords = await extractKeywordsFromText(hotel.address, lang)
+    keywords.push(...addressKeywords.map(k => k.toLowerCase().trim()))
+  }
+  
+  // Remove duplicates and empty strings
+  return Array.from(new Set(keywords.filter(k => k.length > 0)))
+}
+
+/**
+ * Finds hotels that match the user's location query by comparing with hotel keywords
+ * Simple direct matching - if user query matches any keyword, hotel is included
+ */
+export async function findMatchingHotelsByKeywords(
+  userQuery: string,
+  hotelsWithKeywords: Array<{ id: string; keywords: string[]; name?: string; city?: string }>,
+  lang: string = 'es'
+): Promise<string[]> {
+  if (hotelsWithKeywords.length === 0) return []
+  
+  const userQueryLower = userQuery.toLowerCase().trim()
+  const matchingIds: string[] = []
+  
+  // First, check for exact city matches (highest priority)
+  // If user query is a city name, only match hotels from that exact city
+  const cityMatch = hotelsWithKeywords.find(h => 
+    h.city && h.city.toLowerCase().trim() === userQueryLower
+  )
+  
+  if (cityMatch) {
+    // User query is a city name - only return hotels from that exact city
+    const exactCityMatches = hotelsWithKeywords
+      .filter(h => h.city && h.city.toLowerCase().trim() === userQueryLower)
+      .map(h => h.id)
+    console.log('🔍 DEBUG - Exact city match found:', userQueryLower, 'Hotels:', exactCityMatches.length)
+    return exactCityMatches
+  }
+  
+  // For non-city queries, match against keywords
+  // Normalize user query for matching (remove accents, lowercase)
+  const normalize = (str: string) => str
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+  
+  const normalizedQuery = normalize(userQuery)
+  
+  for (const hotel of hotelsWithKeywords) {
+    // Check if any keyword matches the user query
+    const hasMatch = hotel.keywords.some(keyword => {
+      const normalizedKeyword = normalize(keyword)
+      // Exact match or keyword contains query or query contains keyword
+      return normalizedKeyword === normalizedQuery ||
+             normalizedKeyword.includes(normalizedQuery) ||
+             normalizedQuery.includes(normalizedKeyword)
+    })
+    
+    if (hasMatch) {
+      matchingIds.push(hotel.id)
+    }
+  }
+  
+  console.log('🔍 DEBUG - Keyword matches found:', matchingIds.length, 'for query:', userQueryLower)
+  return matchingIds
+}
+
 export async function getHotelRecommendations(query: string, hotels: any[], lang: string = 'es') {
   try {
     const hotelContext = hotels.map(hotel => 

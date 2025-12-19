@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { getHotelRecommendations, getHotelsBySemanticLocation } from '@/lib/mistral'
+import { 
+  isGenericQuery, 
+  buildHotelKeywords, 
+  findMatchingHotelsByKeywords 
+} from '@/lib/mistral'
 
 // Utility function to randomize array order
 function shuffleArray<T>(array: T[]): T[] {
@@ -55,7 +59,7 @@ export async function POST(request: NextRequest) {
     let chatbotMessage = ''
     let finalHotels = filteredByType
 
-    // 2. Si hay ubicación y tipo, usar AI SOLO con los hoteles filtrados por tipo
+    // 2. Si hay ubicación y tipo, usar el nuevo sistema de keywords
     if (location && hotelTypes.length > 0) {
       if (filteredByType.length === 0) {
         chatbotMessage = lang === 'en'
@@ -63,87 +67,92 @@ export async function POST(request: NextRequest) {
           : 'Lo siento, no se encontraron hoteles de ese tipo.'
         finalHotels = []
       } else {
-        // Validación: detectar búsquedas vagas
-        const vagueSearches = ['aeropuerto', 'airport', 'iglesia', 'church', 'parque', 'park', 'centro', 'center', 'hotel', 'restaurante', 'restaurant', 'mall', 'downtown', 'ciudad', 'city', 'lugar', 'place', 'zona', 'zone', 'area']
-        const isVagueSearch = vagueSearches.some(vague => 
-          location.toLowerCase().trim() === vague.toLowerCase().trim()
-        )
-        
-        if (isVagueSearch) {
+        // Validación: detectar búsquedas genéricas/vagas
+        if (isGenericQuery(location)) {
           chatbotMessage = lang === 'en'
             ? 'Please be more specific. Try searching for a specific location like "Mariscal Sucre Airport" or "Quito Airport" instead of just "airport".'
             : 'Por favor, sé más específico. Intenta buscar una ubicación específica como "Aeropuerto Mariscal Sucre" o "Aeropuerto de Quito" en lugar de solo "aeropuerto".'
           finalHotels = []
         } else {
-          // First: Get AI recommendations
-          const aiHotelIds = await getHotelsBySemanticLocation(location, filteredByType, lang)
-          console.log('🔍 DEBUG - AI returned hotel IDs:', aiHotelIds)
+          console.log('🔍 DEBUG - Building keywords for', filteredByType.length, 'hotels')
           
-          // Second: Add deterministic exact city matches to ensure consistency
-          // This prevents AI inconsistency for obvious matches
-          const exactCityMatches = filteredByType.filter(hotel => 
-            hotel.city && hotel.city.toLowerCase().includes(location.toLowerCase())
-          ).map(h => h.id)
+          // Build keywords for each hotel
+          const hotelsWithKeywords = await Promise.all(
+            filteredByType.map(async (hotel) => {
+              const keywords = await buildHotelKeywords(hotel, lang)
+              return {
+                id: hotel.id,
+                keywords,
+                name: hotel.name,
+                city: hotel.city
+              }
+            })
+          )
           
-          console.log('🔍 DEBUG - Exact city match IDs:', exactCityMatches)
+          console.log('🔍 DEBUG - Hotels with keywords:', hotelsWithKeywords.map(h => ({ 
+            id: h.id, 
+            name: h.name, 
+            keywordCount: h.keywords.length,
+            sampleKeywords: h.keywords.slice(0, 5)
+          })))
           
-          // Combine AI results with exact matches (remove duplicates)
-          const combinedIds = Array.from(new Set([...aiHotelIds, ...exactCityMatches]))
-          console.log('🔍 DEBUG - Combined IDs (AI + exact):', combinedIds)
+          // Find matching hotels using AI keyword matching
+          const matchingHotelIds = await findMatchingHotelsByKeywords(location, hotelsWithKeywords, lang)
+          console.log('🔍 DEBUG - Matching hotel IDs:', matchingHotelIds)
           
-          finalHotels = filteredByType.filter(hotel => combinedIds.includes(hotel.id))
-          console.log('🔍 DEBUG - Hotels after AI + exact location filter:', finalHotels.length, finalHotels.map(h => ({ name: h.name, city: h.city, region: h.region })))
-          
-          // Validación adicional: asegurar que los hoteles estén en la región correcta
-          const locationLower = location.toLowerCase()
-          
-          // Filter by region if user searches for a region name
-          if (locationLower.includes('costa')) {
-            const beforeFilter = finalHotels.length
-            finalHotels = finalHotels.filter(hotel => 
-              hotel.region.toLowerCase().includes('costa')
-            )
-            console.log('🔍 DEBUG - Costa region filter: before', beforeFilter, 'after', finalHotels.length)
-          } else if (locationLower.includes('sierra')) {
-            const beforeFilter = finalHotels.length
-            finalHotels = finalHotels.filter(hotel => 
-              hotel.region.toLowerCase().includes('sierra')
-            )
-            console.log('🔍 DEBUG - Sierra region filter: before', beforeFilter, 'after', finalHotels.length)
-          } else if (locationLower.includes('amazonia') || locationLower.includes('amazonía')) {
-            const beforeFilter = finalHotels.length
-            finalHotels = finalHotels.filter(hotel => 
-              hotel.region.toLowerCase().includes('amazon')
-            )
-            console.log('🔍 DEBUG - Amazonia region filter: before', beforeFilter, 'after', finalHotels.length)
-          } else if (locationLower.includes('galapagos') || locationLower.includes('galápagos')) {
-            const beforeFilter = finalHotels.length
-            finalHotels = finalHotels.filter(hotel => 
-              hotel.region.toLowerCase().includes('galapagos') || hotel.region.toLowerCase().includes('galápagos')
-            )
-            console.log('🔍 DEBUG - Galapagos region filter: before', beforeFilter, 'after', finalHotels.length)
-          } else if (locationLower.includes('quito') || locationLower.includes('mariscal sucre')) {
-            const beforeFilter = finalHotels.length
-            finalHotels = finalHotels.filter(hotel => 
-              hotel.region.toLowerCase().includes('sierra') || 
-              hotel.city.toLowerCase().includes('quito')
-            )
-            console.log('🔍 DEBUG - Quito city filter: before', beforeFilter, 'after', finalHotels.length)
-          } else if (locationLower.includes('guayaquil') || locationLower.includes('olmedo')) {
-            const beforeFilter = finalHotels.length
-            finalHotels = finalHotels.filter(hotel => 
-              hotel.region.toLowerCase().includes('costa') || 
-              hotel.city.toLowerCase().includes('guayaquil')
-            )
-            console.log('🔍 DEBUG - Guayaquil city filter: before', beforeFilter, 'after', finalHotels.length)
-          }
-          
-          console.log('🔍 DEBUG - Final hotels:', finalHotels.length, finalHotels.map(h => h.name))
+          // Filter hotels to only those that matched
+          finalHotels = filteredByType.filter(hotel => matchingHotelIds.includes(hotel.id))
+          console.log('🔍 DEBUG - Final matching hotels:', finalHotels.length, finalHotels.map(h => h.name))
           
           chatbotMessage = lang === 'en'
             ? (finalHotels.length > 0 ? 'Here are the hotels that match your search.' : 'Sorry, no hotels matched your search.')
             : (finalHotels.length > 0 ? 'Estos son los hoteles que coinciden con tu búsqueda.' : 'Lo siento, no se encontraron hoteles compatibles.')
         }
+      }
+    } else if (location && hotelTypes.length === 0) {
+      // Location provided but no hotel types - search all approved/paid hotels
+      const allHotels = await prisma.hotel.findMany({
+        where: {
+          status: 'APPROVED',
+          isPaid: true
+        }
+      })
+      
+      if (allHotels.length === 0) {
+        chatbotMessage = lang === 'en'
+          ? 'Sorry, no hotels found.'
+          : 'Lo siento, no se encontraron hoteles.'
+        finalHotels = []
+      } else if (isGenericQuery(location)) {
+        chatbotMessage = lang === 'en'
+          ? 'Please be more specific. Try searching for a specific location like "Mariscal Sucre Airport" or "Quito Airport" instead of just "airport".'
+          : 'Por favor, sé más específico. Intenta buscar una ubicación específica como "Aeropuerto Mariscal Sucre" o "Aeropuerto de Quito" en lugar de solo "aeropuerto".'
+        finalHotels = []
+      } else {
+        console.log('🔍 DEBUG - Building keywords for', allHotels.length, 'hotels (no type filter)')
+        
+        // Build keywords for each hotel
+        const hotelsWithKeywords = await Promise.all(
+          allHotels.map(async (hotel) => {
+            const keywords = await buildHotelKeywords(hotel, lang)
+            return {
+              id: hotel.id,
+              keywords,
+              name: hotel.name,
+              city: hotel.city
+            }
+          })
+        )
+        
+        // Find matching hotels using AI keyword matching
+        const matchingHotelIds = await findMatchingHotelsByKeywords(location, hotelsWithKeywords, lang)
+        console.log('🔍 DEBUG - Matching hotel IDs (no type filter):', matchingHotelIds)
+        
+        finalHotels = allHotels.filter(hotel => matchingHotelIds.includes(hotel.id))
+        
+        chatbotMessage = lang === 'en'
+          ? (finalHotels.length > 0 ? 'Here are the hotels that match your search.' : 'Sorry, no hotels matched your search.')
+          : (finalHotels.length > 0 ? 'Estos son los hoteles que coinciden con tu búsqueda.' : 'Lo siento, no se encontraron hoteles compatibles.')
       }
     } else if (hotelTypes.length > 0) {
       // Si solo hay tipo, mostrar todos los hoteles de ese tipo
