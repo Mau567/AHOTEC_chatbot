@@ -56,6 +56,7 @@ export default function DualChatWidget({
     guidedTab: language === 'es' ? 'Guiado' : 'Guided',
     freeTab: language === 'es' ? 'Libre' : 'Free',
     locationQuestion: language === 'es' ? 'Hola, soy Lucía, tu asistente virtual. ¿Dónde te gustaría buscar un hotel?' : 'Hello, I am Lucía, your virtual assistant. Where would you like to search for a hotel?',
+    locationHint: language === 'es' ? 'Trata de usar búsquedas específicas como: "Parque La Carolina Quito"' : 'Try using specific searches like: "Parque La Carolina Quito"',
     typeQuestion: language === 'es' ? '¿Qué tipo de hotel buscas?' : 'What type of hotel are you looking for?',
     nextButton: language === 'es' ? 'Siguiente' : 'Next',
     resetButton: language === 'es' ? 'Reiniciar' : 'Reset',
@@ -305,6 +306,7 @@ export default function DualChatWidget({
                       placeholder="Ciudad, región o dirección"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
+                    <p className="mt-2 text-xs text-gray-500 italic">{t.locationHint}</p>
                     <button
                       className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
                       disabled={!userLocation.trim()}
