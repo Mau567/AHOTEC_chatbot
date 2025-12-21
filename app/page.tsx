@@ -134,17 +134,6 @@ export default function Home() {
   const [noResults, setNoResults] = useState(false)
   const [selectedHotel, setSelectedHotel] = useState<any | null>(null)
 
-  // Add state for free-form chatbot
-  const [freeInput, setFreeInput] = useState('')
-  const [freeIsLoading, setFreeIsLoading] = useState(false)
-  // Set initial freeBotMessage state to a friendly welcome message
-  const [freeBotMessage, setFreeBotMessage] = useState(language === 'es'
-    ? '¡Hola! 😊 Soy Lucía, tu asistente virtual. ¿Dónde te gustaría buscar un hotel? 🏨✨'
-    : "Hello! 😊 I'm Lucía, your virtual assistant. Where would you like to search for a hotel? 🏨✨"
-  )
-  const [freeHotelResults, setFreeHotelResults] = useState<any[]>([])
-  const [freeNoResults, setFreeNoResults] = useState(false)
-  const [freeSelectedHotel, setFreeSelectedHotel] = useState<any | null>(null)
 
   const hotelTypeOptions = [
     'Hotel / Resort / 5* o 4*',
@@ -406,34 +395,71 @@ export default function Home() {
     setUserInput('')
   }
 
-  const handleSendFreeMessage = async () => {
-    if (!freeInput.trim()) return
-    setFreeIsLoading(true)
-    setFreeBotMessage('')
-    setFreeHotelResults([])
-    setFreeNoResults(false)
+  // Free-form chatbot states
+  const [freeFormMessages, setFreeFormMessages] = useState<Array<{ role: 'user' | 'assistant'; content: string }>>([])
+  const [freeFormInput, setFreeFormInput] = useState('')
+  const [freeFormLoading, setFreeFormLoading] = useState(false)
+  const [freeFormHotels, setFreeFormHotels] = useState<any[]>([])
+  const [freeFormSelectedHotel, setFreeFormSelectedHotel] = useState<any | null>(null)
+  const [freeFormSessionId] = useState(() => `freeform_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`)
+
+  const handleSendFreeFormMessage = async () => {
+    if (!freeFormInput.trim() || freeFormLoading) return
+    
+    const userMessage = freeFormInput.trim()
+    setFreeFormInput('')
+    setFreeFormLoading(true)
+    setFreeFormHotels([])
+    
+    // Add user message to conversation
+    setFreeFormMessages(prev => [...prev, { role: 'user', content: userMessage }])
+    
     try {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: freeInput,
-          sessionId: `free_${sessionId}`,
+          message: userMessage,
+          sessionId: freeFormSessionId,
           lang: language
         })
       })
-      const data = await response.json()
-      setFreeBotMessage(data.message)
-      if (Array.isArray(data.hotels) && data.hotels.length > 0) {
-        setFreeHotelResults(data.hotels)
-      } else {
-        setFreeNoResults(true)
+      
+      // Check if response was successful before parsing
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        const errorMessage = errorData.error || (language === 'en' 
+          ? 'Sorry, there was a technical problem. Please try again.' 
+          : 'Lo siento, hay un problema técnico. Por favor intenta de nuevo.')
+        setFreeFormMessages(prev => [...prev, { role: 'assistant', content: errorMessage }])
+        setFreeFormLoading(false)
+        return
       }
-      setFreeIsLoading(false)
+      
+      const data = await response.json()
+      
+      // Verify that data.message exists before using it
+      if (data.message) {
+        // Add bot response to conversation
+        setFreeFormMessages(prev => [...prev, { role: 'assistant', content: data.message }])
+      } else {
+        // Fallback if message is missing
+        const errorMessage = language === 'en' 
+          ? 'Sorry, I received an invalid response. Please try again.' 
+          : 'Lo siento, recibí una respuesta inválida. Por favor intenta de nuevo.'
+        setFreeFormMessages(prev => [...prev, { role: 'assistant', content: errorMessage }])
+      }
+      
+      // Hotels are no longer displayed separately - links are included in the chatbot response
+      setFreeFormHotels([])
+      
+      setFreeFormLoading(false)
     } catch (error) {
-      setFreeBotMessage(language === 'en' ? 'Sorry, there was a technical problem.' : 'Lo siento, hay un problema técnico.')
-      setFreeNoResults(true)
-      setFreeIsLoading(false)
+      const errorMessage = language === 'en' 
+        ? 'Sorry, there was a technical problem. Please try again.' 
+        : 'Lo siento, hay un problema técnico. Por favor intenta de nuevo.'
+      setFreeFormMessages(prev => [...prev, { role: 'assistant', content: errorMessage }])
+      setFreeFormLoading(false)
     }
   }
 
@@ -904,76 +930,104 @@ export default function Home() {
             {selectedHotel && (
               <HotelDetailModal hotel={selectedHotel} onClose={() => setSelectedHotel(null)} />
             )}
+          </div>
 
-            {/* Free-form Chatbot - TEMPORARILY HIDDEN FOR PRESENTATION */}
-            {/* 
-            <div className="bg-gray-50 border border-gray-200 rounded-lg shadow p-6 mt-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-6 flex items-center">
-                <MessageCircle className="w-6 h-6 mr-2 text-blue-600" />
-                {language === 'es' ? 'Chatbot libre' : 'Free-form Chatbot'}
-              </h2>
-              <div className="flex flex-col items-center">
-                <div className="w-full flex space-x-2 mb-4">
-                  <input
-                    type="text"
-                    value={freeInput}
-                    onChange={e => setFreeInput(e.target.value)}
-                    onKeyDown={e => { if (e.key === 'Enter') handleSendFreeMessage() }}
-                    placeholder={t.chatPlaceholder}
-                    disabled={freeIsLoading}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
-                  />
-                  <button
-                    onClick={handleSendFreeMessage}
-                    disabled={!freeInput.trim() || freeIsLoading}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
-                  >
-                    {t.sendButton}
-                  </button>
+          {/* Free-form Chatbot - Separate Section */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-6 flex items-center">
+              <MessageCircle className="w-6 h-6 mr-2 text-blue-600" />
+              {language === 'es' ? 'Lucía - Chatbot Libre' : 'Lucía - Free Chat'}
+            </h2>
+            
+            {/* Chat Messages */}
+            <div className="h-96 overflow-y-auto border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50">
+              {freeFormMessages.length === 0 ? (
+                <div className="text-center text-gray-500 mt-8">
+                  <p className="text-lg mb-2">
+                    {language === 'es' 
+                      ? '¡Hola! 😊 Soy Lucía, tu asistente virtual. Pregúntame lo que quieras sobre hoteles en Ecuador.'
+                      : "Hello! 😊 I'm Lucía, your virtual assistant. Ask me anything about hotels in Ecuador."}
+                  </p>
+                  <p className="text-sm text-gray-400">
+                    {language === 'es'
+                      ? 'Ejemplo: "¿Dónde puedo encontrar hoteles cerca del aeropuerto en Quito?"'
+                      : 'Example: "Where can I find hotels near the airport in Quito?"'}
+                  </p>
                 </div>
-                {freeIsLoading && <p className="text-center text-gray-500 w-full">{t.loadingMessage}</p>}
-                {freeBotMessage && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 text-gray-900 text-left w-full max-w-xl">
-                    <ReactMarkdown>{freeBotMessage}</ReactMarkdown>
-                  </div>
-                )}
-                {freeNoResults && !freeIsLoading && (
-                  <div className="text-red-600 font-semibold mt-4 text-center w-full">{t.noResultsMessage}</div>
-                )}
-                {freeHotelResults.length > 0 && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4 w-full">
-                    {freeHotelResults.map((hotel, idx) => (
+              ) : (
+                <div className="space-y-4">
+                  {freeFormMessages.map((msg, idx) => (
+                    <div
+                      key={idx}
+                      className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    >
                       <div
-                        key={hotel.id || idx}
-                        onClick={() => setFreeSelectedHotel(hotel)}
-                        className="bg-white border rounded-lg shadow p-4 flex flex-col items-start text-left cursor-pointer hover:shadow-lg transition"
+                        className={`max-w-[80%] px-4 py-2 rounded-lg ${
+                          msg.role === 'user'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-white text-gray-900 border border-gray-200'
+                        }`}
                       >
-                        {hotel.imageUrl && (
-                          <img src={hotel.imageUrl} alt={hotel.name} className="w-full h-40 object-cover rounded mb-3" />
-                        )}
-                        <h3 className="text-xl font-bold mb-1">{hotel.name}</h3>
-                        <div className="text-gray-800 mb-2 line-clamp-3">{hotel.description}</div>
-                        {hotel.address && <div className="text-gray-500 text-sm mb-1"><b>Dirección:</b> {hotel.address}</div>}
-                        {hotel.locationPhrase && <div className="text-gray-500 text-sm mb-1"><b>Ubicación:</b> {hotel.locationPhrase}</div>}
-                        {hotel.recreationAreas && <div className="text-gray-500 text-sm mb-1"><b>Servicios / áreas recreativas:</b> {formatRecreationAreas(hotel.recreationAreas)}</div>}
-                        {hotel.surroundings && hotel.surroundings.length > 0 && (
-                          <div className="text-gray-500 text-sm mb-1">
-                            <b>Alrededores:</b> {hotel.surroundings.join(', ')}
-                          </div>
-                        )}
-                        {hotel.bookingLink && (
-                          <a href={hotel.bookingLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline mt-2">{t.bookingLinkLabel}</a>
-                        )}
+                        <div className="prose prose-sm max-w-none">
+                          <ReactMarkdown>
+                            {msg.content}
+                          </ReactMarkdown>
+                        </div>
                       </div>
-                    ))}
-                  </div>
-                )}
-                {freeSelectedHotel && (
-                  <HotelDetailModal hotel={freeSelectedHotel} onClose={() => setFreeSelectedHotel(null)} />
-                )}
-              </div>
+                    </div>
+                  ))}
+                  {freeFormLoading && (
+                    <div className="flex justify-start">
+                      <div className="bg-white text-gray-900 border border-gray-200 px-4 py-2 rounded-lg">
+                        <span className="text-gray-500">
+                          {language === 'es' ? 'Pensando...' : 'Thinking...'}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
-            */}
+
+            {/* Input Area */}
+            <div className="flex space-x-2 mb-2">
+              <input
+                type="text"
+                value={freeFormInput}
+                onChange={e => setFreeFormInput(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && !e.shiftKey && freeFormInput.trim() && !freeFormLoading) {
+                    handleSendFreeFormMessage()
+                  }
+                }}
+                placeholder={language === 'es' ? 'Pregunta sobre hoteles en Ecuador...' : 'Ask about hotels in Ecuador...'}
+                disabled={freeFormLoading}
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
+              />
+              <button
+                onClick={handleSendFreeFormMessage}
+                disabled={!freeFormInput.trim() || freeFormLoading}
+                className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+              >
+                {t.sendButton}
+              </button>
+            </div>
+
+            {/* Reset Button */}
+            {freeFormMessages.length > 0 && (
+              <div className="flex justify-end mb-2">
+                <button
+                  onClick={() => {
+                    setFreeFormMessages([])
+                    setFreeFormHotels([])
+                    setFreeFormSelectedHotel(null)
+                  }}
+                  className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 transition-colors text-sm"
+                >
+                  {language === 'es' ? 'Reiniciar conversación' : 'Reset conversation'}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -290,23 +290,164 @@ export async function findMatchingHotelsByKeywords(
   
   const normalizedQuery = normalize(userQuery)
   
+  // Extract meaningful words from the query (ignore common words)
+  const commonWords = ['hotel', 'hoteles', 'the', 'a', 'an', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'close', 'near', 'cerca', 'de', 'del', 'la', 'el', 'los', 'las']
+  const queryWords = normalizedQuery
+    .split(/\s+/)
+    .filter(word => word.length > 2 && !commonWords.includes(word))
+  
   for (const hotel of hotelsWithKeywords) {
-    // Check if any keyword matches the user query
-    const hasMatch = hotel.keywords.some(keyword => {
+    let hasMatch = false
+    
+    // Check if any keyword matches the user query or query words
+    for (const keyword of hotel.keywords) {
       const normalizedKeyword = normalize(keyword)
-      // Exact match or keyword contains query or query contains keyword
-      return normalizedKeyword === normalizedQuery ||
-             normalizedKeyword.includes(normalizedQuery) ||
-             normalizedQuery.includes(normalizedKeyword)
-    })
+      
+      // Check for exact match
+      if (normalizedKeyword === normalizedQuery) {
+        hasMatch = true
+        break
+      }
+      
+      // Check if query contains the keyword (e.g., "hotels near airport" contains "airport")
+      if (normalizedQuery.includes(normalizedKeyword) && normalizedKeyword.length > 2) {
+        hasMatch = true
+        break
+      }
+      
+      // Check if keyword contains the query (e.g., keyword "airport" is in query "airport")
+      if (normalizedKeyword.includes(normalizedQuery) && normalizedQuery.length > 2) {
+        hasMatch = true
+        break
+      }
+      
+      // Check if any query word matches the keyword (e.g., "airport" in query matches "airport" keyword)
+      for (const queryWord of queryWords) {
+        if (normalizedKeyword.includes(queryWord) || queryWord.includes(normalizedKeyword)) {
+          hasMatch = true
+          break
+        }
+      }
+      
+      if (hasMatch) break
+    }
     
     if (hasMatch) {
       matchingIds.push(hotel.id)
     }
   }
   
-  console.log('🔍 DEBUG - Keyword matches found:', matchingIds.length, 'for query:', userQueryLower)
+  console.log('🔍 DEBUG - Keyword matches found:', matchingIds.length, 'for query:', userQueryLower, 'matching IDs:', matchingIds)
   return matchingIds
+}
+
+/**
+ * Free-form chatbot that uses all hotel data as context
+ * Allows natural conversation about hotels in the database
+ */
+export async function freeFormChatbot(
+  userMessage: string,
+  hotels: any[],
+  conversationHistory: Array<{ role: 'user' | 'assistant'; content: string }> = [],
+  lang: string = 'es'
+): Promise<string> {
+  try {
+    // Build comprehensive hotel context with all available information
+    const hotelContext = hotels.map(hotel => {
+      const parts = [
+        `Nombre: ${hotel.name || 'N/A'}`,
+        `Ciudad: ${hotel.city || 'N/A'}`,
+        `Región: ${hotel.region || 'N/A'}`,
+        `Tipo: ${hotel.hotelType || 'N/A'}`,
+        `Descripción: ${hotel.description || 'N/A'}`,
+        hotel.address ? `Dirección: ${hotel.address}` : null,
+        hotel.locationPhrase ? `Ubicación: ${hotel.locationPhrase}` : null,
+        hotel.recreationAreas ? `Servicios: ${hotel.recreationAreas}` : null,
+        hotel.surroundings && Array.isArray(hotel.surroundings) && hotel.surroundings.length > 0
+          ? `Alrededores: ${hotel.surroundings.join(', ')}`
+          : null,
+        hotel.websiteLink ? `Sitio web: ${hotel.websiteLink}` : null,
+        hotel.bookingLink ? `Reservas: ${hotel.bookingLink}` : null
+      ].filter(Boolean).join('\n')
+      return parts
+    }).join('\n\n---\n\n')
+
+    const systemPrompt = lang === 'en'
+      ? `You are Lucía, a friendly and helpful hotel assistant for AHOTEC (Federation of Hotels of Ecuador). You help users find information about hotels in Ecuador using the hotel database provided to you.
+
+You have access to information about ${hotels.length} hotels in Ecuador. Use this information to answer questions about:
+- Hotel locations, cities, and regions
+- Hotel types and categories
+- Hotel amenities and services
+- Points of interest near hotels
+- Recommendations based on user preferences
+- Any other questions about hotels in Ecuador
+
+IMPORTANT: When you mention a hotel by name in your response, ALWAYS include its website link and booking link in markdown format. Format links like this:
+- [Visit website](websiteLink) or [Book now](bookingLink)
+- If a hotel has both links, include both: [Visit website](websiteLink) | [Book now](bookingLink)
+- Only include links for hotels that are actually mentioned in your response
+
+Be conversational, friendly, and helpful. If the user asks about something not in the database, politely let them know. Always base your answers on the actual hotel data provided.
+
+HOTEL DATABASE:
+${hotelContext}`
+      : `Eres Lucía, una asistente hotelera amigable y útil para AHOTEC (Federación Hotelera del Ecuador). Ayudas a los usuarios a encontrar información sobre hoteles en Ecuador usando la base de datos de hoteles que se te proporciona.
+
+Tienes acceso a información sobre ${hotels.length} hoteles en Ecuador. Usa esta información para responder preguntas sobre:
+- Ubicaciones de hoteles, ciudades y regiones
+- Tipos y categorías de hoteles
+- Servicios y amenidades de hoteles
+- Puntos de interés cerca de hoteles
+- Recomendaciones basadas en preferencias del usuario
+- Cualquier otra pregunta sobre hoteles en Ecuador
+
+IMPORTANTE: Cuando menciones un hotel por nombre en tu respuesta, SIEMPRE incluye su enlace al sitio web y enlace de reservas en formato markdown. Formatea los enlaces así:
+- [Visitar sitio web](websiteLink) o [Reservar ahora](bookingLink)
+- Si un hotel tiene ambos enlaces, incluye ambos: [Visitar sitio web](websiteLink) | [Reservar ahora](bookingLink)
+- Solo incluye enlaces para hoteles que realmente menciones en tu respuesta
+
+Sé conversacional, amigable y útil. Si el usuario pregunta sobre algo que no está en la base de datos, indícaselo amablemente. Siempre basa tus respuestas en los datos reales de hoteles proporcionados.
+
+BASE DE DATOS DE HOTELES:
+${hotelContext}`
+
+    // Build conversation messages
+    const messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
+      { role: 'system', content: systemPrompt }
+    ]
+
+    // Add conversation history (last 10 messages to avoid token limits)
+    const recentHistory = conversationHistory.slice(-10)
+    recentHistory.forEach(msg => {
+      messages.push({
+        role: msg.role,
+        content: msg.content
+      })
+    })
+
+    // Add current user message
+    messages.push({
+      role: 'user',
+      content: userMessage
+    })
+
+    const response = await client.chat({
+      model: 'mistral-small-latest',
+      messages,
+      maxTokens: 1000,
+      temperature: 0.7 // Higher temperature for more natural conversation
+    })
+
+    return response.choices[0]?.message?.content || (lang === 'en' 
+      ? 'Sorry, I could not process your message. Please try again.' 
+      : 'Lo siento, no pude procesar tu mensaje. Por favor intenta de nuevo.')
+  } catch (error) {
+    console.error('Error in free-form chatbot:', error)
+    return lang === 'en' 
+      ? 'Sorry, there was a technical problem. Please try again later.' 
+      : 'Lo siento, hay un problema técnico. Por favor intenta de nuevo más tarde.'
+  }
 }
 
 export async function getHotelRecommendations(query: string, hotels: any[], lang: string = 'es') {

@@ -3,7 +3,8 @@ import { prisma } from '@/lib/db'
 import { 
   isGenericQuery, 
   buildHotelKeywords, 
-  findMatchingHotelsByKeywords 
+  findMatchingHotelsByKeywords,
+  freeFormChatbot
 } from '@/lib/mistral'
 
 // Utility function to randomize array order
@@ -21,9 +22,79 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { message, sessionId, lang = 'es' } = body
 
-    // Detect guided search
+    // Detect guided search vs free-form chat
     const locationMatch = message.match(/Ubicación:\s*(.*)/i)
     const typeMatch = message.match(/Tipo de hotel:\s*(.*)/i)
+    const isGuidedSearch = !!(locationMatch || typeMatch)
+    
+    // If it's NOT a guided search, use free-form chatbot
+    if (!isGuidedSearch) {
+      console.log('💬 FREE-FORM CHAT - Processing:', message)
+      
+      // Get all approved and paid hotels for context
+      const allHotels = await prisma.hotel.findMany({
+        where: {
+          status: 'APPROVED',
+          isPaid: true
+        }
+      })
+      
+      // Get conversation history from session
+      const existingSession = await prisma.chatSession.findUnique({
+        where: { sessionId }
+      })
+      
+      // Extract conversation history for AI (only role and content needed)
+      const conversationHistory = existingSession 
+        ? (existingSession.messages as any[]).map((msg: any) => ({
+            role: msg.role,
+            content: msg.content
+          }))
+        : []
+      
+      // Get response from free-form chatbot
+      const chatbotResponse = await freeFormChatbot(message, allHotels, conversationHistory, lang)
+      
+      // Save conversation to session
+      const newMessage = {
+        role: 'user',
+        content: message,
+        timestamp: new Date().toISOString()
+      }
+      
+      const botMessage = {
+        role: 'assistant',
+        content: chatbotResponse,
+        timestamp: new Date().toISOString()
+      }
+      
+      if (existingSession) {
+        // Preserve existing messages with their timestamps, only append new messages
+        const existingMessages = (existingSession.messages as any[]) || []
+        await prisma.chatSession.update({
+          where: { sessionId },
+          data: {
+            messages: [...existingMessages, newMessage, botMessage]
+          }
+        })
+      } else {
+        await prisma.chatSession.create({
+          data: {
+            sessionId,
+            messages: [newMessage, botMessage]
+          }
+        })
+      }
+      
+      // Return empty hotels array - links are included in the chatbot response itself
+      return NextResponse.json({
+        message: chatbotResponse,
+        hotels: [], // No separate hotel list - links are in the chatbot response
+        timestamp: new Date().toISOString()
+      })
+    }
+
+    // Continue with guided search logic below
     let location = ''
     let hotelTypesString = ''
     if (locationMatch) location = locationMatch[1].trim()
