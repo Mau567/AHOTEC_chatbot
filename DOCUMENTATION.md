@@ -374,8 +374,7 @@ AHOTEC_chatbot/
 │   └── globals.css               # Estilos globales
 │
 ├── components/
-│   ├── ChatWidget.tsx            # Widget flotante de chat
-│   ├── DualChatWidget.tsx        # Widget dual (alternativo)
+│   ├── ChatWidget.tsx            # Widget flotante de chat (free-form)
 │   ├── HotelDetailModal.tsx      # Modal de detalles de hotel
 │   └── MapModal.tsx              # Modal de mapa (comentado)
 │
@@ -695,7 +694,6 @@ const prompt = lang === 'en'
 
 El chatbot se llama **"Lucía"** [[memory:7743120]] en todos los componentes:
 - ChatWidget
-- DualChatWidget
 - Página principal
 - Prompts de Mistral AI
 
@@ -762,46 +760,16 @@ npm run setup
 #### Option 1: Main Page Chatbot
 
 1. **Go to the AHOTEC homepage**
-2. In the chatbot section, you'll see two guided questions:
-   
-   **Step 1: Where would you like to search for a hotel?**
-   - Enter the city, region, or address where you want to stay
-   - Valid examples:
-     - "Quito"
-     - "Coast"
-     - "Mariscal Sucre Airport"
-     - "Baños de Agua Santa"
-     - "La Carolina Park"
-   - Click **"Next"**
-
-   **Step 2: What type of hotel are you looking for?**
-   - Select one or multiple accommodation types:
-     - 🏨 Hotel / Resort / 5* or 4*
-     - 🏨 Hotel / 2* or 3*
-     - 🏠 Hostel / Bed and Breakfast / 3*, 2* or 1*
-     - 🏡 Hostería / Hacienda / Lodge / 5*, 4* or 3*
-   - Click **"Next"**
-
-3. **Results**: The system will show a list of hotels matching your search
-   - Each hotel displays:
-     - Hotel photograph
-     - Name and description
-     - Full address
-     - Location (descriptive phrase)
-     - Services and recreational areas
-     - Points of interest nearby
-     - Website and booking links
-
-4. **View Details**: Click on any hotel to see complete information in a modal
-
-5. **Reset Search**: Click the "Reset search" button to start a new query
+2. In the chatbot section, type your question or request in natural language (e.g. "Hotels near the airport in Quito", "I want a 4-star hotel in Guayaquil").
+3. **Results**: Lucía will reply with relevant hotels and links. You can keep the conversation going with follow-up questions.
+4. **View Details**: Click on any hotel in the main page results to see complete information in a modal.
 
 #### Option 2: Floating Widget
 
 On any page of the website, you'll find a floating chat button in the bottom-right corner:
 
 1. **Click the message icon** (blue circle with chat icon)
-2. Follow the same guided process as the main chatbot
+2. Use the same free-form chat: type your question and Lucía will respond with hotel suggestions and links
 3. You can change the language using the language button above the chat
 4. The widget is minimalist and doesn't interrupt your browsing
 

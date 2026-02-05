@@ -1,104 +1,108 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { MessageCircle, X, Building } from 'lucide-react'
-import HotelDetailModal from '@/components/HotelDetailModal'
-// import MapModal from '@/components/MapModal' // TEMPORARILY HIDDEN FOR PRESENTATION
+import { MessageCircle, X, Send, Building } from 'lucide-react'
+import ReactMarkdown from 'react-markdown'
 
-const hotelTypeOptions = [
-  'Hotel / Resort / 5* o 4*',
-  'Hotel / 2* o 3*',
-  'Hostal / Bed and Breakfast / 3*, 2* o 1*',
-  'Hostería / Hacienda / Lodge / 5*, 4* o 3*'
-]
+interface ChatMessage {
+  id: string
+  text: string
+  isUser: boolean
+  timestamp: Date
+}
 
-export default function ChatWidget({ 
-  apiUrl = '/api/chat', 
+interface ChatWidgetProps {
+  apiUrl?: string
+  theme?: 'light' | 'dark'
+  position?: 'bottom-right' | 'bottom-left'
+}
+
+export default function ChatWidget({
+  apiUrl = '/api/chat',
   theme = 'light',
   position = 'bottom-right'
-}: {
-  apiUrl?: string,
-  theme?: 'light' | 'dark',
-  position?: 'bottom-right' | 'bottom-left'
-}) {
-  const [language, setLanguage] = useState<'es' | 'en'>('es')
+}: ChatWidgetProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const [step, setStep] = useState<'ubicacion' | 'tipo' | 'resultados'>('ubicacion')
-  const [userLocation, setUserLocation] = useState('')
-  const [userHotelType, setUserHotelType] = useState<string[]>([])
-  const [hotelResults, setHotelResults] = useState<any[]>([])
+  const [language, setLanguage] = useState<'es' | 'en'>('es')
+  const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [inputValue, setInputValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [noResults, setNoResults] = useState(false)
-  const [selectedHotel, setSelectedHotel] = useState<any | null>(null)
-  // const [showMap, setShowMap] = useState(false) // TEMPORARILY HIDDEN FOR PRESENTATION
-  const [sessionId] = useState(() => `widget_${Date.now()}_${Math.random().toString(36).substr(2,9)}`)
+  const [sessionId] = useState(() => `widget_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const t = {
     assistantTitle: language === 'es' ? 'Lucía' : 'Lucía',
     openChat: language === 'es' ? 'Abrir chat' : 'Open chat',
     closeChat: language === 'es' ? 'Cerrar chat' : 'Close chat',
-    locationQuestion: language === 'es' ? 'Hola, soy Lucía, tu asistente virtual. ¿Dónde te gustaría buscar un hotel?' : 'Hello, I am Lucía, your virtual assistant. Where would you like to search for a hotel?',
-    locationHint: language === 'es' ? 'Trata de usar búsquedas específicas como: "Parque La Carolina Quito"' : 'Try using specific searches like: "Parque La Carolina Quito"',
-    typeQuestion: language === 'es' ? '¿Qué tipo de hotel buscas?' : 'What type of hotel are you looking for?',
-    nextButton: language === 'es' ? 'Siguiente' : 'Next',
-    loadingMessage: language === 'es' ? 'Buscando hoteles compatibles...' : 'Searching for compatible hotels...',
-    noResultsMessage: language === 'es' ? 'Lo siento, no encontramos un hotel que coincida con tu búsqueda.' : 'Sorry, we couldn\'t find a hotel that matches your search.',
-    resetButton: language === 'es' ? 'Reiniciar búsqueda' : 'Reset search',
-    chatPlaceholder: language === 'es' ? 'Ciudad, región o dirección' : 'City, region or address',
+    welcomeMessage: language === 'es' ? 'Hola, soy Lucía, tu asistente virtual. ¿En qué puedo ayudarte?' : 'Hello, I am Lucía, your virtual assistant. How can I help you?',
+    placeholder: language === 'es' ? 'Escribe tu mensaje...' : 'Type your message...',
     sendButton: language === 'es' ? 'Enviar' : 'Send',
-    bookingLinkLabel: language === 'es' ? 'Link a hotel' : 'Hotel link',
-    mapButton: language === 'es' ? 'Ver mapa' : 'Show map',
+    technicalError: language === 'es' ? 'Lo siento, hay un problema técnico. Por favor intenta de nuevo.' : 'Sorry, there is a technical problem. Please try again.',
     english: 'English',
     spanish: 'Español'
   }
 
-  const formatRecreationAreas = (areas: string) => {
-    const items = areas.split(',').map(a => a.trim())
-    const genIndex = items.findIndex(a => a.toLowerCase() === 'generador eléctrico')
-    if (genIndex !== -1) {
-      const [gen] = items.splice(genIndex, 1)
-      items.push(gen)
-    }
-    return items.join(', ')
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
-  const handleSendGuidedQuery = async (location: string, hotelTypes: string[]) => {
-    console.log('🟦 FRONTEND - Sending query with types:', hotelTypes)
-    console.log('🟦 FRONTEND - Joined types:', hotelTypes.join('|||'))
-    
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages])
+
+  const handleSendMessage = async () => {
+    if (!inputValue.trim() || isLoading) return
+
+    const userMessage: ChatMessage = {
+      id: Date.now().toString(),
+      text: inputValue,
+      isUser: true,
+      timestamp: new Date()
+    }
+
+    setMessages(prev => [...prev, userMessage])
+    setInputValue('')
     setIsLoading(true)
-    setNoResults(false)
-    setHotelResults([])
+
     try {
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: `Ubicación: ${location}\nTipo de hotel: ${hotelTypes.join('|||')}`,
+          message: inputValue,
           sessionId,
           lang: language
         })
       })
+
       const data = await response.json()
-      if (Array.isArray(data.hotels) && data.hotels.length > 0) {
-        setHotelResults(data.hotels)
-      } else {
-        setNoResults(true)
+
+      const botMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        text: data.message ?? t.technicalError,
+        isUser: false,
+        timestamp: new Date()
       }
-      setIsLoading(false)
+
+      setMessages(prev => [...prev, botMessage])
     } catch (error) {
-      setNoResults(true)
+      const errorMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        text: t.technicalError,
+        isUser: false,
+        timestamp: new Date()
+      }
+      setMessages(prev => [...prev, errorMessage])
+    } finally {
       setIsLoading(false)
     }
   }
 
-  const handleChatReset = () => {
-    setStep('ubicacion')
-    setUserLocation('')
-    setUserHotelType([])
-    setHotelResults([])
-    setNoResults(false)
-    setSelectedHotel(null)
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleSendMessage()
+    }
   }
 
   const positionClasses = {
@@ -106,33 +110,54 @@ export default function ChatWidget({
     'bottom-left': 'bottom-4 left-4'
   }
 
+  const themeClasses = {
+    light: {
+      widget: 'bg-white border-gray-200',
+      header: 'bg-blue-600 text-white',
+      input: 'bg-gray-50 border-gray-300 text-gray-900',
+      button: 'bg-blue-600 hover:bg-blue-700 text-white',
+      message: {
+        user: 'bg-blue-600 text-white',
+        bot: 'bg-gray-100 text-gray-900'
+      }
+    },
+    dark: {
+      widget: 'bg-gray-800 border-gray-600',
+      header: 'bg-gray-700 text-white',
+      input: 'bg-gray-700 border-gray-600 text-white',
+      button: 'bg-blue-600 hover:bg-blue-700 text-white',
+      message: {
+        user: 'bg-blue-600 text-white',
+        bot: 'bg-gray-700 text-white'
+      }
+    }
+  }
+
+  const currentTheme = themeClasses[theme]
+
   return (
     <div className={`fixed ${positionClasses[position]} z-50`}>
-      {/* Chat Toggle Button */}
       {!isOpen && (
         <div className="flex flex-col items-end space-y-2">
-          {/* Language Toggle */}
           <button
             onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
-            className={`bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-xs shadow-lg transition-all duration-200 hover:scale-105`}
+            className={`${currentTheme.button} px-3 py-1 rounded-md text-xs shadow-lg transition-all duration-200 hover:scale-105`}
           >
-            {language === 'es' ? t.spanish : t.english}
+            {language === 'es' ? t.english : t.spanish}
           </button>
-          {/* Chat Button */}
           <button
             onClick={() => setIsOpen(true)}
-            className={`bg-blue-600 hover:bg-blue-700 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110`}
+            className={`${currentTheme.button} w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110`}
             aria-label={t.openChat}
           >
             <MessageCircle className="w-6 h-6" />
           </button>
         </div>
       )}
-      {/* Chat Widget */}
+
       {isOpen && (
-        <div className="w-96 h-[520px] rounded-lg shadow-xl border bg-white flex flex-col">
-          {/* Header */}
-          <div className="bg-blue-600 text-white px-4 py-3 rounded-t-lg flex items-center justify-between">
+        <div className={`w-80 h-96 rounded-lg shadow-xl border ${currentTheme.widget} flex flex-col`}>
+          <div className={`${currentTheme.header} px-4 py-3 rounded-t-lg flex items-center justify-between`}>
             <div className="flex items-center">
               <Building className="w-5 h-5 mr-2" />
               <span className="font-semibold">{t.assistantTitle}</span>
@@ -145,142 +170,75 @@ export default function ChatWidget({
               <X className="w-5 h-5" />
             </button>
           </div>
-          {/* Guided Chat Content */}
-          <div className="flex-1 overflow-y-auto p-4">
-            {step === 'ubicacion' && (
-              <div className="text-center text-gray-700 mt-4">
-                <p className="mb-4 font-medium">{t.locationQuestion}</p>
-                <input
-                  type="text"
-                  value={userLocation}
-                  onChange={e => setUserLocation(e.target.value)}
-                  placeholder={t.chatPlaceholder}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  onKeyDown={e => {
-                    if (e.key === 'Enter' && userLocation.trim()) {
-                      setStep('tipo')
-                    }
-                  }}
-                />
-                <p className="mt-2 text-xs text-gray-500 italic">{t.locationHint}</p>
-                <button
-                  className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-                  disabled={!userLocation.trim()}
-                  onClick={() => setStep('tipo')}
-                >
-                  {t.nextButton}
-                </button>
+
+          <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            {messages.length === 0 ? (
+              <div className="text-center text-gray-500">
+                <MessageCircle className="w-8 h-8 mx-auto mb-2" />
+                <p className="text-sm">{t.welcomeMessage}</p>
               </div>
-            )}
-            {step === 'tipo' && (
-              <div className="text-center text-gray-700 mt-4">
-                <p className="mb-4 font-medium">{t.typeQuestion}</p>
-                <div className="grid grid-cols-1 gap-2">
-                  {hotelTypeOptions.map(option => (
-                    <button
-                      key={option}
-                      className={`px-4 py-2 rounded-md border ${userHotelType.includes(option) ? 'bg-blue-600 text-white' : 'bg-white text-gray-900 hover:bg-blue-100'}`}
-                      onClick={() => {
-                        setUserHotelType(prev => 
-                          prev.includes(option) 
-                            ? prev.filter(t => t !== option)
-                            : [...prev, option]
-                        )
-                      }}
-                    >
-                      {option}
-                    </button>
-                  ))}
-                </div>
-                <button
-                  className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
-                  disabled={userHotelType.length === 0}
-                  onClick={() => {
-                    setStep('resultados')
-                    handleSendGuidedQuery(userLocation, userHotelType)
-                  }}
+            ) : (
+              messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
                 >
-                  {t.nextButton}
-                </button>
-              </div>
-            )}
-            {step === 'resultados' && (
-              <div className="text-center text-gray-700 flex-1 flex flex-col">
-                {isLoading && <p>{t.loadingMessage}</p>}
-                {!isLoading && noResults && (
-                  <div className="text-red-600 font-semibold mt-4">{t.noResultsMessage}</div>
-                )}
-                {!isLoading && hotelResults.length > 0 && (
-                  <div className="space-y-3 flex-1 overflow-y-auto">
-                    {hotelResults.map((hotel, idx) => (
-                      <div
-                        key={hotel.id || idx}
-                        onClick={() => setSelectedHotel(hotel)}
-                        className="bg-white border rounded-lg shadow p-3 flex flex-col items-start text-left cursor-pointer hover:shadow-lg transition"
-                      >
-                        {hotel.imageUrl && (
-                          <img src={hotel.imageUrl} alt={hotel.name} className="w-full h-28 object-cover rounded mb-2" />
-                        )}
-                        <h3 className="text-base font-bold mb-1">{hotel.name}</h3>
-                        <div className="text-xs mb-1 line-clamp-2">{hotel.description}</div>
-                        {hotel.address && <div className="text-gray-500 text-xs mb-1"><b>Dirección:</b> {hotel.address}</div>}
-                        {hotel.locationPhrase && <div className="text-gray-500 text-xs mb-1"><b>Ubicación:</b> {hotel.locationPhrase}</div>}
-                        {hotel.recreationAreas && <div className="text-gray-500 text-xs mb-1"><b>Servicios / áreas recreativas:</b> {formatRecreationAreas(hotel.recreationAreas)}</div>}
-                        {hotel.surroundings && hotel.surroundings.length > 0 && (
-                          <div className="text-gray-500 text-xs mb-1">
-                            <b>Alrededores:</b> {hotel.surroundings.join(', ')}
-                          </div>
-                        )}
-                        <div className="flex gap-2 mt-1">
-                          {hotel.websiteLink && (
-                            <a href={hotel.websiteLink} target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:underline text-xs">Sitio web</a>
-                          )}
-                          {hotel.bookingLink && (
-                            <a href={hotel.bookingLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs">Reservar</a>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {/* Botón del mapa - TEMPORARILY HIDDEN FOR PRESENTATION */}
-                {/*
-                {!isLoading && hotelResults.length > 0 && (
-                  <button
-                    className="mt-3 bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 text-xs self-center"
-                    onClick={() => setShowMap(true)}
+                  <div
+                    className={`max-w-[85%] px-3 py-2 rounded-lg text-sm ${
+                      message.isUser
+                        ? currentTheme.message.user
+                        : currentTheme.message.bot
+                    }`}
                   >
-                    {t.mapButton}
-                  </button>
-                )}
-                */}
+                    {message.isUser ? (
+                      message.text
+                    ) : (
+                      <ReactMarkdown
+                        components={{
+                          a: ({ href, children }) => (
+                            <a href={href} target="_blank" rel="noopener noreferrer" className="underline text-blue-600">
+                              {children}
+                            </a>
+                          )
+                        }}
+                      >
+                        {message.text}
+                      </ReactMarkdown>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className={`px-3 py-2 rounded-lg text-sm ${currentTheme.message.bot}`}>...</div>
               </div>
             )}
+            <div ref={messagesEndRef} />
           </div>
-          {/* Reset Button */}
-          <div className="p-2 border-t border-gray-200 flex justify-end">
-            <button
-              onClick={handleChatReset}
-              className="bg-gray-200 text-gray-700 px-3 py-1 rounded-md hover:bg-gray-300 transition-colors text-xs"
-            >
-              {t.resetButton}
-            </button>
+
+          <div className="p-4 border-t border-gray-200">
+            <div className="flex space-x-2">
+              <input
+                type="text"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder={t.placeholder}
+                disabled={isLoading}
+                className={`flex-1 px-3 py-2 rounded-md text-sm border focus:outline-none focus:ring-2 focus:ring-blue-500 ${currentTheme.input}`}
+              />
+              <button
+                onClick={handleSendMessage}
+                disabled={!inputValue.trim() || isLoading}
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${currentTheme.button}`}
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </div>
           </div>
-          {/* Hotel Detail Modal (optional, not implemented here for compactness) */}
         </div>
       )}
-      {selectedHotel && (
-        <HotelDetailModal hotel={selectedHotel} onClose={() => setSelectedHotel(null)} />
-      )}
-      {/* Modal del mapa - TEMPORARILY HIDDEN FOR PRESENTATION */}
-      {/*
-      {showMap && (
-        <MapModal
-          highlightIds={hotelResults.map(h => h.id)}
-          onClose={() => setShowMap(false)}
-        />
-      )}
-      */}
     </div>
   )
 }
