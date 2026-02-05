@@ -435,7 +435,7 @@ ${hotelContext}`
     const response = await client.chat({
       model: 'mistral-small-latest',
       messages,
-      maxTokens: 1000,
+      maxTokens: 8000, // Increased significantly to allow full responses even with large hotel context
       temperature: 0.7 // Higher temperature for more natural conversation
     })
 
