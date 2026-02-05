@@ -2,10 +2,21 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { freeFormChatbot } from '@/lib/mistral'
 
+/** Detect response language from the user's message: Spanish vs English. Default Spanish if unclear. */
+function detectMessageLanguage(message: string): 'es' | 'en' {
+  const lower = message.trim().toLowerCase()
+  const en = (lower.match(/\b(the|and|is|are|near|find|where|what|how|can|you|recommend|hotels?|please|want|looking for|nearby|close to|need|like|best|in)\b/gi) || []).length
+  const es = (lower.match(/\b(el|la|los|las|qué|dónde|cómo|hoteles?|por favor|busco|recomienda|cerca de|necesito|me gustaría|mejor|en)\b/gi) || []).length
+  return en > es ? 'en' : 'es'
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const { message, sessionId, lang = 'es' } = body
+
+    // Respond in the same language as the user's message (ignore app UI language)
+    const responseLang = detectMessageLanguage(message)
 
     // Get all approved and paid hotels for context
     const allHotels = await prisma.hotel.findMany({
@@ -28,8 +39,8 @@ export async function POST(request: NextRequest) {
         }))
       : []
 
-    // Get response from free-form chatbot
-    const chatbotResponse = await freeFormChatbot(message, allHotels, conversationHistory, lang)
+    // Get response from free-form chatbot (responseLang = language of user's message)
+    const chatbotResponse = await freeFormChatbot(message, allHotels, conversationHistory, responseLang)
 
     // Save conversation to session
     const newMessage = {
