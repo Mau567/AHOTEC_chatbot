@@ -124,6 +124,8 @@ export default function Home() {
   const successMsgRef = useRef<HTMLDivElement | null>(null)
   const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`)
 
+  const SHOW_GUIDED_CHATBOT = false // Set to true to show the guided (step-by-step) chatbot again
+
   // 1. Estado para el flujo guiado del chatbot
   const [chatStep, setChatStep] = useState<'ubicacion' | 'tipo' | 'resultados'>('ubicacion')
   const [userLocation, setUserLocation] = useState('')
@@ -810,7 +812,9 @@ export default function Home() {
             </form>
           </div>
 
-          {/* Chatbot Interface */}
+          {SHOW_GUIDED_CHATBOT && (
+          <>
+          {/* Chatbot Interface (guided - hidden for now) */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-2xl font-semibold text-gray-900 mb-6 flex items-center">
               <MessageCircle className="w-6 h-6 mr-2 text-blue-600" />
@@ -931,6 +935,8 @@ export default function Home() {
               <HotelDetailModal hotel={selectedHotel} onClose={() => setSelectedHotel(null)} />
             )}
           </div>
+          </>
+          )}
 
           {/* Free-form Chatbot - Separate Section */}
           <div className="bg-white rounded-lg shadow-md p-6">
