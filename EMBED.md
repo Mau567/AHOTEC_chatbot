@@ -1,61 +1,63 @@
-# Embed the AHOTEC Chat on Any Website
+# Incrustar el chat de AHOTEC en cualquier sitio web
 
-The chat widget can be added to **any webpage** as a floating widget. It runs in an iframe and talks to your AHOTEC app’s API.
+> **English:** [EMBED.md](./EMBED.md)
 
-## 1. Deploy your AHOTEC app
+El widget de chat se puede añadir a **cualquier página web** como un widget flotante. Funciona en un iframe y se comunica con la API de tu aplicación AHOTEC.
 
-Your app must be deployed and reachable at a public URL, e.g.:
+## 1. Despliega tu aplicación AHOTEC
+
+Tu aplicación debe estar desplegada y ser accesible en una URL pública, por ejemplo:
 
 - `https://ahotec-chatbot.vercel.app`
 - `https://chat.ahotec.com`
 
-Use that URL as **YOUR_DOMAIN** below.
+Usa esa URL como **TU_DOMINIO** en los ejemplos siguientes.
 
-## 2. Add the chat to a website
+## 2. Añadir el chat a un sitio web
 
-### Option A: Script tag (recommended)
+### Opción A: Etiqueta script (recomendado)
 
-Add this before `</body>` on the page where you want the chat:
+Añade esto antes de `</body>` en la página donde quieras el chat:
 
 ```html
-<script src="https://YOUR_DOMAIN/embed.js" async></script>
+<script src="https://TU_DOMINIO/embed.js" async></script>
 ```
 
-Replace `YOUR_DOMAIN` with your app’s URL (no trailing slash), e.g.:
+Sustituye `TU_DOMINIO` por la URL de tu aplicación (sin barra final), por ejemplo:
 
 ```html
 <script src="https://ahotec-chatbot.vercel.app/embed.js" async></script>
 ```
 
-The script will inject a floating iframe in the bottom-right corner.
+El script insertará un iframe flotante en la esquina inferior derecha.
 
-### Option B: Iframe only
+### Opción B: Solo iframe
 
-You can also embed the chat with a plain iframe:
+También puedes incrustar el chat con un iframe directo:
 
 ```html
 <iframe
-  src="https://YOUR_DOMAIN/embed/chat"
-  title="AHOTEC Chat"
+  src="https://TU_DOMINIO/embed/chat"
+  title="Chat AHOTEC"
   style="position: fixed; bottom: 20px; right: 20px; width: 380px; height: 520px; border: none; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.15); z-index: 2147483647;"
 ></iframe>
 ```
 
-Replace `YOUR_DOMAIN` with your app’s URL.
+Sustituye `TU_DOMINIO` por la URL de tu aplicación.
 
-## 3. How it works
+## 3. Cómo funciona
 
-- The widget is loaded from **your** AHOTEC domain (`/embed/chat`).
-- All API calls go to **your** domain (`/api/chat`), so no CORS setup is needed for the host site.
-- The host site only loads your script or iframe; it does not need to expose any API.
-- The chat appears as a floating bubble and panel on top of the existing page.
+- El widget se carga desde **tu** dominio AHOTEC (`/embed/chat`).
+- Todas las llamadas a la API van a **tu** dominio (`/api/chat`), así que el sitio que lo incrusta no necesita configurar CORS.
+- El sitio que incrusta solo carga tu script o tu iframe; no tiene que exponer ninguna API.
+- El chat se muestra como una burbuja y panel flotante sobre la página.
 
-## 4. Requirements
+## 4. Requisitos
 
-- The AHOTEC app (this repo) must be deployed and publicly accessible.
-- The host site must allow loading your domain (no strict CSP that blocks your origin).
-- For **Option A**, the host site must allow loading the script from your domain.
+- La aplicación AHOTEC (este repositorio) debe estar desplegada y ser accesible públicamente.
+- El sitio que incrusta debe permitir cargar tu dominio (que la política CSP no bloquee tu origen).
+- Para la **Opción A**, el sitio debe permitir cargar el script desde tu dominio.
 
-## 5. Customization (optional)
+## 5. Personalización (opcional)
 
-To change size or position when using the script, you can host a copy of `public/embed.js` and edit the `iframe.style.cssText` values (width, height, bottom, right, etc.).
+Para cambiar tamaño o posición cuando uses el script, puedes alojar una copia de `public/embed.js` y editar los valores de `iframe.style.cssText` (width, height, bottom, right, etc.).
