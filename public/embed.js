@@ -17,9 +17,9 @@
   iframe.src = baseUrl + '/embed/chat';
   iframe.title = 'AHOTEC Chat - Lucía';
   iframe.id = 'ahotec-chat-iframe';
-  // Initial size; widget will send actual size once loaded
-  var fallbackW = 88;
-  var fallbackH = 120;
+  // Initial size (chat button + language button with room); widget will send actual size once loaded
+  var fallbackW = 100;
+  var fallbackH = 130;
 
   function setSize(w, h) {
     iframe.style.width = (w || fallbackW) + 'px';

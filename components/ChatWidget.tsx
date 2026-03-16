@@ -62,8 +62,10 @@ export default function ChatWidget({
         const w = Math.ceil(rect.width)
         const h = Math.ceil(rect.height)
         if (w > 0 && h > 0) {
+          // Add small buffer so frame fully contains chat button + language selector (no clipping)
+          const pad = 8
           window.parent.postMessage(
-            { type: 'ahotec-chat-resize', open: isOpen, width: w, height: h },
+            { type: 'ahotec-chat-resize', open: isOpen, width: w + pad, height: h + pad },
             '*'
           )
         }
