@@ -50,6 +50,18 @@ export default function ChatWidget({
     scrollToBottom()
   }, [messages])
 
+  // When embedded in an iframe, tell the parent to resize so we don't block the whole page
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.self !== window.top) {
+      try {
+        window.parent.postMessage(
+          { type: 'ahotec-chat-resize', open: isOpen },
+          '*'
+        )
+      } catch (_) {}
+    }
+  }, [isOpen])
+
   const handleSendMessage = async () => {
     if (!inputValue.trim() || isLoading) return
 
