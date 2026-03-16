@@ -5,7 +5,7 @@ Un sistema completo de chatbot inteligente para la Federación Hotelera del Ecua
 ## 🏨 **Características Principales**
 
 ### **1. Widget de Chat Flotante**
-- Botón flotante que se puede integrar en el sitio web de AHOTEC
+- Botón flotante que se puede integrar en sitios web
 - Interfaz de chat intuitiva y responsive
 - Temas personalizables (claro/oscuro)
 - Posicionamiento configurable (esquina inferior derecha/izquierda)
