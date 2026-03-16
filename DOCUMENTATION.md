@@ -375,8 +375,7 @@ AHOTEC_chatbot/
 │
 ├── components/
 │   ├── ChatWidget.tsx            # Widget flotante de chat (free-form)
-│   ├── HotelDetailModal.tsx      # Modal de detalles de hotel
-│   └── MapModal.tsx              # Modal de mapa (comentado)
+│   └── HotelDetailModal.tsx      # Modal de detalles de hotel
 │
 ├── lib/
 │   ├── db.ts                     # Cliente Prisma + Supabase
