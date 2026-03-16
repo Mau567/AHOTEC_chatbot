@@ -29,6 +29,7 @@ export default function ChatWidget({
   const [isLoading, setIsLoading] = useState(false)
   const [sessionId] = useState(() => `widget_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   const t = {
     assistantTitle: language === 'es' ? 'Lucía' : 'Lucía',
@@ -50,16 +51,30 @@ export default function ChatWidget({
     scrollToBottom()
   }, [messages])
 
-  // When embedded in an iframe, tell the parent to resize so we don't block the whole page
+  // When embedded in an iframe, measure our size and tell the parent so the frame exactly matches the chatbot
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.self !== window.top) {
+    if (typeof window === 'undefined' || window.self === window.top) return
+    const el = containerRef.current
+    if (!el) return
+    const reportSize = () => {
       try {
-        window.parent.postMessage(
-          { type: 'ahotec-chat-resize', open: isOpen },
-          '*'
-        )
+        const rect = el.getBoundingClientRect()
+        const w = Math.ceil(rect.width)
+        const h = Math.ceil(rect.height)
+        if (w > 0 && h > 0) {
+          window.parent.postMessage(
+            { type: 'ahotec-chat-resize', open: isOpen, width: w, height: h },
+            '*'
+          )
+        }
       } catch (_) {}
     }
+    reportSize()
+    const raf1 = requestAnimationFrame(() => {
+      reportSize()
+      requestAnimationFrame(reportSize)
+    })
+    return () => cancelAnimationFrame(raf1)
   }, [isOpen])
 
   const handleSendMessage = async () => {
@@ -148,7 +163,7 @@ export default function ChatWidget({
   const currentTheme = themeClasses[theme]
 
   return (
-    <div className={`fixed ${positionClasses[position]} z-50`}>
+    <div ref={containerRef} className={`fixed ${positionClasses[position]} z-50`}>
       {!isOpen && (
         <div className="flex flex-col items-end space-y-2">
           <button

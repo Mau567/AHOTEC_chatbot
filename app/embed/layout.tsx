@@ -6,7 +6,7 @@ export default function EmbedLayout({
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: 'html, body { background: transparent !important; min-height: 0; }' }} />
-      <div className="min-h-0 bg-transparent p-0 m-0 overflow-hidden">
+      <div className="min-h-0 bg-transparent p-0 m-0 overflow-visible">
         {children}
       </div>
     </>

@@ -5,8 +5,8 @@
  * Usage:
  *   <script src="https://YOUR_DOMAIN/embed.js" async></script>
  *
- * Frame is fully invisible (no border, shadow, or background). When closed,
- * the iframe is only the size of the buttons so the rest of the page works normally.
+ * The frame size is driven by the chatbot: the widget measures itself and
+ * posts width/height to the parent, so the iframe always matches the chatbot exactly.
  */
 (function() {
   var script = document.currentScript;
@@ -17,30 +17,22 @@
   iframe.src = baseUrl + '/embed/chat';
   iframe.title = 'AHOTEC Chat - Lucía';
   iframe.id = 'ahotec-chat-iframe';
-  var closedWidth = 70;
-  var closedHeight = 88;
-  var openWidth = 340;
-  var openHeight = 420;
+  // Initial size; widget will send actual size once loaded
+  var fallbackW = 88;
+  var fallbackH = 120;
 
   function setSize(w, h) {
-    iframe.style.width = w + 'px';
-    iframe.style.height = h + 'px';
+    iframe.style.width = (w || fallbackW) + 'px';
+    iframe.style.height = (h || fallbackH) + 'px';
   }
 
-  function setClosedStyle() {
-    setSize(closedWidth, closedHeight);
+  function setFrameStyle(open) {
     iframe.style.boxShadow = 'none';
-    iframe.style.borderRadius = '9999px';
+    iframe.style.borderRadius = open ? '12px' : '9999px';
   }
 
-  function setOpenStyle() {
-    setSize(openWidth, Math.min(openHeight, (window.innerHeight || 500) - 40));
-    iframe.style.boxShadow = 'none'; // keep frame invisible when open too; panel has its own shadow
-    iframe.style.borderRadius = '12px';
-  }
-
-  setClosedStyle();
-  // Fully invisible frame: no border, no shadow, transparent, no outline
+  setSize(fallbackW, fallbackH);
+  setFrameStyle(false);
   iframe.style.cssText = [
     'position: fixed',
     'bottom: 20px',
@@ -56,11 +48,16 @@
 
   window.addEventListener('message', function(e) {
     if (e.data && e.data.type === 'ahotec-chat-resize') {
-      if (e.data.open) {
-        setOpenStyle();
-      } else {
-        setClosedStyle();
+      var w = e.data.width;
+      var h = e.data.height;
+      var open = e.data.open;
+      if (typeof w === 'number' && typeof h === 'number' && w > 0 && h > 0) {
+        if (open && h > (window.innerHeight || 500) - 40) {
+          h = (window.innerHeight || 500) - 40;
+        }
+        setSize(w, h);
       }
+      setFrameStyle(!!open);
     }
   });
 })();
