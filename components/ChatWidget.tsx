@@ -176,7 +176,7 @@ export default function ChatWidget({
           </button>
           <button
             onClick={() => setIsOpen(true)}
-            className={`${currentTheme.button} w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110`}
+            className={`${currentTheme.button} w-14 h-12 rounded-xl shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-105`}
             aria-label={t.openChat}
           >
             <MessageCircle className="w-6 h-6" />
