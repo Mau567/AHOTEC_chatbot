@@ -38,9 +38,7 @@ export default function ChatWidget({
     welcomeMessage: language === 'es' ? 'Hola, soy Lucía, tu asistente virtual. ¿En qué puedo ayudarte?' : 'Hello, I am Lucía, your virtual assistant. How can I help you?',
     placeholder: language === 'es' ? 'Escribe tu mensaje...' : 'Type your message...',
     sendButton: language === 'es' ? 'Enviar' : 'Send',
-    technicalError: language === 'es' ? 'Lo siento, hay un problema técnico. Por favor intenta de nuevo.' : 'Sorry, there is a technical problem. Please try again.',
-    english: 'English',
-    spanish: 'Español'
+    technicalError: language === 'es' ? 'Lo siento, hay un problema técnico. Por favor intenta de nuevo.' : 'Sorry, there is a technical problem. Please try again.'
   }
 
   const scrollToBottom = () => {
@@ -167,16 +165,10 @@ export default function ChatWidget({
   return (
     <div ref={containerRef} className={`fixed ${positionClasses[position]} z-50`}>
       {!isOpen && (
-        <div className="flex flex-col items-end space-y-2">
-          <button
-            onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
-            className={`${currentTheme.button} px-3 py-1 rounded-none text-xs shadow-lg transition-all duration-200 hover:scale-105`}
-          >
-            {language === 'es' ? t.english : t.spanish}
-          </button>
+        <div className="flex flex-col items-end">
           <button
             onClick={() => setIsOpen(true)}
-            className={`${currentTheme.button} w-14 h-12 rounded-none shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-105`}
+            className={`${currentTheme.button} w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110`}
             aria-label={t.openChat}
           >
             <MessageCircle className="w-6 h-6" />
