@@ -170,13 +170,13 @@ export default function ChatWidget({
         <div className="flex flex-col items-end space-y-2">
           <button
             onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
-            className={`${currentTheme.button} px-3 py-1 rounded-md text-xs shadow-lg transition-all duration-200 hover:scale-105`}
+            className={`${currentTheme.button} px-3 py-1 rounded-none text-xs shadow-lg transition-all duration-200 hover:scale-105`}
           >
             {language === 'es' ? t.english : t.spanish}
           </button>
           <button
             onClick={() => setIsOpen(true)}
-            className={`${currentTheme.button} w-14 h-12 rounded-xl shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-105`}
+            className={`${currentTheme.button} w-14 h-12 rounded-none shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-105`}
             aria-label={t.openChat}
           >
             <MessageCircle className="w-6 h-6" />

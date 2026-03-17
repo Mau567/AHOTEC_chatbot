@@ -28,7 +28,7 @@
 
   function setFrameStyle(open) {
     iframe.style.boxShadow = 'none';
-    iframe.style.borderRadius = open ? '12px' : '9999px';
+    iframe.style.borderRadius = open ? '12px' : '0'; // rectangle when closed
   }
 
   setSize(fallbackW, fallbackH);
