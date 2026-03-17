@@ -49,11 +49,24 @@ export default function ChatWidget({
     scrollToBottom()
   }, [messages])
 
-  // When embedded in an iframe, measure our size and tell the parent so the frame exactly matches the chatbot
+  // When embedded in an iframe, measure our size when open so the frame matches the open panel.
+  // When closed, we let the parent use a fixed small size for the circular button.
   useEffect(() => {
     if (typeof window === 'undefined' || window.self === window.top) return
     const el = containerRef.current
     if (!el) return
+
+    if (!isOpen) {
+      // Just tell parent we are closed; it will use its own compact size.
+      try {
+        window.parent.postMessage(
+          { type: 'ahotec-chat-resize', open: false },
+          '*'
+        )
+      } catch (_) {}
+      return
+    }
+
     const reportSize = () => {
       try {
         const rect = el.getBoundingClientRect()

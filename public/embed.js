@@ -17,21 +17,21 @@
   iframe.src = baseUrl + '/embed/chat';
   iframe.title = 'AHOTEC Chat - Lucía';
   iframe.id = 'ahotec-chat-iframe';
-  // Initial size (chat button with small buffer); widget will send actual size once loaded
-  var fallbackW = 80;
-  var fallbackH = 80;
+  // Closed size: circular button with small buffer; open size is provided by the widget.
+  var closedW = 80;
+  var closedH = 80;
 
   function setSize(w, h) {
-    iframe.style.width = (w || fallbackW) + 'px';
-    iframe.style.height = (h || fallbackH) + 'px';
+    iframe.style.width = w + 'px';
+    iframe.style.height = h + 'px';
   }
 
   function setFrameStyle(open) {
     iframe.style.boxShadow = 'none';
-    iframe.style.borderRadius = open ? '12px' : '0'; // rectangle when closed
+    iframe.style.borderRadius = open ? '12px' : '9999px'; // circle-ish when closed, rounded panel when open
   }
 
-  setSize(fallbackW, fallbackH);
+  setSize(closedW, closedH);
   setFrameStyle(false);
   iframe.style.cssText = [
     'position: fixed',
@@ -51,13 +51,17 @@
       var w = e.data.width;
       var h = e.data.height;
       var open = e.data.open;
-      if (typeof w === 'number' && typeof h === 'number' && w > 0 && h > 0) {
-        if (open && h > (window.innerHeight || 500) - 40) {
+      if (!open) {
+        // Closed: always use the compact circular-button size.
+        setSize(closedW, closedH);
+        setFrameStyle(false);
+      } else if (typeof w === 'number' && typeof h === 'number' && w > 0 && h > 0) {
+        if (h > (window.innerHeight || 500) - 40) {
           h = (window.innerHeight || 500) - 40;
         }
         setSize(w, h);
+        setFrameStyle(true);
       }
-      setFrameStyle(!!open);
     }
   });
 })();
