@@ -30,3 +30,6 @@ coverage/
 # Prisma
 prisma/migrations/*/migration.sql
 !prisma/migrations/*/ 
+
+# Example files
+env.example
