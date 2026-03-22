@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { MessageCircle, X, Send, Building } from 'lucide-react'
+import { MessageCircle, X, Send, Building, Headphones } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 
 interface ChatMessage {
@@ -23,6 +23,9 @@ export default function ChatWidget({
   position = 'bottom-right'
 }: ChatWidgetProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const [showProactiveBubble, setShowProactiveBubble] = useState(false)
+  /** Once dismissed or user opens chat, don't show the bubble again this session */
+  const [proactiveBubbleDone, setProactiveBubbleDone] = useState(false)
   const [language, setLanguage] = useState<'es' | 'en'>('es')
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [inputValue, setInputValue] = useState('')
@@ -39,7 +42,11 @@ export default function ChatWidget({
     placeholder: language === 'es' ? 'Escribe tu mensaje...' : 'Type your message...',
     sendButton: language === 'es' ? 'Enviar' : 'Send',
     technicalError: language === 'es' ? 'Lo siento, hay un problema técnico. Por favor intenta de nuevo.' : 'Sorry, there is a technical problem. Please try again.',
-    resetChat: language === 'es' ? 'Reiniciar' : 'Reset'
+    resetChat: language === 'es' ? 'Reiniciar' : 'Reset',
+    proactiveBubble:
+      language === 'es'
+        ? '¡Hola! ¿Te puedo ayudar en algo?'
+        : 'Hi! Can I help you with anything?'
   }
 
   const scrollToBottom = () => {
@@ -50,23 +57,18 @@ export default function ChatWidget({
     scrollToBottom()
   }, [messages])
 
-  // When embedded in an iframe, measure our size when open so the frame matches the open panel.
-  // When closed, we let the parent use a fixed small size for the circular button.
+  // Show proactive bubble after a short delay (only when chat is closed and not already done)
+  useEffect(() => {
+    if (isOpen || proactiveBubbleDone) return
+    const t = window.setTimeout(() => setShowProactiveBubble(true), 1500)
+    return () => window.clearTimeout(t)
+  }, [isOpen, proactiveBubbleDone])
+
+  // When embedded in an iframe, measure container so the frame matches bubble + button (closed) or panel (open).
   useEffect(() => {
     if (typeof window === 'undefined' || window.self === window.top) return
     const el = containerRef.current
     if (!el) return
-
-    if (!isOpen) {
-      // Just tell parent we are closed; it will use its own compact size.
-      try {
-        window.parent.postMessage(
-          { type: 'ahotec-chat-resize', open: false },
-          '*'
-        )
-      } catch (_) {}
-      return
-    }
 
     const reportSize = () => {
       try {
@@ -74,22 +76,36 @@ export default function ChatWidget({
         const w = Math.ceil(rect.width)
         const h = Math.ceil(rect.height)
         if (w > 0 && h > 0) {
-          // Add small buffer so frame fully contains chat button + language selector (no clipping)
           const pad = 8
           window.parent.postMessage(
-            { type: 'ahotec-chat-resize', open: isOpen, width: w + pad, height: h + pad },
+            {
+              type: 'ahotec-chat-resize',
+              open: isOpen,
+              width: w + pad,
+              height: h + pad
+            },
             '*'
           )
         }
       } catch (_) {}
     }
+
+    if (!isOpen) {
+      reportSize()
+      const raf1 = requestAnimationFrame(() => {
+        reportSize()
+        requestAnimationFrame(reportSize)
+      })
+      return () => cancelAnimationFrame(raf1)
+    }
+
     reportSize()
     const raf1 = requestAnimationFrame(() => {
       reportSize()
       requestAnimationFrame(reportSize)
     })
     return () => cancelAnimationFrame(raf1)
-  }, [isOpen])
+  }, [isOpen, showProactiveBubble])
 
   const handleSendMessage = async () => {
     if (!inputValue.trim() || isLoading) return
@@ -179,9 +195,45 @@ export default function ChatWidget({
   return (
     <div ref={containerRef} className={`fixed ${positionClasses[position]} z-50`}>
       {!isOpen && (
-        <div className="flex flex-col items-end">
+        <div className="flex flex-col items-end gap-3">
+          {showProactiveBubble && (
+            <div className="relative pt-5 transition-opacity duration-300">
+              <div className="absolute -top-0 left-1/2 z-10 flex h-11 w-11 -translate-x-1/2 items-center justify-center rounded-full border-4 border-white bg-blue-100 shadow-md">
+                <Headphones className="h-5 w-5 text-blue-600" aria-hidden />
+              </div>
+              <div className="relative max-w-[240px] rounded-2xl border border-gray-100 bg-white px-4 pb-3 pt-6 shadow-lg">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowProactiveBubble(false)
+                    setProactiveBubbleDone(true)
+                  }}
+                  className="absolute right-2 top-2 rounded p-0.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                  aria-label={t.closeChat}
+                >
+                  <X className="h-4 w-4" />
+                </button>
+                <p className="pr-6 text-sm leading-snug text-gray-800">{t.proactiveBubble}</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowProactiveBubble(false)
+                    setProactiveBubbleDone(true)
+                    setIsOpen(true)
+                  }}
+                  className="mt-3 w-full rounded-lg bg-blue-600 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                >
+                  {language === 'es' ? 'Chatear' : 'Chat'}
+                </button>
+              </div>
+            </div>
+          )}
           <button
-            onClick={() => setIsOpen(true)}
+            onClick={() => {
+              setShowProactiveBubble(false)
+              setProactiveBubbleDone(true)
+              setIsOpen(true)
+            }}
             className={`${currentTheme.button} w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110`}
             aria-label={t.openChat}
           >

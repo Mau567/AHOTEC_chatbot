@@ -38,3 +38,20 @@ También puedes incrustar el chat con un iframe directo:
 - La aplicación AHOTEC (este repositorio) debe estar desplegada y ser accesible públicamente.
 - El sitio que incrusta debe permitir cargar tu dominio (que la política CSP no bloquee tu origen).
 - Para la **Opción A**, el sitio debe permitir cargar el script desde tu dominio.
+
+## 4. Probar el embed sin desplegar (local o preview)
+
+No hace falta hacer `push` a producción para probar en otra página:
+
+1. **Desarrollo local + túnel HTTPS**  
+   - Arranca la app: `npm run dev` (por defecto `http://localhost:3000`).  
+   - Expón el puerto con un túnel, por ejemplo [ngrok](https://ngrok.com/) (`ngrok http 3000`), [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/) o [localtunnel](https://localtunnel.github.io/www/).  
+   - Obtendrás una URL pública `https://…`. En tu HTML de prueba usa:  
+     `<script src="https://TU_TUNEL/embed.js" async></script>`  
+   - El iframe cargará `/embed/chat` desde ese mismo origen; las peticiones irán a tu instancia local.
+
+2. **Preview de Vercel**  
+   - Si conectas el repo a Vercel, cada rama o PR genera una URL de preview. Puedes usar esa URL en lugar del dominio de producción en el `src` del script, sin fusionar a `main`.
+
+3. **Solo en tu máquina**  
+   - Puedes abrir un HTML local que apunte a `http://localhost:3000/embed.js` **solo si** la página se sirve también en `localhost` (mismo origen que el iframe). Para probar desde otro origen o desde un dominio distinto necesitas HTTPS y túnel como en el punto 1.

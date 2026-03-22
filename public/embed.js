@@ -52,8 +52,12 @@
       var h = e.data.height;
       var open = e.data.open;
       if (!open) {
-        // Closed: always use the compact circular-button size.
-        setSize(closedW, closedH);
+        // Closed: use widget-reported size (bubble + button) when provided, else compact button-only.
+        if (typeof w === 'number' && typeof h === 'number' && w > 0 && h > 0) {
+          setSize(w, h);
+        } else {
+          setSize(closedW, closedH);
+        }
         setFrameStyle(false);
       } else if (typeof w === 'number' && typeof h === 'number' && w > 0 && h > 0) {
         if (h > (window.innerHeight || 500) - 40) {
