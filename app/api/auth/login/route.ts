@@ -6,10 +6,18 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { username, password } = body
 
-    // Obtener credenciales de variables de entorno
-    const adminUsername = process.env.ADMIN_USERNAME || 'AHOTEC2025'
-    const adminPassword = process.env.ADMIN_PASSWORD || 'AHOTEC2025'
-    const jwtSecret = process.env.JWT_SECRET || 'your-jwt-secret-here'
+    // Credenciales y secreto JWT deben existir en el entorno (sin valores por defecto en código).
+    const adminUsername = process.env.ADMIN_USERNAME
+    const adminPassword = process.env.ADMIN_PASSWORD
+    const jwtSecret = process.env.JWT_SECRET
+
+    if (!adminUsername || !adminPassword || !jwtSecret) {
+      console.error('Login: faltan ADMIN_USERNAME, ADMIN_PASSWORD o JWT_SECRET en el entorno')
+      return NextResponse.json(
+        { success: false, message: 'Configuración del servidor incompleta' },
+        { status: 503 }
+      )
+    }
 
     // Validar credenciales
     if (username === adminUsername && password === adminPassword) {
