@@ -65,38 +65,50 @@ export default function ChatWidget({
   }, [isOpen, proactiveBubbleDone])
 
   // When embedded in an iframe, measure container so the frame matches bubble + button (closed) or panel (open).
+  // Important: if the iframe is narrower than the greeting card (~248px), layout squeezes and each word wraps to its own line.
+  // We enforce minimum closed dimensions until the user dismisses the bubble / goes compact (launcher only).
   useEffect(() => {
     if (typeof window === 'undefined' || window.self === window.top) return
     const el = containerRef.current
     if (!el) return
 
+    const CLOSED_MIN_W_GREETING = 288 // card 248px + FAB nudge + padding
+    const CLOSED_MIN_H_GREETING = 312
+    const CLOSED_MIN_COMPACT = 88
+
     const reportSize = () => {
       try {
         const rect = el.getBoundingClientRect()
-        const w = Math.ceil(rect.width)
-        const h = Math.ceil(rect.height)
-        if (w > 0 && h > 0) {
-          const pad = 8
-          window.parent.postMessage(
-            {
-              type: 'ahotec-chat-resize',
-              open: isOpen,
-              width: w + pad,
-              height: h + pad
-            },
-            '*'
-          )
-        }
-      } catch (_) {}
-    }
+        let w = Math.ceil(rect.width)
+        let h = Math.ceil(rect.height)
+        if (w <= 0 || h <= 0) return
 
-    if (!isOpen) {
-      reportSize()
-      const raf1 = requestAnimationFrame(() => {
-        reportSize()
-        requestAnimationFrame(reportSize)
-      })
-      return () => cancelAnimationFrame(raf1)
+        if (!isOpen) {
+          const compactClosed =
+            proactiveBubbleDone && !showProactiveBubble
+          if (compactClosed) {
+            w = Math.max(w, CLOSED_MIN_COMPACT)
+            h = Math.max(h, CLOSED_MIN_COMPACT)
+          } else {
+            w = Math.max(w, CLOSED_MIN_W_GREETING)
+            h = Math.max(
+              h,
+              showProactiveBubble ? CLOSED_MIN_H_GREETING : 104
+            )
+          }
+        }
+
+        const pad = 8
+        window.parent.postMessage(
+          {
+            type: 'ahotec-chat-resize',
+            open: isOpen,
+            width: w + pad,
+            height: h + pad
+          },
+          '*'
+        )
+      } catch (_) {}
     }
 
     reportSize()
@@ -104,8 +116,18 @@ export default function ChatWidget({
       reportSize()
       requestAnimationFrame(reportSize)
     })
-    return () => cancelAnimationFrame(raf1)
-  }, [isOpen, showProactiveBubble])
+
+    const ro =
+      typeof ResizeObserver !== 'undefined'
+        ? new ResizeObserver(() => reportSize())
+        : null
+    if (ro) ro.observe(el)
+
+    return () => {
+      cancelAnimationFrame(raf1)
+      ro?.disconnect()
+    }
+  }, [isOpen, showProactiveBubble, proactiveBubbleDone])
 
   const handleSendMessage = async () => {
     if (!inputValue.trim() || isLoading) return
@@ -195,25 +217,31 @@ export default function ChatWidget({
   return (
     <div ref={containerRef} className={`fixed ${positionClasses[position]} z-50`}>
       {!isOpen && (
-        <div className="flex flex-col items-end gap-3">
+        <div
+          className={`flex shrink-0 flex-col gap-3 ${
+            position === 'bottom-right' ? 'items-end' : 'items-start'
+          } min-w-[288px]`}
+        >
           {showProactiveBubble && (
-            <div className="relative pt-5 transition-opacity duration-300">
-              <div className="absolute -top-0 left-1/2 z-10 flex h-11 w-11 -translate-x-1/2 items-center justify-center rounded-full border-4 border-white bg-blue-100 shadow-md">
-                <Headphones className="h-5 w-5 text-blue-600" aria-hidden />
+            <div className="relative w-[248px] shrink-0 pt-5 transition-opacity duration-300">
+              <div className="absolute left-1/2 top-0 z-10 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-[3px] border-white bg-sky-100 shadow-md">
+                <Headphones className="h-5 w-5 text-blue-600" strokeWidth={2} aria-hidden />
               </div>
-              <div className="relative max-w-[240px] rounded-2xl border border-gray-100 bg-white px-4 pb-3 pt-6 shadow-lg">
+              <div className="relative rounded-2xl border border-gray-100/80 bg-white px-4 pb-3.5 pt-7 shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
                 <button
                   type="button"
                   onClick={() => {
                     setShowProactiveBubble(false)
                     setProactiveBubbleDone(true)
                   }}
-                  className="absolute right-2 top-2 rounded p-0.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                  className="absolute right-2.5 top-2.5 rounded-md p-0.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
                   aria-label={t.closeChat}
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-4 w-4" strokeWidth={2} />
                 </button>
-                <p className="pr-6 text-sm leading-snug text-gray-800">{t.proactiveBubble}</p>
+                <p className="pr-7 text-left text-[15px] font-normal leading-[1.45] tracking-tight text-gray-800">
+                  {t.proactiveBubble}
+                </p>
                 <button
                   type="button"
                   onClick={() => {
@@ -221,7 +249,7 @@ export default function ChatWidget({
                     setProactiveBubbleDone(true)
                     setIsOpen(true)
                   }}
-                  className="mt-3 w-full rounded-lg bg-blue-600 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                  className="mt-3.5 w-full rounded-xl bg-blue-600 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700"
                 >
                   {language === 'es' ? 'Chatear' : 'Chat'}
                 </button>
@@ -234,10 +262,12 @@ export default function ChatWidget({
               setProactiveBubbleDone(true)
               setIsOpen(true)
             }}
-            className={`${currentTheme.button} w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110`}
+            className={`${currentTheme.button} flex h-14 w-14 shrink-0 items-center justify-center rounded-full shadow-lg transition-all duration-200 hover:scale-110 ${
+              position === 'bottom-right' ? 'translate-x-1.5' : '-translate-x-1.5'
+            }`}
             aria-label={t.openChat}
           >
-            <MessageCircle className="w-6 h-6" />
+            <MessageCircle className="h-6 w-6" strokeWidth={2} />
           </button>
         </div>
       )}

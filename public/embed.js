@@ -17,9 +17,9 @@
   iframe.src = baseUrl + '/embed/chat';
   iframe.title = 'AHOTEC Chat - Lucía';
   iframe.id = 'ahotec-chat-iframe';
-  // Closed size: circular button with small buffer; open size is provided by the widget.
-  var closedW = 80;
-  var closedH = 80;
+  // Initial closed size: wide enough for the greeting card layout before the first resize message (avoids narrow iframe reflow).
+  var closedW = 288;
+  var closedH = 120;
 
   function setSize(w, h) {
     iframe.style.width = w + 'px';
@@ -28,7 +28,9 @@
 
   function setFrameStyle(open) {
     iframe.style.boxShadow = 'none';
-    iframe.style.borderRadius = open ? '12px' : '9999px'; // circle-ish when closed, rounded panel when open
+    // Rounded rectangle when closed so the greeting card (above the FAB) is not clipped by a circle.
+    iframe.style.borderRadius = open ? '12px' : '20px';
+    iframe.style.overflow = 'visible';
   }
 
   setSize(closedW, closedH);
@@ -37,11 +39,14 @@
     'position: fixed',
     'bottom: 20px',
     'right: 20px',
+    'width: ' + closedW + 'px',
+    'height: ' + closedH + 'px',
     'border: none',
     'outline: none',
     'background: transparent',
     'box-shadow: none',
     'z-index: 2147483647',
+    'overflow: visible',
     'transition: width 0.2s ease, height 0.2s ease, border-radius 0.2s ease'
   ].join('; ');
   document.body.appendChild(iframe);
