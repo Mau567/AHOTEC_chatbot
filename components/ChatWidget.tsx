@@ -273,7 +273,9 @@ export default function ChatWidget({
       )}
 
       {isOpen && (
-        <div className={`w-80 h-96 rounded-lg shadow-xl border ${currentTheme.widget} flex flex-col`}>
+        <div
+          className={`w-[min(28rem,calc(100vw-1.5rem))] h-[min(34rem,calc(100vh-5rem))] rounded-lg shadow-xl border ${currentTheme.widget} flex flex-col`}
+        >
           <div className={`${currentTheme.header} px-4 py-3 rounded-t-lg flex items-center justify-between`}>
             <div className="flex items-center">
               <Building className="w-5 h-5 mr-2" />
