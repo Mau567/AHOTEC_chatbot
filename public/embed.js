@@ -48,7 +48,8 @@
     'box-shadow: none',
     'z-index: 2147483647',
     'overflow: visible',
-    'transition: width 0.2s ease, height 0.2s ease, border-radius 0.2s ease'
+    // No width/height transition: animated iframe resize fights postMessage sizing and causes flicker/collapse.
+    'transition: border-radius 0.2s ease'
   ].join('; ');
   document.body.appendChild(iframe);
 

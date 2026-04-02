@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useLayoutEffect } from 'react'
 import { MessageCircle, X, Send, Building, Headphones } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 
@@ -33,6 +33,14 @@ export default function ChatWidget({
   const [sessionId] = useState(() => `widget_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  /** In an iframe, vh/vw track the frame size; using them in the panel fights embed resize (feedback loop). */
+  const [isEmbedded, setIsEmbedded] = useState(false)
+
+  useLayoutEffect(() => {
+    if (typeof window !== 'undefined' && window.self !== window.top) {
+      setIsEmbedded(true)
+    }
+  }, [])
 
   const t = {
     assistantTitle: language === 'es' ? 'Lucía' : 'Lucía',
@@ -275,7 +283,11 @@ export default function ChatWidget({
 
       {isOpen && (
         <div
-          className={`w-80 h-[min(30rem,calc(100vh-5rem))] max-w-[calc(100vw-2rem)] rounded-lg shadow-xl border ${currentTheme.widget} flex flex-col`}
+          className={`rounded-lg shadow-xl border ${currentTheme.widget} flex flex-col shrink-0 ${
+            isEmbedded
+              ? 'w-[min(20rem,100%)] h-[30rem]'
+              : 'w-80 h-[min(30rem,calc(100vh-5rem))] max-w-[calc(100vw-2rem)]'
+          }`}
         >
           <div className={`${currentTheme.header} px-4 py-3 rounded-t-lg flex items-center justify-between`}>
             <div className="flex items-center">
