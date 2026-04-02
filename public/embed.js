@@ -17,9 +17,14 @@
   iframe.src = baseUrl + '/embed/chat';
   iframe.title = 'AHOTEC Chat - Lucía';
   iframe.id = 'ahotec-chat-iframe';
-  // Initial closed size: wide enough for the greeting card layout before the first resize message (avoids narrow iframe reflow).
-  var closedW = 288;
+  // Must match ChatWidget embed postMessage: 320px panel + 14px shadow pad = 334 (same closed vs open width).
+  var closedW = 334;
   var closedH = 120;
+  /** Widest iframe width used while open — closed state keeps this width so the frame doesn’t slide horizontally. */
+  var iframeMaxW = 0;
+  var resizeRaf = null;
+  var pendingResize = null;
+  var lastAppliedKey = '';
 
   function setSize(w, h) {
     iframe.style.width = w + 'px';
@@ -53,29 +58,53 @@
   ].join('; ');
   document.body.appendChild(iframe);
 
+  function flushResize() {
+    resizeRaf = null;
+    var d = pendingResize;
+    pendingResize = null;
+    if (!d || d.type !== 'ahotec-chat-resize') return;
+
+    var w = d.width;
+    var h = d.height;
+    var open = d.open;
+    var vw = window.innerWidth || 400;
+    var vh = window.innerHeight || 600;
+    var gutter = margin * 2;
+    var maxW = Math.max(200, vw - gutter);
+    var maxH = Math.max(240, vh - gutter);
+
+    var fw;
+    var fh;
+
+    if (!open) {
+      if (typeof w === 'number' && typeof h === 'number' && w > 0 && h > 0) {
+        var cw = iframeMaxW > 0 ? Math.max(w, iframeMaxW) : w;
+        fw = Math.min(Math.round(cw), maxW);
+        fh = Math.min(Math.round(h), maxH);
+      } else {
+        fw = closedW;
+        fh = closedH;
+      }
+    } else if (typeof w === 'number' && typeof h === 'number' && w > 0 && h > 0) {
+      fw = Math.min(Math.round(w), maxW);
+      fh = Math.min(Math.round(h), maxH);
+      iframeMaxW = Math.max(iframeMaxW, fw);
+    } else {
+      return;
+    }
+
+    var key = fw + 'x' + fh + ':' + !!open;
+    if (key === lastAppliedKey) return;
+    lastAppliedKey = key;
+    setFrameStyle(!!open);
+    setSize(fw, fh);
+  }
+
   window.addEventListener('message', function(e) {
     if (e.data && e.data.type === 'ahotec-chat-resize') {
-      var w = e.data.width;
-      var h = e.data.height;
-      var open = e.data.open;
-      if (!open) {
-        // Closed: use widget-reported size (bubble + button) when provided, else compact button-only.
-        if (typeof w === 'number' && typeof h === 'number' && w > 0 && h > 0) {
-          setSize(w, h);
-        } else {
-          setSize(closedW, closedH);
-        }
-        setFrameStyle(false);
-      } else if (typeof w === 'number' && typeof h === 'number' && w > 0 && h > 0) {
-        var vw = window.innerWidth || 400;
-        var vh = window.innerHeight || 600;
-        var gutter = margin * 2;
-        var maxW = Math.max(200, vw - gutter);
-        var maxH = Math.max(240, vh - gutter);
-        w = Math.min(Math.ceil(w), maxW);
-        h = Math.min(Math.ceil(h), maxH);
-        setSize(w, h);
-        setFrameStyle(true);
+      pendingResize = e.data;
+      if (resizeRaf == null) {
+        resizeRaf = requestAnimationFrame(flushResize);
       }
     }
   });

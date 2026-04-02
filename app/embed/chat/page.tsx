@@ -18,6 +18,7 @@ export default function EmbedChatPage() {
         apiUrl={apiUrl}
         theme="light"
         position="bottom-right"
+        embedded
       />
     </div>
   )

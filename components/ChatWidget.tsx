@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect, useLayoutEffect } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { MessageCircle, X, Send, Building, Headphones } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 
@@ -15,12 +15,15 @@ interface ChatWidgetProps {
   apiUrl?: string
   theme?: 'light' | 'dark'
   position?: 'bottom-right' | 'bottom-left'
+  /** True on `/embed/chat` only — avoids SSR/hydration using non-embed layout for one frame (iframe jump). */
+  embedded?: boolean
 }
 
 export default function ChatWidget({
   apiUrl = '/api/chat',
   theme = 'light',
-  position = 'bottom-right'
+  position = 'bottom-right',
+  embedded = false
 }: ChatWidgetProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [showProactiveBubble, setShowProactiveBubble] = useState(false)
@@ -33,14 +36,7 @@ export default function ChatWidget({
   const [sessionId] = useState(() => `widget_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
-  /** In an iframe, vh/vw track the frame size; using them in the panel fights embed resize (feedback loop). */
-  const [isEmbedded, setIsEmbedded] = useState(false)
-
-  useLayoutEffect(() => {
-    if (typeof window !== 'undefined' && window.self !== window.top) {
-      setIsEmbedded(true)
-    }
-  }, [])
+  const isEmbedded = embedded
 
   const t = {
     assistantTitle: language === 'es' ? 'Lucía' : 'Lucía',
@@ -106,8 +102,12 @@ export default function ChatWidget({
           }
         }
 
-        // Tighter when open so the iframe hugs the panel; closed keeps slack for bubble + FAB
-        const pad = isOpen ? 4 : 8
+        // Same as open panel (w-80 = 320px): host iframe is right-aligned; widening the frame moves its left edge.
+        w = Math.max(w, 320)
+
+        // Same pad open/closed so iframe width does not change by a few px when toggling (visible “slide”).
+        // Room for shadow-xl (iframe overflow:hidden when open).
+        const pad = 14
         window.parent.postMessage(
           {
             type: 'ahotec-chat-resize',
@@ -197,6 +197,11 @@ export default function ChatWidget({
     'bottom-right': 'bottom-4 right-4',
     'bottom-left': 'bottom-4 left-4'
   }
+  /** Flush to iframe edges: iframe size matches content; avoids clip/asymmetry vs bottom-4/right-4 + tight iframe. */
+  const embedPositionClasses = {
+    'bottom-right': 'bottom-0 right-0',
+    'bottom-left': 'bottom-0 left-0'
+  } as const
 
   const themeClasses = {
     light: {
@@ -224,7 +229,12 @@ export default function ChatWidget({
   const currentTheme = themeClasses[theme]
 
   return (
-    <div ref={containerRef} className={`fixed ${positionClasses[position]} z-50`}>
+    <div
+      ref={containerRef}
+      className={`fixed z-50 ${
+        isEmbedded ? embedPositionClasses[position] : positionClasses[position]
+      }`}
+    >
       {!isOpen && (
         <div
           className={`flex shrink-0 flex-col gap-3 ${
@@ -272,7 +282,11 @@ export default function ChatWidget({
               setIsOpen(true)
             }}
             className={`${currentTheme.button} flex h-14 w-14 shrink-0 items-center justify-center rounded-full shadow-lg transition-all duration-200 hover:scale-110 ${
-              position === 'bottom-right' ? 'translate-x-1.5' : '-translate-x-1.5'
+              isEmbedded
+                ? ''
+                : position === 'bottom-right'
+                  ? 'translate-x-1.5'
+                  : '-translate-x-1.5'
             }`}
             aria-label={t.openChat}
           >
@@ -285,7 +299,7 @@ export default function ChatWidget({
         <div
           className={`rounded-lg shadow-xl border ${currentTheme.widget} flex flex-col shrink-0 ${
             isEmbedded
-              ? 'w-[min(20rem,100%)] h-[30rem]'
+              ? 'w-80 h-[30rem]'
               : 'w-80 h-[min(30rem,calc(100vh-5rem))] max-w-[calc(100vw-2rem)]'
           }`}
         >
