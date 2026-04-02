@@ -13,7 +13,7 @@ export default function EmbedChatPage() {
     : '/api/chat'
 
   return (
-    <div className="min-h-screen w-full bg-transparent">
+    <div className="w-full bg-transparent min-h-0">
       <ChatWidget
         apiUrl={apiUrl}
         theme="light"

@@ -28,17 +28,18 @@
 
   function setFrameStyle(open) {
     iframe.style.boxShadow = 'none';
-    // Rounded rectangle when closed so the greeting card (above the FAB) is not clipped by a circle.
     iframe.style.borderRadius = open ? '12px' : '20px';
-    iframe.style.overflow = 'visible';
+    // Open: clip to exact panel (no inner page scroll). Closed: allow bubble/FAB shadows past the frame edge.
+    iframe.style.overflow = open ? 'hidden' : 'visible';
   }
 
   setSize(closedW, closedH);
   setFrameStyle(false);
+  var margin = 20;
   iframe.style.cssText = [
     'position: fixed',
-    'bottom: 20px',
-    'right: 20px',
+    'bottom: ' + margin + 'px',
+    'right: ' + margin + 'px',
     'width: ' + closedW + 'px',
     'height: ' + closedH + 'px',
     'border: none',
@@ -65,9 +66,13 @@
         }
         setFrameStyle(false);
       } else if (typeof w === 'number' && typeof h === 'number' && w > 0 && h > 0) {
-        if (h > (window.innerHeight || 500) - 40) {
-          h = (window.innerHeight || 500) - 40;
-        }
+        var vw = window.innerWidth || 400;
+        var vh = window.innerHeight || 600;
+        var gutter = margin * 2;
+        var maxW = Math.max(200, vw - gutter);
+        var maxH = Math.max(240, vh - gutter);
+        w = Math.min(Math.ceil(w), maxW);
+        h = Math.min(Math.ceil(h), maxH);
         setSize(w, h);
         setFrameStyle(true);
       }
