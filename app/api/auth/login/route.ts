@@ -4,12 +4,14 @@ import jwt from 'jsonwebtoken'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { username, password } = body
+    const username = typeof body.username === 'string' ? body.username.trim() : ''
+    const password = typeof body.password === 'string' ? body.password.trim() : ''
 
     // Credenciales y secreto JWT deben existir en el entorno (sin valores por defecto en código).
-    const adminUsername = process.env.ADMIN_USERNAME
-    const adminPassword = process.env.ADMIN_PASSWORD
-    const jwtSecret = process.env.JWT_SECRET
+    // trim() evita fallos por espacios accidentales en .env o en el formulario.
+    const adminUsername = process.env.ADMIN_USERNAME?.trim()
+    const adminPassword = process.env.ADMIN_PASSWORD?.trim()
+    const jwtSecret = process.env.JWT_SECRET?.trim()
 
     if (!adminUsername || !adminPassword || !jwtSecret) {
       console.error('Login: faltan ADMIN_USERNAME, ADMIN_PASSWORD o JWT_SECRET en el entorno')
