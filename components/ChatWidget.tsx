@@ -227,6 +227,12 @@ export default function ChatWidget({
   }
 
   const currentTheme = themeClasses[theme]
+  const mdHeadingBorder = theme === 'dark' ? 'border-white/20' : 'border-gray-200/80'
+  const mdHr = theme === 'dark' ? 'border-white/15' : 'border-gray-200'
+  const mdLink =
+    theme === 'dark'
+      ? 'font-medium text-sky-300 underline underline-offset-2 hover:text-sky-200'
+      : 'font-medium text-blue-600 underline underline-offset-2 hover:text-blue-700'
 
   return (
     <div
@@ -330,10 +336,10 @@ export default function ChatWidget({
                   className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
-                    className={`max-w-[85%] px-3 py-2 rounded-lg text-sm ${
+                    className={`rounded-lg text-sm ${
                       message.isUser
-                        ? currentTheme.message.user
-                        : currentTheme.message.bot
+                        ? `max-w-[85%] px-3 py-2 ${currentTheme.message.user}`
+                        : `max-w-[min(100%,36rem)] w-full px-3 py-2.5 ${currentTheme.message.bot} [&_a]:break-all`
                     }`}
                   >
                     {message.isUser ? (
@@ -342,9 +348,49 @@ export default function ChatWidget({
                       <ReactMarkdown
                         components={{
                           a: ({ href, children }) => (
-                            <a href={href} target="_blank" rel="noopener noreferrer" className="underline text-blue-600">
+                            <a href={href} target="_blank" rel="noopener noreferrer" className={mdLink}>
                               {children}
                             </a>
+                          ),
+                          p: ({ children }) => <p className="mb-2 last:mb-0 leading-relaxed">{children}</p>,
+                          ul: ({ children }) => (
+                            <ul className="my-2 list-disc space-y-1 pl-5 last:mb-0">{children}</ul>
+                          ),
+                          ol: ({ children }) => (
+                            <ol className="my-2 list-decimal space-y-1 pl-5 last:mb-0">{children}</ol>
+                          ),
+                          li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+                          h1: ({ children }) => (
+                            <h3
+                              className={`mb-1 mt-3 border-b pb-1 text-base font-semibold first:mt-0 ${mdHeadingBorder}`}
+                            >
+                              {children}
+                            </h3>
+                          ),
+                          h2: ({ children }) => (
+                            <h3
+                              className={`mb-1 mt-3 border-b pb-1 text-base font-semibold first:mt-0 ${mdHeadingBorder}`}
+                            >
+                              {children}
+                            </h3>
+                          ),
+                          h3: ({ children }) => (
+                            <h3
+                              className={`mb-1 mt-3 border-b pb-1 text-[0.95rem] font-semibold first:mt-0 ${mdHeadingBorder}`}
+                            >
+                              {children}
+                            </h3>
+                          ),
+                          strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+                          hr: () => <hr className={`my-3 ${mdHr}`} />,
+                          blockquote: ({ children }) => (
+                            <blockquote
+                              className={`my-2 border-l-2 pl-3 ${
+                                theme === 'dark' ? 'border-sky-500/50 text-gray-200' : 'border-blue-300 text-gray-700'
+                              }`}
+                            >
+                              {children}
+                            </blockquote>
                           )
                         }}
                       >
