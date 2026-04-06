@@ -42,7 +42,7 @@ export default function ChatWidget({
     assistantTitle: language === 'es' ? 'Lucía' : 'Lucía',
     openChat: language === 'es' ? 'Abrir chat' : 'Open chat',
     closeChat: language === 'es' ? 'Cerrar chat' : 'Close chat',
-    welcomeMessage: language === 'es' ? 'Hola, soy Lucía, tu asistente virtual. ¿En qué puedo ayudarte?' : 'Hello, I am Lucía, your virtual assistant. How can I help you?',
+    welcomeMessage: language === 'es' ? 'Hola, soy Lucía. ¿Buscas hoteles en Ecuador? Estoy para ayudarte...' : 'Hello, I am Lucía. Looking for hotels in Ecuador? I\'m here to help...',
     placeholder: language === 'es' ? 'Escribe tu mensaje...' : 'Type your message...',
     sendButton: language === 'es' ? 'Enviar' : 'Send',
     technicalError: language === 'es' ? 'Lo siento, hay un problema técnico. Por favor intenta de nuevo.' : 'Sorry, there is a technical problem. Please try again.',
