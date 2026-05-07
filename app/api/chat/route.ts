@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { enforceChatRateLimit } from '@/lib/chat-rate-limit'
 import { freeFormChatbot } from '@/lib/mistral'
 
 /** Detect response language from the user's message: Spanish vs English. Default Spanish if unclear. */
@@ -11,6 +12,9 @@ function detectMessageLanguage(message: string): 'es' | 'en' {
 }
 
 export async function POST(request: NextRequest) {
+  const rateLimited = await enforceChatRateLimit(request)
+  if (rateLimited) return rateLimited
+
   try {
     const body = await request.json()
     const { message, sessionId, lang = 'es' } = body
